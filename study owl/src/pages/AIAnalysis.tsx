@@ -1,0 +1,164 @@
+import { useState } from "react";
+import { C, Card, Badge, Btn, PageHeader, ProgressBar, Spinner, Select } from "../components/ui";
+import { IconSparkles, IconFileText, IconCheck, IconPlus, IconX, IconTrendingUp } from "../components/Icons";
+
+const paperPool = [
+  { id: 1, label: "DBMS Final 2023", subject: "DBMS" },
+  { id: 2, label: "DBMS Final 2022", subject: "DBMS" },
+  { id: 3, label: "DBMS Final 2021", subject: "DBMS" },
+  { id: 4, label: "DBMS Midterm 2023", subject: "DBMS" },
+  { id: 5, label: "Algorithms Final 2023", subject: "Algorithms" },
+];
+
+const analysisResult = {
+  subject: "DBMS",
+  papers: 4,
+  totalQuestions: 38,
+  topTopics: [
+    { topic: "Normalization (1NF, 2NF, 3NF, BCNF)", freq: 92, marks: [5, 10], appeared: 4 },
+    { topic: "Transaction Management & ACID Properties", freq: 78, marks: [5, 10], appeared: 3 },
+    { topic: "SQL Queries & Joins", freq: 71, marks: [5, 10], appeared: 3 },
+    { topic: "ER Diagram & Relational Mapping", freq: 65, marks: [5], appeared: 3 },
+    { topic: "Indexing & Hashing", freq: 54, marks: [5, 10], appeared: 2 },
+    { topic: "Concurrency Control", freq: 48, marks: [5], appeared: 2 },
+    { topic: "Database Security", freq: 32, marks: [3, 5], appeared: 2 },
+  ],
+  repeatedQuestions: [
+    { question: "Explain the different normal forms with examples. Normalize the given relation to BCNF.", count: 3, marks: 10 },
+    { question: "What are ACID properties? Explain each with an example.", count: 3, marks: 5 },
+    { question: "Write SQL queries for the given schema involving joins and subqueries.", count: 3, marks: 10 },
+    { question: "Draw and explain the ER diagram for a university management system.", count: 2, marks: 10 },
+    { question: "Compare B-tree and B+ tree indexing structures.", count: 2, marks: 5 },
+  ],
+  marksDistribution: [
+    { marks: "2 marks", count: 5, pct: 13 },
+    { marks: "3 marks", count: 8, pct: 21 },
+    { marks: "5 marks", count: 14, pct: 37 },
+    { marks: "10 marks", count: 11, pct: 29 },
+  ],
+};
+
+export default function AIAnalysis() {
+  const [selected, setSelected] = useState<number[]>([1, 2, 3, 4]);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [showResult, setShowResult] = useState(true);
+
+  const analyze = () => {
+    setShowResult(false);
+    setAnalyzing(true);
+    setTimeout(() => { setAnalyzing(false); setShowResult(true); }, 1800);
+  };
+
+  return (
+    <div style={{ padding: '28px 32px', maxWidth: '1200px' }}>
+      <PageHeader title="AI Question Paper Analysis" sub="Detect repeated questions, topic frequencies, and marks distribution across past papers" />
+
+      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '20px', alignItems: 'start' }}>
+        {/* Paper selector */}
+        <Card>
+          <h3 style={{ fontSize: '14px', fontWeight: 600, color: C.navy, marginBottom: '14px' }}>Select Papers to Analyze</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+            {paperPool.map(p => {
+              const active = selected.includes(p.id);
+              return (
+                <div key={p.id} onClick={() => setSelected(s => active ? s.filter(x => x !== p.id) : [...s, p.id])} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', border: `1.5px solid ${active ? C.indigo : C.border}`, borderRadius: '10px', cursor: 'pointer', backgroundColor: active ? C.indigoLight : C.surface, transition: 'all 0.15s' }}>
+                  <div style={{ width: '18px', height: '18px', borderRadius: '5px', border: `2px solid ${active ? C.indigo : C.border}`, backgroundColor: active ? C.indigo : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {active && <IconCheck size={11} color="#fff" />}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '13px', fontWeight: 500, color: C.text }}>{p.label}</p>
+                    <p style={{ fontSize: '11px', color: C.text3 }}>{p.subject}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <Btn fullWidth onClick={analyze} loading={analyzing} icon={<IconSparkles size={14} />} disabled={selected.length === 0}>
+            {analyzing ? 'Analyzing…' : `Analyze ${selected.length} Paper${selected.length !== 1 ? 's' : ''}`}
+          </Btn>
+          {selected.length === 0 && <p style={{ fontSize: '12px', color: C.text3, textAlign: 'center', marginTop: '8px' }}>Select at least one paper</p>}
+        </Card>
+
+        {/* Results */}
+        <div>
+          {analyzing && (
+            <Card style={{ textAlign: 'center', padding: '48px' }}>
+              <Spinner size={36} />
+              <p style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginTop: '20px' }}>Analyzing question papers…</p>
+              <p style={{ fontSize: '13px', color: C.text2, marginTop: '8px' }}>Detecting repeated questions, topic frequency, and marks distribution.</p>
+            </Card>
+          )}
+
+          {showResult && !analyzing && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Summary */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                {[{ label: 'Papers Analyzed', value: analysisResult.papers }, { label: 'Total Questions', value: analysisResult.totalQuestions }, { label: 'Topics Identified', value: analysisResult.topTopics.length }, { label: 'Repeated Questions', value: analysisResult.repeatedQuestions.length }].map(s => (
+                  <Card key={s.label} padding={16}>
+                    <p style={{ fontSize: '22px', fontWeight: 700, color: C.navy }}>{s.value}</p>
+                    <p style={{ fontSize: '12px', color: C.text3, marginTop: '2px' }}>{s.label}</p>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Topic frequency */}
+              <Card>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+                  <IconTrendingUp size={18} color={C.indigo} />
+                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>Topic Frequency Analysis</h3>
+                  <Badge variant="purple" style={{ marginLeft: 'auto' }}>AI Generated</Badge>
+                </div>
+                {analysisResult.topTopics.map((t, i) => (
+                  <div key={i} style={{ marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <div>
+                        <span style={{ fontSize: '13.5px', fontWeight: 500, color: C.text }}>{t.topic}</span>
+                        <span style={{ fontSize: '11.5px', color: C.text3, marginLeft: '8px' }}>Appeared in {t.appeared}/{analysisResult.papers} papers · {t.marks.map(m => `${m}M`).join(', ')}</span>
+                      </div>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: C.indigo, flexShrink: 0, marginLeft: '12px' }}>{t.freq}%</span>
+                    </div>
+                    <ProgressBar value={t.freq} color={t.freq >= 70 ? C.error : t.freq >= 50 ? C.warning : C.indigo} />
+                  </div>
+                ))}
+              </Card>
+
+              {/* Repeated questions */}
+              <Card>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Frequently Repeated Questions</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {analysisResult.repeatedQuestions.map((q, i) => (
+                    <div key={i} style={{ padding: '14px', backgroundColor: q.count >= 3 ? '#FEF2F2' : C.surface2, border: `1px solid ${q.count >= 3 ? '#FECACA' : C.border}`, borderRadius: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
+                        <p style={{ fontSize: '13.5px', color: C.text, lineHeight: 1.5 }}>{q.question}</p>
+                        <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                          <Badge variant={q.count >= 3 ? 'error' : 'warning'}>×{q.count}</Badge>
+                          <Badge variant="navy">{q.marks}M</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Marks distribution */}
+              <Card>
+                <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Marks Distribution</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                  {analysisResult.marksDistribution.map((m, i) => (
+                    <div key={i} style={{ textAlign: 'center' }}>
+                      <div style={{ height: '80px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '8px' }}>
+                        <div style={{ width: '40px', backgroundColor: C.indigo, borderRadius: '6px 6px 0 0', height: `${m.pct * 2}px`, transition: 'height 0.4s', opacity: 0.7 + i * 0.1 }} />
+                      </div>
+                      <p style={{ fontSize: '12px', fontWeight: 600, color: C.navy }}>{m.marks}</p>
+                      <p style={{ fontSize: '11px', color: C.text3 }}>{m.count} questions ({m.pct}%)</p>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,237 @@
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { C } from "../components/ui";
+import { IconChevronDown, IconBook, IconFolder, IconFileText, IconBrain, IconCheck, IconCalendar, IconBarChart, IconUsers, IconZap, IconLightbulb, IconSparkles } from "../components/Icons";
+
+const dropdownMenus: Record<string, string[]> = {
+  Resources: ["Video Lectures", "Notes & PDFs", "Flashcards", "eBooks", "Practice Sets"],
+  "Question Papers": ["Previous Year Papers", "Mock Tests", "Topic-wise Questions", "Solution Keys"],
+  "AI Tools": ["AI Doubt Solver", "Marks Generator", "AI Analysis", "Exam Prep"],
+  Community: ["Discussion Forum", "Study Groups", "Leaderboard", "Events"],
+};
+
+function NavDropdown({ label, items }: { label: string; items: string[] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
+    document.addEventListener('mousedown', fn);
+    return () => document.removeEventListener('mousedown', fn);
+  }, []);
+  return (
+    <div ref={ref} style={{ position: 'relative' }}>
+      <button onClick={() => setOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontWeight: 500, color: open ? C.indigo : C.text2, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px' }}>
+        {label} <IconChevronDown size={13} color={open ? C.indigo : C.text3} />
+      </button>
+      {open && (
+        <div style={{ position: 'absolute', top: '110%', left: 0, backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '6px', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', zIndex: 100 }}>
+          {items.map(item => (
+            <a key={item} href="#features" onClick={() => setOpen(false)} style={{ display: 'block', padding: '8px 14px', fontSize: '13.5px', color: C.text2, borderRadius: '8px', transition: 'background 0.1s' }}
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surface2}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+              {item}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const featureSections = [
+  { icon: <IconFolder size={22} />, title: "Academic Resource Library", desc: "Store and organize PDFs, lecture notes, assignments, and reference materials by department, semester, subject, and topic." },
+  { icon: <IconFileText size={22} />, title: "Question Paper Archive", desc: "Access a searchable archive of previous year papers, midterms, finals, and model questions — filtered by subject, year, and exam type." },
+  { icon: <IconSparkles size={22} />, title: "AI Question Paper Analysis", desc: "Upload past papers and let AI detect repeated questions, topic frequencies, marks distribution, and recurring concepts." },
+  { icon: <IconLightbulb size={22} />, title: "Exam Preparation Suggestions", desc: "Receive AI-generated recommendations on important topics, high-frequency concepts, and revision priorities based on real data." },
+  { icon: <IconZap size={22} />, title: "Marks-Based Answer Generator", desc: "Enter a question and select 2, 3, 5, or 10 marks. Get a structured, exam-ready answer with definitions, examples, and conclusions." },
+  { icon: <IconBrain size={22} />, title: "AI Study Assistant", desc: "Ask academic questions, explain difficult topics, summarize chapters, generate notes, create MCQs, and prepare exam answers." },
+  { icon: <IconCheck size={22} />, title: "Quiz & Practice", desc: "Test your knowledge with subject-wise quizzes. Get detailed results, topic weakness analysis, and revision recommendations." },
+  { icon: <IconCalendar size={22} />, title: "Smart Study Planner", desc: "Create a personalized day-by-day study plan based on your exam dates, subjects, and weak topics." },
+  { icon: <IconBarChart size={22} />, title: "Progress Tracking", desc: "Monitor study activity, quiz performance, task completion, and learning consistency over time." },
+  { icon: <IconUsers size={22} />, title: "Academic Community", desc: "Connect with seniors and juniors. Share resources, exam tips, course guidance, and verified academic knowledge." },
+];
+
+const workflow = [
+  { step: "01", title: "Store", desc: "Upload resources, lecture notes, and question papers from any device." },
+  { step: "02", title: "Organize", desc: "Categorize by department, semester, subject, and topic automatically." },
+  { step: "03", title: "Understand", desc: "Use AI to analyze papers, summarize content, and explain concepts." },
+  { step: "04", title: "Practice", desc: "Take quizzes and generate structured exam answers at any marks level." },
+  { step: "05", title: "Prepare", desc: "Follow personalized study plans and exam preparation suggestions." },
+  { step: "06", title: "Share", desc: "Contribute to the community and help future students succeed." },
+];
+
+export default function Landing() {
+  const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  return (
+    <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: C.bg, color: C.text, minHeight: '100vh' }}>
+      {/* Nav */}
+      <nav style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: 'rgba(247,247,250,0.9)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.border}` }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', height: '60px', display: 'flex', alignItems: 'center', gap: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+            <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '34px', width: 'auto' }} />
+            <span style={{ fontSize: '14px', fontWeight: 700, color: C.navy }}>Study Owl <span style={{ color: C.indigo }}>AI</span></span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
+            {/* Desktop links */}
+            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+              <a href="#features" style={{ fontSize: '14px', fontWeight: 500, color: C.text2, padding: '4px 8px', borderRadius: '6px' }}
+                onMouseEnter={e => e.currentTarget.style.color = C.indigo}
+                onMouseLeave={e => e.currentTarget.style.color = C.text2}>
+                Features
+              </a>
+              {Object.entries(dropdownMenus).map(([label, items]) => (
+                <NavDropdown key={label} label={label} items={items} />
+              ))}
+            </div>
+
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+              <button onClick={() => navigate('/login')} style={{ padding: '7px 16px', fontSize: '14px', fontWeight: 500, color: C.text, background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer' }}>Sign in</button>
+              <button onClick={() => navigate('/register')} style={{ padding: '7px 16px', fontSize: '14px', fontWeight: 500, color: '#fff', backgroundColor: C.indigo, border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Get Started</button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px 60px' }}>
+        <div style={{ maxWidth: '720px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 12px', backgroundColor: C.indigoLight, borderRadius: '99px', marginBottom: '24px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.indigo }}>Study Owl AI — Academic Platform</span>
+          </div>
+
+          <h1 style={{ fontFamily: "'Merriweather', serif", fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 900, lineHeight: 1.1, color: C.navy, marginBottom: '24px' }}>
+            Your Entire Academic<br />Life, In One Place.
+          </h1>
+
+          <p style={{ fontSize: '18px', lineHeight: 1.7, color: C.text2, maxWidth: '580px', marginBottom: '40px' }}>
+            Store resources, find previous question papers, study with AI, practice with quizzes, plan your studies, track progress, and share academic knowledge.
+          </p>
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '60px' }}>
+            <button onClick={() => navigate('/register')} style={{ padding: '13px 28px', fontSize: '15px', fontWeight: 600, color: '#fff', backgroundColor: C.navyMid, border: 'none', borderRadius: '50px', cursor: 'pointer' }}>
+              Get Started — It's Free
+            </button>
+            <button onClick={() => { document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '13px 28px', fontSize: '15px', fontWeight: 600, color: C.navyMid, backgroundColor: 'transparent', border: `2px solid ${C.border}`, borderRadius: '50px', cursor: 'pointer' }}>
+              Explore Features
+            </button>
+          </div>
+        </div>
+
+        {/* Hero video card */}
+        <div style={{ width: '100%', height: '380px', borderRadius: '24px', backgroundColor: '#F1F1F6', border: `1px solid ${C.border}`, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', overflow: 'hidden', position: 'relative' }}>
+          <video src="/assets/hero-video.mp4" autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '8px' }}>
+            {['Organized', 'AI-Powered', 'Community-Driven'].map(tag => (
+              <span key={tag} style={{ padding: '5px 12px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '99px', fontSize: '12px', fontWeight: 600, color: C.navy, backdropFilter: 'blur(8px)' }}>{tag}</span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Workflow / Core Philosophy */}
+      <section style={{ backgroundColor: C.navyMid, padding: '5rem 2rem' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
+          <p style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '14px', textAlign: 'center' }}>Core Philosophy</p>
+          <h2 style={{ fontFamily: "'Merriweather', serif", fontSize: 'clamp(22px, 3vw, 34px)', fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1.4, marginBottom: '2.5rem' }}>
+            Store → Organize → Understand → Practice → Prepare → Share
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
+            {workflow.map((w, i) => (
+              <div
+                key={i}
+                style={{
+                  padding: '28px 24px',
+                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '16px',
+                  textAlign: 'center',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  transition: 'transform 0.2s ease, background-color 0.2s ease',
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)';
+                  e.currentTarget.style.transform = 'translateY(-3px)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.12em', marginBottom: '12px' }}>{w.step}</div>
+                <div style={{ fontSize: '18px', fontWeight: 700, color: '#fff', marginBottom: '10px' }}>{w.title}</div>
+                <div style={{ fontSize: '13.5px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6 }}>{w.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" style={{ padding: '80px 24px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <p style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: C.text3, marginBottom: '12px' }}>Features</p>
+          <h2 style={{ fontFamily: "'Merriweather', serif", fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Everything you need to ace your semester.</h2>
+          <p style={{ fontSize: '16px', color: C.text2, maxWidth: '600px', lineHeight: 1.7, marginBottom: '48px' }}>
+            Stop juggling Drive, WhatsApp, notes apps, and AI tools. Study Owl AI brings everything into one intelligent academic workspace.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+            {featureSections.map((f, i) => (
+              <div key={i} style={{ padding: '24px', backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', transition: 'box-shadow 0.2s, transform 0.2s' }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.07)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, marginBottom: '16px' }}>
+                  {f.icon}
+                </div>
+                <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.navy, marginBottom: '8px' }}>{f.title}</h3>
+                <p style={{ fontSize: '14px', color: C.text2, lineHeight: 1.6 }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section style={{ backgroundColor: C.indigoLight, padding: '80px 24px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <img src="/assets/ce79b.svg" alt="logo" style={{ height: '48px', marginBottom: '20px' }} />
+          <h2 style={{ fontFamily: "'Merriweather', serif", fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>
+            Start your academic journey today.
+          </h2>
+          <p style={{ fontSize: '16px', color: C.text2, marginBottom: '32px', lineHeight: 1.7 }}>
+            Join thousands of students who use Study Owl AI to study smarter, prepare better, and achieve more.
+          </p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={() => navigate('/register')} style={{ padding: '14px 32px', fontSize: '15px', fontWeight: 600, color: '#fff', backgroundColor: C.indigo, border: 'none', borderRadius: '50px', cursor: 'pointer' }}>
+              Create Free Account
+            </button>
+            <button onClick={() => navigate('/login')} style={{ padding: '14px 32px', fontSize: '15px', fontWeight: 600, color: C.navyMid, backgroundColor: 'transparent', border: `2px solid ${C.border}`, borderRadius: '50px', cursor: 'pointer' }}>
+              Sign In
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ borderTop: `1px solid ${C.border}`, padding: '40px 24px', backgroundColor: C.surface }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '28px' }} />
+            <span style={{ fontSize: '13px', fontWeight: 600, color: C.navy }}>Study Owl AI</span>
+          </div>
+          <p style={{ fontSize: '13px', color: C.text3 }}>© 2026 Study Owl AI. All rights reserved.</p>
+          <div style={{ display: 'flex', gap: '24px' }}>
+            {['Privacy', 'Terms', 'Contact'].map(link => (
+              <a key={link} href="#" style={{ fontSize: '13px', color: C.text2 }}>{link}</a>
+            ))}
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
