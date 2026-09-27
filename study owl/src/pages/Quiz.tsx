@@ -2,6 +2,19 @@ import { useState } from "react";
 import { C, Card, Btn, Badge, ProgressBar, Select, PageHeader } from "../components/ui";
 import { IconCheck, IconX, IconChevronRight, IconChevronLeft, IconAward, IconTrendingUp, IconRefresh } from "../components/Icons";
 
+/**
+ * Page: Quiz (/app/quiz) — student-only, inside AppLayout.
+ * Purpose: A three-state MCQ flow — 'setup' (configure) -> 'quiz' (answer)
+ *   -> 'results' (score + full question review). The state machine is the
+ *   `screen` variable; each branch returns early with its own layout.
+ * Data source: the single hard-coded `quizData` (5 DBMS questions). The
+ *   question-count and difficulty selectors are non-functional, and `time`
+ *   is a fixed 15-minute value that is never counted down.
+ * Note: answers can still be changed by navigating back before submitting,
+ *   because the review only locks once `submitted` is true.
+ */
+
+// The only question set; `answer` is the index into `options`
 const quizData = {
   subject: "Database Management Systems",
   questions: [
@@ -13,29 +26,57 @@ const quizData = {
   ],
 };
 
+// The three mutually exclusive views this page can be in
 type Screen = 'setup' | 'quiz' | 'results';
 
 export default function Quiz() {
+  // Which of the three screens is showing
   const [screen, setScreen] = useState<Screen>('setup');
+
+  // Chosen subject; only surfaced as a badge, the question set is fixed
   const [subject, setSubject] = useState('DBMS');
+
+  // Index of the question currently on screen
   const [current, setCurrent] = useState(0);
+
+  // Chosen option index per question; null means unanswered
   const [selected, setSelected] = useState<(number | null)[]>(Array(quizData.questions.length).fill(null));
+
+  // Locked once the quiz is submitted; blocks further answer changes
   const [submitted, setSubmitted] = useState(false);
+
+  // Time limit in seconds. Set once with no setter, so no countdown runs
   const [time] = useState(15 * 60); // 15 min in seconds
 
+  // Derived score: number of questions whose selection matches the answer key
   const score = selected.filter((s, i) => s === quizData.questions[i].answer).length;
+
+  // Score as a percentage, used for the grade band
   const pct = Math.round((score / quizData.questions.length) * 100);
+
+  // The active question, dereferenced for the quiz screen
   const q = quizData.questions[current];
 
+  // Records an answer for the current question; ignored after submitting
   const selectOption = (i: number) => { if (submitted) return; setSelected(s => { const n = [...s]; n[current] = i; return n; }); };
+
+  // Advances, or submits when on the final question
   const next = () => { if (current < quizData.questions.length - 1) setCurrent(c => c + 1); else setSubmitted(true); };
+
+  // Steps back one question
   const prev = () => { if (current > 0) setCurrent(c => c - 1); };
+
+  // Submits early and jumps straight to the results screen
   const finish = () => { setSubmitted(true); setScreen('results'); };
+
+  // Resets every piece of quiz state and returns to the setup screen
   const restart = () => { setScreen('setup'); setCurrent(0); setSelected(Array(quizData.questions.length).fill(null)); setSubmitted(false); };
 
+  // Dropdown options for the setup screen
   const subjects = ['DBMS', 'Algorithms', 'Computer Networks', 'Software Engineering'].map(s => ({ value: s, label: s }));
   const counts = [5, 10, 15, 20].map(n => ({ value: String(n), label: `${n} Questions` }));
 
+  // Setup screen: subject, question count, difficulty, and quiz facts
   if (screen === 'setup') return (
     <div style={{ padding: '28px 32px', maxWidth: '700px', margin: '0 auto' }}>
       <PageHeader title="Start a Quiz" sub="Test your knowledge with subject-specific questions" />
@@ -51,6 +92,7 @@ export default function Quiz() {
               ))}
             </div>
           </div>
+          {/* Quiz facts row: question count, time limit, question type */}
           <div style={{ display: 'flex', gap: '8px' }}>
             <div style={{ flex: 1, padding: '14px', backgroundColor: C.surface2, borderRadius: '10px', textAlign: 'center' }}>
               <p style={{ fontSize: '20px', fontWeight: 700, color: C.navy }}>5</p>
@@ -71,11 +113,14 @@ export default function Quiz() {
     </div>
   );
 
+  // Results screen: grade summary plus a full question-by-question review
   if (screen === 'results') {
+    // Verbal grade and its colour, both derived from the percentage
     const grade = pct >= 80 ? 'Excellent' : pct >= 60 ? 'Good' : pct >= 40 ? 'Fair' : 'Needs Work';
     const gradeColor = pct >= 80 ? C.success : pct >= 60 ? C.indigo : pct >= 40 ? C.warning : C.error;
     return (
       <div style={{ padding: '28px 32px', maxWidth: '700px', margin: '0 auto' }}>
+        {/* Score summary card: award icon, grade, percentage, progress bar */}
         <Card style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: gradeColor + '15', border: `3px solid ${gradeColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
             <IconAward size={36} color={gradeColor} />
@@ -94,6 +139,7 @@ export default function Quiz() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.navy }}>Question Review</h3>
           {quizData.questions.map((question, i) => {
+            // Correct only counts as correct if it was actually the chosen answer
             const userAns = selected[i];
             const correct = userAns === question.answer;
             return (
@@ -106,6 +152,7 @@ export default function Quiz() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '34px' }}>
                   {question.options.map((opt, j) => {
+                    // Highlight the correct answer always, and the user's wrong pick on top of it
                     const isCorrect = j === question.answer;
                     const isUser = j === userAns;
                     const bg = isCorrect ? C.successLight : (isUser && !isCorrect) ? C.errorLight : 'transparent';
@@ -127,7 +174,8 @@ export default function Quiz() {
     );
   }
 
-  // Quiz screen
+  // Quiz screen (the fall-through branch)
+  // Count of questions the user has answered, shown as a badge
   const answered = selected.filter(s => s !== null).length;
   return (
     <div style={{ padding: '28px 32px', maxWidth: '700px', margin: '0 auto' }}>
@@ -143,10 +191,12 @@ export default function Quiz() {
         <ProgressBar value={(current + 1) / quizData.questions.length * 100} />
       </div>
 
+      {/* Current question and its options */}
       <Card style={{ marginBottom: '16px' }}>
         <p style={{ fontSize: '17px', fontWeight: 600, color: C.navy, lineHeight: 1.5, marginBottom: '24px' }}>{q.q}</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {q.options.map((opt, i) => {
+            // The radio-style option button for this question
             const isSelected = selected[current] === i;
             return (
               <button key={i} onClick={() => selectOption(i)} style={{ padding: '14px 16px', border: `1.5px solid ${isSelected ? C.indigo : C.border}`, borderRadius: '10px', backgroundColor: isSelected ? C.indigoLight : C.surface, color: isSelected ? C.indigo : C.text, fontSize: '14px', fontWeight: isSelected ? 600 : 400, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.15s' }}>

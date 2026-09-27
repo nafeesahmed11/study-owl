@@ -3,6 +3,16 @@ import { C, Card, StatCard, Btn, Badge, ProgressBar, PageHeader, EmptyState } fr
 import { IconBook, IconFolder, IconFileText, IconCheck, IconPlus, IconBrain, IconZap, IconSparkles, IconCalendar, IconTrendingUp, IconAward, IconChevronRight, IconBarChart } from "../components/Icons";
 import { useAuth } from "../context/AuthContext";
 
+/**
+ * Page: Dashboard (/app/dashboard, also the /app index route) — student-only.
+ * Purpose: The student's landing page — greeting, KPI row, quick-action
+ *   shortcuts, subject progress, study tasks, recent resources, AI insights.
+ * Data source: a mix. Identity fields (name, department, semester, batch)
+ *   come from `useAuth()`; everything else is the hard-coded arrays below.
+ *   Task checkboxes are display-only — they cannot be toggled here.
+ */
+
+// Headline KPI cards
 const stats = [
   { icon: <IconFolder size={20} />, label: "Saved Resources", value: "47", sub: "+3 this week" },
   { icon: <IconFileText size={20} />, label: "Question Papers", value: "23", sub: "6 subjects" },
@@ -10,6 +20,7 @@ const stats = [
   { icon: <IconCalendar size={20} />, label: "Study Streak", value: "12 days", sub: "Keep it up!" },
 ];
 
+// Subjects summarised with their coverage percentage
 const subjects = [
   { code: "CSE-401", name: "Database Management Systems", progress: 72, resources: 14, papers: 8, color: "#4F46E5" },
   { code: "CSE-402", name: "Algorithms & Complexity", progress: 58, resources: 9, papers: 5, color: "#059669" },
@@ -17,6 +28,7 @@ const subjects = [
   { code: "CSE-404", name: "Software Engineering", progress: 83, resources: 7, papers: 4, color: "#DC2626" },
 ];
 
+// Study tasks preview; `done` drives the checkmark and strikethrough
 const tasks = [
   { title: "Revise Normalization (DBMS)", due: "Today", priority: "High", done: false },
   { title: "Practice Dijkstra's Algorithm", due: "Tomorrow", priority: "Medium", done: false },
@@ -24,12 +36,14 @@ const tasks = [
   { title: "Complete Assignment 3 – SE", due: "Dec 14", priority: "High", done: true },
 ];
 
+// Newly added library resources
 const recentResources = [
   { title: "DBMS Complete Notes – Unit 4", type: "PDF", subject: "DBMS", by: "Dr. Rahman", verified: true },
   { title: "CN Lab Manual 2024", type: "PDF", subject: "CN", by: "Dept. CSE", verified: true },
   { title: "Algo Past Papers 2019–23", type: "QP", subject: "Algorithms", by: "Senior Upload", verified: false },
 ];
 
+// AI insight cards; each `action` label links through to AI Analysis
 const aiInsights = [
   { text: "Normalization appears in 87% of your selected DBMS question papers.", action: "View Analysis" },
   { text: "You haven't studied Computer Networks in 4 days.", action: "Start Session" },
@@ -37,18 +51,25 @@ const aiInsights = [
 ];
 
 export default function Dashboard() {
+  // `navigate` powers every shortcut on this page
   const navigate = useNavigate();
+
+  // Signed-in user from context; supplies the greeting and academic details
   const { user } = useAuth();
+
+  // Maps a task priority to its badge colour
   const priorityBadge = (p: string) => p === 'High' ? 'error' : p === 'Medium' ? 'warning' : 'default';
 
+  // Identity fields for the header, each with a fallback if context is empty
   const firstName = user?.name ? user.name.split(' ')[0] : 'Alex';
   const dept = user?.department || 'CSE';
   const sem = user?.semester || '6';
   const batch = user?.batch || '2022';
 
   return (
+    // Page container: wide 1400px for the dashboard grid
     <div style={{ padding: '28px 32px', maxWidth: '1400px' }}>
-      {/* Welcome */}
+      {/* Welcome block: greeting, academic details, and two header actions */}
       <div style={{ marginBottom: '28px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 style={{ fontFamily: "'Merriweather', serif", fontSize: '24px', fontWeight: 700, color: C.navy, marginBottom: '4px' }}>
@@ -72,6 +93,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick actions */}
+      {/* Quick-action shortcuts: six buttons, each navigating to a feature */}
       <Card style={{ marginBottom: '28px', padding: '20px' }}>
         <p style={{ fontSize: '13px', fontWeight: 600, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '14px' }}>Quick Actions</p>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -92,6 +114,7 @@ export default function Dashboard() {
         </div>
       </Card>
 
+      {/* Two-column row: current subjects (left) and study tasks (right) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
         {/* Subjects */}
         <Card>
@@ -142,6 +165,7 @@ export default function Dashboard() {
         </Card>
       </div>
 
+      {/* Bottom row: recent resources (wide) and AI insights (340px sidebar) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px' }}>
         {/* Recent resources */}
         <Card>

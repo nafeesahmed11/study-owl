@@ -2,6 +2,16 @@ import { useState } from "react";
 import { C, Card, Badge, Btn, PageHeader, ProgressBar, Spinner, Select } from "../components/ui";
 import { IconSparkles, IconFileText, IconCheck, IconPlus, IconX, IconTrendingUp } from "../components/Icons";
 
+/**
+ * Page: AI Analysis (/app/ai-analysis) — student-only, inside AppLayout.
+ * Purpose: Pick question papers, run a fake "analysis", then show topic
+ *   frequencies, frequently repeated questions, and the marks distribution.
+ * Data source: NOT a real AI call. `analyze` hides the results, waits 1.8s,
+ *   then re-renders the same static `analysisResult` object regardless of which
+ *   papers are selected.
+ */
+
+// Papers available to select for analysis
 const paperPool = [
   { id: 1, label: "DBMS Final 2023", subject: "DBMS" },
   { id: 2, label: "DBMS Final 2022", subject: "DBMS" },
@@ -10,6 +20,7 @@ const paperPool = [
   { id: 5, label: "Algorithms Final 2023", subject: "Algorithms" },
 ];
 
+// The canned analysis payload shown for every run
 const analysisResult = {
   subject: "DBMS",
   papers: 4,
@@ -39,10 +50,16 @@ const analysisResult = {
 };
 
 export default function AIAnalysis() {
+  // Ids of the papers currently ticked in the selector (pre-seeded with the 4 DBMS papers)
   const [selected, setSelected] = useState<number[]>([1, 2, 3, 4]);
+
+  // In-flight flag driving the spinner and the button label
   const [analyzing, setAnalyzing] = useState(false);
+
+  // Whether the results panel is mounted; cleared while analyzing
   const [showResult, setShowResult] = useState(true);
 
+  // Fakes the round-trip: hide results, wait 1.8s, then show the canned analysis
   const analyze = () => {
     setShowResult(false);
     setAnalyzing(true);
@@ -50,9 +67,12 @@ export default function AIAnalysis() {
   };
 
   return (
+    // Page container: 1200px max width
     <div style={{ padding: '28px 32px', maxWidth: '1200px' }}>
+      {/* Page title + subtitle */}
       <PageHeader title="AI Question Paper Analysis" sub="Detect repeated questions, topic frequencies, and marks distribution across past papers" />
 
+      {/* Two-column layout: 300px selector sidebar, flexible results area */}
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '20px', alignItems: 'start' }}>
         {/* Paper selector */}
         <Card>
@@ -61,6 +81,7 @@ export default function AIAnalysis() {
             {paperPool.map(p => {
               const active = selected.includes(p.id);
               return (
+                // Checkbox-style row; clicking toggles this paper in `selected`
                 <div key={p.id} onClick={() => setSelected(s => active ? s.filter(x => x !== p.id) : [...s, p.id])} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', border: `1.5px solid ${active ? C.indigo : C.border}`, borderRadius: '10px', cursor: 'pointer', backgroundColor: active ? C.indigoLight : C.surface, transition: 'all 0.15s' }}>
                   <div style={{ width: '18px', height: '18px', borderRadius: '5px', border: `2px solid ${active ? C.indigo : C.border}`, backgroundColor: active ? C.indigo : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {active && <IconCheck size={11} color="#fff" />}
@@ -81,6 +102,7 @@ export default function AIAnalysis() {
 
         {/* Results */}
         <div>
+          {/* Loading state shown while `analyze` is in flight */}
           {analyzing && (
             <Card style={{ textAlign: 'center', padding: '48px' }}>
               <Spinner size={36} />
@@ -109,6 +131,7 @@ export default function AIAnalysis() {
                   <Badge variant="purple" style={{ marginLeft: 'auto' }}>AI Generated</Badge>
                 </div>
                 {analysisResult.topTopics.map((t, i) => (
+                  // One topic row: name, evidence line, frequency %, coloured bar
                   <div key={i} style={{ marginBottom: '16px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
                       <div>
@@ -127,6 +150,7 @@ export default function AIAnalysis() {
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Frequently Repeated Questions</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {analysisResult.repeatedQuestions.map((q, i) => (
+                    // Questions seen 3+ times are highlighted in red
                     <div key={i} style={{ padding: '14px', backgroundColor: q.count >= 3 ? '#FEF2F2' : C.surface2, border: `1px solid ${q.count >= 3 ? '#FECACA' : C.border}`, borderRadius: '10px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
                         <p style={{ fontSize: '13.5px', color: C.text, lineHeight: 1.5 }}>{q.question}</p>
@@ -145,6 +169,7 @@ export default function AIAnalysis() {
                 <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Marks Distribution</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
                   {analysisResult.marksDistribution.map((m, i) => (
+                    // One bar per mark band; bar height is percentage * 2px
                     <div key={i} style={{ textAlign: 'center' }}>
                       <div style={{ height: '80px', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: '8px' }}>
                         <div style={{ width: '40px', backgroundColor: C.indigo, borderRadius: '6px 6px 0 0', height: `${m.pct * 2}px`, transition: 'height 0.4s', opacity: 0.7 + i * 0.1 }} />

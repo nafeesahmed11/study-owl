@@ -2,6 +2,17 @@ import { useState } from "react";
 import { C, Card, Btn, Textarea, Select, Badge, PageHeader } from "../components/ui";
 import { IconZap, IconCopy, IconStar, IconRefresh, IconBook } from "../components/Icons";
 
+/**
+ * Page: Marks Generator (/app/marks-generator) — student-only, inside AppLayout.
+ * Purpose: Produce a structured, exam-ready answer sized to a chosen mark
+ *   value (2/3/5/10). Left panel = inputs, right panel = the generated answer.
+ * Data source: NOT a real AI call. `generate` fakes a 1.4s delay, then returns
+ *   either a canned answer from `sampleAnswers` (keyed by question -> marks) or
+ *   a generic template from `generatePlaceholder`. The Save/Simplify/Expand
+ *   buttons are visual only.
+ */
+
+// Answer-length options, each with a hint about the expected depth
 const marksLevels = [
   { value: '2', label: '2 Marks', desc: 'Short definition/concept' },
   { value: '3', label: '3 Marks', desc: 'Brief explanation with example' },
@@ -9,6 +20,7 @@ const marksLevels = [
   { value: '10', label: '10 Marks', desc: 'Full essay-type answer with examples' },
 ];
 
+// Canned answers: sampleAnswers[question][marks] -> answer text
 const sampleAnswers: Record<string, Record<string, string>> = {
   'Explain ACID properties in database transactions.': {
     '2': `**ACID Properties:**\nACID stands for Atomicity, Consistency, Isolation, and Durability — four properties that guarantee reliable database transactions.`,
@@ -17,17 +29,33 @@ const sampleAnswers: Record<string, Record<string, string>> = {
   },
 };
 
+// Subject dropdown options
 const subjects = ['DBMS', 'Algorithms', 'Computer Networks', 'Software Engineering', 'Numerical Methods', 'Compiler Design', 'Other'].map(s => ({ value: s, label: s }));
 
 export default function MarksGenerator() {
+  // The question the user wants answered
   const [question, setQuestion] = useState('');
+
+  // Subject context (currently only shown as a badge on the result)
   const [subject, setSubject] = useState('DBMS');
+
+  // Selected answer length as a string; also the key into sampleAnswers
   const [marks, setMarks] = useState('5');
+
+  // The generated answer text, or '' before the first generation
   const [answer, setAnswer] = useState('');
+
+  // In-flight flag driving the loading spinner and the "Generating…" copy
   const [generating, setGenerating] = useState(false);
+
+  // Transient "Copied!" confirmation flag
   const [copied, setCopied] = useState(false);
+
+  // Star/save toggle on the result header
   const [saved, setSaved] = useState(false);
 
+  // Fakes the generation round-trip: clears any old answer, waits 1.4s, then
+  // looks up a canned answer and falls back to the generic template
   const generate = () => {
     if (!question.trim()) return;
     setGenerating(true);
@@ -40,12 +68,16 @@ export default function MarksGenerator() {
     }, 1400);
   };
 
+  // Copies the answer to the clipboard and shows "Copied!" for 2 seconds
   const copy = () => { navigator.clipboard.writeText(answer); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
   return (
+    // Page container: 1100px max width
     <div style={{ padding: '28px 32px', maxWidth: '1100px' }}>
+      {/* Page title + subtitle */}
       <PageHeader title="Marks-Based Answer Generator" sub="Get structured, exam-ready answers tailored to the marks allocated" />
 
+      {/* Two-column layout: 360px input panel, flexible output panel */}
       <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '20px', alignItems: 'start' }}>
         {/* Input panel */}
         <Card>
@@ -54,6 +86,7 @@ export default function MarksGenerator() {
             <Textarea label="Question" placeholder="e.g., Explain ACID properties in database transactions." value={question} onChange={e => setQuestion(e.target.value)} style={{ minHeight: '100px' }} />
             <Select label="Subject / Topic" options={subjects} value={subject} onChange={e => setSubject(e.target.value)} />
 
+            {/* Answer-length picker: one clickable tile per mark value */}
             <div>
               <p style={{ fontSize: '13px', fontWeight: 500, color: C.text, marginBottom: '8px' }}>Answer Length (Marks)</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
@@ -84,8 +117,9 @@ export default function MarksGenerator() {
           </div>
         </Card>
 
-        {/* Output */}
+        {/* Output column: switches between empty, loading, and result states */}
         <div>
+          {/* Empty state — shown before anything has been generated */}
           {!answer && !generating && (
             <Card style={{ textAlign: 'center', padding: '60px 32px' }}>
               <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: C.indigo }}>
@@ -96,6 +130,7 @@ export default function MarksGenerator() {
             </Card>
           )}
 
+          {/* Loading state — spinner + inline keyframes for the rotation */}
           {generating && (
             <Card style={{ padding: '48px', textAlign: 'center' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: `3px solid ${C.indigoLight}`, borderTopColor: C.indigo, animation: 'spin 0.8s linear infinite', margin: '0 auto 20px' }} />
@@ -105,6 +140,7 @@ export default function MarksGenerator() {
             </Card>
           )}
 
+          {/* Result: badge row + actions, rendered answer body, and follow-up actions */}
           {answer && !generating && (
             <Card>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
@@ -120,6 +156,7 @@ export default function MarksGenerator() {
                 </div>
               </div>
 
+              {/* Answer body: `**` prefixed lines are rendered as bold headings */}
               <div style={{ backgroundColor: C.surface2, borderRadius: '12px', padding: '20px', fontFamily: 'inherit' }}>
                 {answer.split('\n').map((line, i) => (
                   <p key={i} style={{
@@ -134,6 +171,7 @@ export default function MarksGenerator() {
                 ))}
               </div>
 
+              {/* Follow-up actions; none of these are wired up yet */}
               <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                 <Btn variant="secondary" size="sm">Simplify</Btn>
                 <Btn variant="secondary" size="sm">Expand</Btn>
@@ -147,6 +185,11 @@ export default function MarksGenerator() {
   );
 }
 
+/**
+ * Fallback answer builder for questions with no canned entry.
+ * Produces the same `**heading**` markdown shape as the canned answers so the
+ * renderer above can display both identically.
+ */
 function generatePlaceholder(q: string, marks: string) {
   return `**Answer (${marks} Marks)**\n\n**Introduction:**\n${q.replace('?', '.')} This is a fundamental concept in the subject.\n\n**Key Points:**\n1. First important aspect of the topic with clear explanation.\n2. Second key point supported by relevant example or diagram reference.\n3. Third aspect covering the practical application.\n\n**Conclusion:**\nIn summary, this topic is important because it forms the basis for understanding related concepts in the curriculum.`;
 }

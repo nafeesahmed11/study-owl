@@ -2,8 +2,17 @@ import { useState } from "react";
 import { C, Card, Badge, Btn, Avatar, Tabs, PageHeader, Modal, Textarea, Input, Select } from "../components/ui";
 import { IconUsers, IconMessageCircle, IconTrendingUp, IconCheck, IconPlus, IconShare, IconStar } from "../components/Icons";
 
+/**
+ * Page: Community (/app/community) — student-only, inside AppLayout.
+ * Purpose: Academic social feed — browse posts by category, mark posts
+ *   helpful, and open a modal to create a new post.
+ * Data source: seeded from the in-file `initPosts` mock array. Posts live in
+ *   React state only, so they reset on reload (no backend yet).
+ */
+
 type Post = { id: number; author: string; role: 'Student' | 'Senior' | 'Admin'; dept: string; subject: string; category: string; title: string; content: string; helpful: number; comments: number; time: string; userHelped: boolean };
 
+// Seed feed shown on first mount (5 sample posts)
 const initPosts: Post[] = [
   { id: 1, author: "Fahim Hossain", role: "Senior", dept: "CSE", subject: "DBMS", category: "Resource", title: "DBMS Final Prep — Normalization Notes 2024", content: "I've compiled a complete normalization guide with examples from the last 5 years' question papers. Covers 1NF through BCNF with practice problems. Good luck to all 6th semester students!", helpful: 47, comments: 12, time: "2h ago", userHelped: false },
   { id: 2, author: "Nadia Islam", role: "Senior", dept: "CSE", subject: "Algorithms", category: "Tip", title: "How I scored 92% in Algorithms — Study Strategy", content: "The key to Algorithms is not just memorizing — understand WHY each algorithm works. Focus on Dynamic Programming first (it's 30+ marks), then Graph Algorithms. Practice at least 3 past papers under timed conditions.", helpful: 63, comments: 18, time: "5h ago", userHelped: true },
@@ -12,12 +21,21 @@ const initPosts: Post[] = [
   { id: 5, author: "Tanvir Ahmed", role: "Senior", dept: "CSE", subject: "DBMS", category: "QP", title: "DBMS Question Pattern Analysis — 5 Year Summary", content: "After analyzing 5 years of DBMS finals: Normalization (appears every year, 10M), SQL (appears every year, 10M), ACID (appears 4/5 years, 5M), ER Diagram (appears 4/5 years, 10M). Plan accordingly!", helpful: 124, comments: 31, time: "2d ago", userHelped: false },
 ];
 
+// Badge colour per author role and per post category
 const roleColors: Record<string, string> = { Senior: 'purple', Admin: 'error', Student: 'default' };
 const catColors: Record<string, string> = { Resource: 'success', Tip: 'info', Discussion: 'navy', Announcement: 'error', QP: 'warning' };
 
+/**
+ * Presentational sub-component: a single feed post card.
+ * Renders author/role, category + subject badges, body text, and the
+ * action row. Marking "helpful" is delegated up via the `onHelp` callback
+ * so the parent owns the posts array.
+ */
 function PostCard({ post, onHelp }: { post: Post; onHelp: () => void }) {
   return (
+    // Card wrapper; `hover` enables the elevation-on-hover style
     <Card hover>
+      {/* Author block: avatar, name, role badge, department and time */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
         <Avatar name={post.author} size={38} />
         <div style={{ flex: 1 }}>
@@ -34,6 +52,7 @@ function PostCard({ post, onHelp }: { post: Post; onHelp: () => void }) {
       </div>
       <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '8px', lineHeight: 1.4 }}>{post.title}</h3>
       <p style={{ fontSize: '13.5px', color: C.text2, lineHeight: 1.65, marginBottom: '14px' }}>{post.content}</p>
+      {/* Action row: helpful toggle, replies, and share (last two are visual only) */}
       <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: `1px solid ${C.border}` }}>
         <button onClick={onHelp} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 12px', border: `1.5px solid ${post.userHelped ? C.success : C.border}`, borderRadius: '8px', backgroundColor: post.userHelped ? C.successLight : 'transparent', fontSize: '13px', fontWeight: 500, color: post.userHelped ? C.success : C.text3, cursor: 'pointer', transition: 'all 0.15s' }}>
           <IconCheck size={13} /> Helpful ({post.helpful + (post.userHelped ? 1 : 0)})
@@ -50,16 +69,28 @@ function PostCard({ post, onHelp }: { post: Post; onHelp: () => void }) {
 }
 
 export default function Community() {
+  // Feed array — the single source of truth for rendered posts
   const [posts, setPosts] = useState<Post[]>(initPosts);
+
+  // Active category filter ('all' shows everything)
   const [tab, setTab] = useState('all');
+
+  // Visibility flag for the create-post modal
   const [postOpen, setPostOpen] = useState(false);
+
+  // Draft values for the post being composed in the modal
   const [newPost, setNewPost] = useState({ title: '', subject: 'DBMS', category: 'Discussion', content: '' });
 
+  // Flips a post's helpful flag; count shown in the card adds 1 when set
   const toggleHelp = (id: number) => setPosts(ps => ps.map(p => p.id === id ? { ...p, userHelped: !p.userHelped } : p));
 
+  // Filter chips; 'all' is the special unfiltered case
   const categories = ['all', 'Discussion', 'Resource', 'Tip', 'QP', 'Announcement'];
+
+  // Derived view list applying the active category filter
   const filtered = tab === 'all' ? posts : posts.filter(p => p.category === tab);
 
+  // Validates the draft, prepends the new post to the feed, resets the form, closes the modal
   const addPost = () => {
     if (!newPost.title || !newPost.content) return;
     const p: Post = { id: Date.now(), author: "Alex Johnson", role: "Student", dept: "CSE", subject: newPost.subject, category: newPost.category, title: newPost.title, content: newPost.content, helpful: 0, comments: 0, time: "Just now", userHelped: false };
@@ -69,7 +100,9 @@ export default function Community() {
   };
 
   return (
+    // Page container: 900px max width
     <div style={{ padding: '28px 32px', maxWidth: '900px' }}>
+      {/* Page title, subtitle, and the "New Post" button that opens the modal */}
       <PageHeader title="Academic Community" sub="Share resources, ask questions, and connect with seniors and peers"
         actions={<Btn icon={<IconPlus size={14} />} onClick={() => setPostOpen(true)}>New Post</Btn>}
       />
@@ -83,10 +116,12 @@ export default function Community() {
         ))}
       </div>
 
+      {/* Feed: one PostCard per post matching the active filter */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
         {filtered.map(p => <PostCard key={p.id} post={p} onHelp={() => toggleHelp(p.id)} />)}
       </div>
 
+      {/* Create-post modal: title, subject + category, body, and actions */}
       <Modal open={postOpen} onClose={() => setPostOpen(false)} title="Create a Post" width={560}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <Input label="Post Title" placeholder="e.g., DBMS Normalization Notes — 2024" value={newPost.title} onChange={e => setNewPost(f => ({ ...f, title: e.target.value }))} fullWidth />

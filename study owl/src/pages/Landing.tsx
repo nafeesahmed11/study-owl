@@ -3,6 +3,17 @@ import { useNavigate } from "react-router";
 import { C } from "../components/ui";
 import { IconChevronDown, IconBook, IconFolder, IconFileText, IconBrain, IconCheck, IconCalendar, IconBarChart, IconUsers, IconZap, IconLightbulb, IconSparkles } from "../components/Icons";
 
+/**
+ * Page: Landing (/) — the public marketing site, no auth required.
+ * Purpose: Single scrolling page of nav, hero, "core philosophy" workflow,
+ *   feature grid, closing CTA, and footer. All feature claims are static
+ *   marketing copy — nothing here reads real data.
+ * Data source: the three in-file constant arrays (`dropdownMenus`,
+ *   `featureSections`, `workflow`). Navigation is the only interactive part,
+ *   plus a click-outside handler on each nav dropdown.
+ */
+
+// Nav dropdown labels mapped to their link lists
 const dropdownMenus: Record<string, string[]> = {
   Resources: ["Video Lectures", "Notes & PDFs", "Flashcards", "eBooks", "Practice Sets"],
   "Question Papers": ["Previous Year Papers", "Mock Tests", "Topic-wise Questions", "Solution Keys"],
@@ -10,9 +21,19 @@ const dropdownMenus: Record<string, string[]> = {
   Community: ["Discussion Forum", "Study Groups", "Leaderboard", "Events"],
 };
 
+/**
+ * Sub-component: a hover/click nav dropdown.
+ * Owns its open state and closes on any outside mousedown via a document
+ * listener that is registered on mount and cleaned up on unmount.
+ */
 function NavDropdown({ label, items }: { label: string; items: string[] }) {
+  // Whether the dropdown panel is visible
   const [open, setOpen] = useState(false);
+
+  // Wrapper ref, used to detect clicks outside the dropdown
   const ref = useRef<HTMLDivElement>(null);
+
+  // Close the dropdown when a mousedown lands outside `ref`
   useEffect(() => {
     const fn = (e: MouseEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false); };
     document.addEventListener('mousedown', fn);
@@ -20,9 +41,11 @@ function NavDropdown({ label, items }: { label: string; items: string[] }) {
   }, []);
   return (
     <div ref={ref} style={{ position: 'relative' }}>
+      {/* Trigger button; the chevron and label change colour while open */}
       <button onClick={() => setOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', fontWeight: 500, color: open ? C.indigo : C.text2, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 2px' }}>
         {label} <IconChevronDown size={13} color={open ? C.indigo : C.text3} />
       </button>
+      {/* Panel — every link just anchors to #features */}
       {open && (
         <div style={{ position: 'absolute', top: '110%', left: 0, backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '12px', padding: '6px', minWidth: '180px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)', zIndex: 100 }}>
           {items.map(item => (
@@ -38,6 +61,7 @@ function NavDropdown({ label, items }: { label: string; items: string[] }) {
   );
 }
 
+// The 11 feature cards in the Features section
 const featureSections = [
   { icon: <IconFolder size={22} />, title: "Academic Resource Library", desc: "Store and organize PDFs, lecture notes, assignments, and reference materials by department, semester, subject, and topic." },
   { icon: <IconFileText size={22} />, title: "Question Paper Archive", desc: "Access a searchable archive of previous year papers, midterms, finals, and model questions — filtered by subject, year, and exam type." },
@@ -51,6 +75,7 @@ const featureSections = [
   { icon: <IconUsers size={22} />, title: "Academic Community", desc: "Connect with seniors and juniors. Share resources, exam tips, course guidance, and verified academic knowledge." },
 ];
 
+// The six-step "Core Philosophy" workflow shown on the dark band
 const workflow = [
   { step: "01", title: "Store", desc: "Upload resources, lecture notes, and question papers from any device." },
   { step: "02", title: "Organize", desc: "Categorize by department, semester, subject, and topic automatically." },
@@ -61,10 +86,14 @@ const workflow = [
 ];
 
 export default function Landing() {
+  // Drives every call-to-action button on the page
   const navigate = useNavigate();
+
+  // Mobile nav toggle; note the hamburger button is not rendered anywhere
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
+    // Page wrapper; sets the base font and background for the whole site
     <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: C.bg, color: C.text, minHeight: '100vh' }}>
       {/* Nav */}
       <nav style={{ position: 'sticky', top: 0, zIndex: 50, backgroundColor: 'rgba(247,247,250,0.9)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${C.border}` }}>
@@ -98,6 +127,7 @@ export default function Landing() {
       {/* Hero */}
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px 60px' }}>
         <div style={{ maxWidth: '720px' }}>
+          {/* Hero copy: eyebrow pill, headline, subcopy, and the two CTAs */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 12px', backgroundColor: C.indigoLight, borderRadius: '99px', marginBottom: '24px' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.indigo }}>Study Owl AI — Academic Platform</span>
           </div>
@@ -140,6 +170,7 @@ export default function Landing() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
             {workflow.map((w, i) => (
+              // One workflow step card; lifts on hover
               <div
                 key={i}
                 style={{
@@ -182,6 +213,7 @@ export default function Landing() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
             {featureSections.map((f, i) => (
+              // One feature card; raises on hover
               <div key={i} style={{ padding: '24px', backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', transition: 'box-shadow 0.2s, transform 0.2s' }}
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.07)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}>

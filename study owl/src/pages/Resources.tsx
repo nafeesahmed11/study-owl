@@ -2,6 +2,16 @@ import { useState } from "react";
 import { C, Card, Badge, Btn, PageHeader, SearchInput, EmptyState, Select, Modal, Input, Textarea } from "../components/ui";
 import { IconFileText, IconFolder, IconUpload, IconDownload, IconEye, IconStar, IconShare, IconGrid, IconList, IconFilter } from "../components/Icons";
 
+/**
+ * Page: Resources (/app/resources) — student-only, inside AppLayout.
+ * Purpose: Searchable/filterable resource library with a grid/list view
+ *   toggle, a stats row, and an upload modal.
+ * Data source: the in-file `allResources` mock array. Each card keeps its own
+ *   `saved` flag in local state, and the upload modal is purely visual — its
+ *   submit handler just closes the dialog and adds nothing to the library.
+ */
+
+// Library contents; `verified`, `saved`, and `drive` drive the badges
 const allResources = [
   { id: 1, title: "DBMS Complete Lecture Notes – Units 1-5", type: "PDF", subject: "DBMS", dept: "CSE", semester: 6, year: 2024, by: "Dr. A.K. Rahman", date: "Dec 1, 2024", verified: true, saved: true, views: 342, rating: 4.8, drive: false },
   { id: 2, title: "Algorithms & Data Structures Textbook Notes", type: "Note", subject: "Algorithms", dept: "CSE", semester: 6, year: 2024, by: "Senior Upload", date: "Nov 28, 2024", verified: false, saved: false, views: 187, rating: 4.2, drive: true },
@@ -13,12 +23,22 @@ const allResources = [
   { id: 8, title: "OOP Design Patterns Reference Guide", type: "Reference", subject: "SE", dept: "CSE", semester: 6, year: 2024, by: "Batch 2021", date: "Oct 20, 2024", verified: true, saved: false, views: 312, rating: 4.6, drive: true },
 ];
 
+// Badge colour per resource type
 const typeColors: Record<string, string> = {
   PDF: 'error', Note: 'info', Assignment: 'warning', QP: 'purple', Reference: 'success',
 };
 
+/**
+ * Sub-component: one resource, rendered in either list or grid form.
+ * The `grid` prop switches the layout. `saved` is component-local state seeded
+ * from the resource's `saved` field, so starring a card does not affect the
+ * parent list or the "Saved" stat count.
+ */
 function ResourceCard({ r, grid }: { r: typeof allResources[0]; grid: boolean }) {
+  // Local star state for this card
   const [saved, setSaved] = useState(r.saved);
+
+  // List layout: a single horizontal row (icon, title/meta, type, actions)
   if (!grid) return (
     <Card padding={14} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
       <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: C.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, flexShrink: 0 }}>
@@ -41,6 +61,7 @@ function ResourceCard({ r, grid }: { r: typeof allResources[0]; grid: boolean })
     </Card>
   );
 
+  // Grid layout: icon + badges on top, then title, meta, and an action row
   return (
     <Card hover style={{ cursor: 'default' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -70,13 +91,23 @@ function ResourceCard({ r, grid }: { r: typeof allResources[0]; grid: boolean })
 }
 
 export default function Resources() {
+  // Free-text search over title and subject
   const [search, setSearch] = useState('');
+
+  // Layout toggle for the results area
   const [view, setView] = useState<'grid' | 'list'>('grid');
+
+  // The two dropdown filters; 'all' disables that filter
   const [typeFilter, setTypeFilter] = useState('all');
   const [subjectFilter, setSubjectFilter] = useState('all');
+
+  // Visibility flag for the upload modal
   const [uploadOpen, setUploadOpen] = useState(false);
+
+  // Draft values for the resource being uploaded
   const [uploadForm, setUploadForm] = useState({ title: '', type: 'PDF', subject: '', desc: '' });
 
+  // Combined filter: must satisfy search AND both dropdowns
   const filtered = allResources.filter(r => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) || r.subject.toLowerCase().includes(search.toLowerCase());
     const matchType = typeFilter === 'all' || r.type === typeFilter;
@@ -84,11 +115,14 @@ export default function Resources() {
     return matchSearch && matchType && matchSubject;
   });
 
+  // Filter dropdown options; subjects are deduped from the dataset
   const subjects = ['all', ...Array.from(new Set(allResources.map(r => r.subject)))].map(s => ({ value: s, label: s === 'all' ? 'All Subjects' : s }));
   const types = ['all', 'PDF', 'Note', 'Assignment', 'QP', 'Reference'].map(t => ({ value: t, label: t === 'all' ? 'All Types' : t }));
 
   return (
+    // Page container: wide 1400px to fit the library grid
     <div style={{ padding: '28px 32px', maxWidth: '1400px' }}>
+      {/* Page title + "Upload Resource" button that opens the modal */}
       <PageHeader title="Resource Library" sub="Academic resources organized by subject, type, and semester"
         actions={<Btn icon={<IconUpload size={14} />} onClick={() => setUploadOpen(true)}>Upload Resource</Btn>}
       />
@@ -117,6 +151,7 @@ export default function Resources() {
         ))}
       </div>
 
+      {/* Results: empty state, or the grid/list layout selected above */}
       {filtered.length === 0 ? (
         <EmptyState icon={<IconFolder size={28} />} title="No resources found" desc="Try adjusting your filters or upload a new resource." action={<Btn onClick={() => setUploadOpen(true)} icon={<IconUpload size={14} />}>Upload Resource</Btn>} />
       ) : view === 'grid' ? (
@@ -129,6 +164,7 @@ export default function Resources() {
         </div>
       )}
 
+      {/* Upload modal: metadata fields, a fake drop zone, and actions */}
       <Modal open={uploadOpen} onClose={() => setUploadOpen(false)} title="Upload Resource" width={500}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Input label="Title" placeholder="e.g., DBMS Lecture Notes – Unit 3" value={uploadForm.title} onChange={e => setUploadForm(f => ({ ...f, title: e.target.value }))} fullWidth />

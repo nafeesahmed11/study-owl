@@ -26,8 +26,21 @@ const AI_MODELS = [
   { id: 'chatgpt', name: 'Chat gpt', color: '#000000', icon: <ChatGPTIcon /> },
 ];
 
+/**
+ * Page: AI Study Chat (/app/ai-study) — student-only, inside AppLayout.
+ * Purpose: Chat-style AI tutor with a conversation history sidebar, a model
+ *   picker, per-message copy/save/regenerate actions, and a context panel.
+ * Data source: NOT a real AI call. `send` appends the user's message, waits
+ *   1.2s, then always replies with the same canned `aiResponses.default`
+ *   text regardless of the question or the selected model. Choosing a model
+ *   only changes the avatar colour/icon, not the response.
+ * Layout: a fixed three-column full-height shell (240px history / flex chat /
+ *   220px context) rather than a normal scrolling page.
+ */
+
 type Message = { id: number; role: 'user' | 'assistant'; content: string; saved?: boolean };
 
+// Clickable starter prompts shown in the empty-chat state
 const suggestions = [
   "Explain the difference between B-Tree and B+ Tree indexing",
   "Summarize the OSI model layers with examples",
@@ -37,33 +50,51 @@ const suggestions = [
   "Write a 10-mark answer on Transaction Management",
 ];
 
+// Canned reply text. Only `default` exists, so every answer is identical
 const aiResponses: Record<string, string> = {
   default: `Great question! Let me break this down clearly for your exam preparation.\n\n**Key Concepts:**\nThis is an important topic that regularly appears in CSE 6th semester examinations.\n\n**Explanation:**\nThe core idea involves understanding the underlying principles and their practical applications. Let me walk you through each aspect systematically:\n\n1. **First Principle** — The foundational concept that everything else builds upon. Understanding this gives you the framework to answer any related question.\n\n2. **Second Aspect** — This builds on the first and introduces the practical mechanics of how the system works.\n\n3. **Third Point** — The advanced consideration that often appears in 10-mark questions and distinguishes good answers from excellent ones.\n\n**Example:**\nConsider a real-world scenario: when you book a train ticket online, multiple concepts from this topic are applied simultaneously.\n\n**Exam Tip:**\nIn a 5-mark question, cover points 1 and 2 with one example. For 10 marks, add point 3, a comparison table, and a conclusion paragraph.\n\nWould you like me to generate practice questions on this topic, or explain any specific part in more detail?`,
 };
 
+// Module-level message id counter, shared by user and assistant messages
 let msgId = 10;
 
+// The greeting that starts every conversation
 const initMessages: Message[] = [
   { id: 1, role: 'assistant', content: "Hello! I'm your Study Owl AI academic tutor. I can help you understand difficult topics, explain concepts, generate practice questions, summarize chapters, and prepare structured exam answers.\n\nWhat would you like to study today?" },
 ];
 
 export default function AIStudy() {
+  // The full conversation, oldest first
   const [messages, setMessages] = useState<Message[]>(initMessages);
+
+  // Current textarea contents
   const [input, setInput] = useState('');
+
+  // In-flight flag; renders the typing indicator and blocks the send button
   const [loading, setLoading] = useState(false);
+
+  // Which provider is active; affects only the assistant's avatar
   const [selectedModel, setSelectedModel] = useState('chatgpt');
+
+  // Static conversation history list. Declared without a setter, so the
+  // entries never change and the buttons have no click handler
   const [history] = useState([
     { id: 1, title: "DBMS — Normalization Explained", date: "2h ago" },
     { id: 2, title: "CN — OSI vs TCP/IP Model", date: "Yesterday" },
     { id: 3, title: "Algo — Dynamic Programming", date: "Dec 10" },
     { id: 4, title: "SE — SDLC Models Compared", date: "Dec 9" },
   ]);
+  // Anchor for auto-scrolling; always kept at the end of the message list
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Look up the active model's display data, falling back to the first entry
   const selectedModelData = AI_MODELS.find(m => m.id === selectedModel) || AI_MODELS[0];
 
+  // Scroll to the newest message whenever the conversation grows
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  // Sends a message: appends the user turn, clears the input, then fakes a
+  // 1.2s round-trip before appending the canned assistant reply
   const send = (text?: string) => {
     const content = text || input.trim();
     if (!content) return;
@@ -78,9 +109,11 @@ export default function AIStudy() {
     }, 1200);
   };
 
+  // Stars/unstars an assistant message
   const toggleSave = (id: number) => setMessages(m => m.map(msg => msg.id === id ? { ...msg, saved: !msg.saved } : msg));
 
   return (
+    // Three-column full-height shell: history | chat | context
     <div style={{ display: 'flex', height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
       {/* Left: History sidebar */}
       <div style={{ width: '240px', borderRight: `1px solid ${C.border}`, backgroundColor: C.surface, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
@@ -100,6 +133,7 @@ export default function AIStudy() {
             </button>
           ))}
         </div>
+        {/* Model picker: one coloured button per provider, green dot = active */}
         <div style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: `1px solid ${C.border}` }}>
           {AI_MODELS.map(model => (
             <button
@@ -148,7 +182,7 @@ export default function AIStudy() {
           </div>
         </div>
 
-        {/* Messages */}
+        {/* Scrollable message list; user turns are right-aligned via row-reverse */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: C.bg }}>
           {messages.map(msg => (
             <div key={msg.id} style={{ display: 'flex', gap: '10px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
@@ -161,6 +195,7 @@ export default function AIStudy() {
               )}
               <div style={{ maxWidth: '72%' }}>
                 <div style={{ padding: '14px 16px', borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px', backgroundColor: msg.role === 'user' ? C.indigo : C.surface, color: msg.role === 'user' ? '#fff' : C.text, border: msg.role === 'assistant' ? `1px solid ${C.border}` : 'none', lineHeight: 1.65 }}>
+                  {/* `**` prefixed lines are emphasised as headings */}
                   {msg.content.split('\n').map((line, i) => (
                     <p key={i} style={{ fontSize: '13.5px', fontWeight: line.startsWith('**') ? 600 : 400, color: msg.role === 'user' ? '#fff' : (line.startsWith('**') ? C.navy : C.text), marginBottom: line === '' ? '8px' : '2px' }}>
                       {line.replace(/\*\*/g, '')}
@@ -251,6 +286,7 @@ export default function AIStudy() {
             { label: 'Generate MCQs', icon: <IconSparkles size={13} /> },
             { label: 'Summarize Chapter', icon: <IconFileText size={13} /> },
             { label: 'Make Study Notes', icon: <IconStar size={13} /> },
+            // Quick-action shortcut; sends its own label as the prompt
           ].map(a => (
             <button key={a.label} onClick={() => send(a.label)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '12.5px', color: C.text2, cursor: 'pointer', marginBottom: '6px', textAlign: 'left' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.borderColor = C.indigo; e.currentTarget.style.color = C.indigo; }}

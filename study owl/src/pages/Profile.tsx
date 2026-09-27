@@ -1,8 +1,17 @@
 import { C, Card, Badge, Btn, Avatar, ProgressBar, StatCard, PageHeader } from "../components/ui";
 import { IconBook, IconFolder, IconCheck, IconAward, IconEdit, IconCalendar, IconBarChart } from "../components/Icons";
 
+/**
+ * Page: Profile (/app/profile) — student-only, rendered inside AppLayout.
+ * Purpose: Read-only profile overview for the signed-in student.
+ * Data source: hard-coded mock constants defined below. Note this page does
+ *   NOT read from useAuth() or localStorage, so it always shows the same
+ *   person regardless of who is logged in.
+ */
+
 const student = { name: "Alex Johnson", id: "CSE-2022-007", email: "alex.johnson@university.edu", dept: "CSE", semester: 6, batch: "2022", bio: "6th semester CSE student passionate about databases and algorithms. Active community contributor." };
 
+// Headline counters shown in the 4-up stats grid
 const stats = [
   { label: "Resources Uploaded", value: 12 },
   { label: "Community Posts", value: 7 },
@@ -10,6 +19,7 @@ const stats = [
   { label: "Study Streak", value: 12 },
 ];
 
+// Feed entries for the Recent Activity timeline
 const recentActivity = [
   { action: "Uploaded", item: "DBMS Lab Notes – Unit 4", time: "2h ago", type: "resource" },
   { action: "Completed quiz", item: "Algorithms – 80%", time: "Yesterday", type: "quiz" },
@@ -18,11 +28,15 @@ const recentActivity = [
   { action: "Analyzed papers", item: "DBMS 2019–2023", time: "Dec 9", type: "ai" },
 ];
 
+// Maps each activity type to the dot colour used in the timeline
 const typeColors: Record<string, string> = { resource: C.indigo, quiz: C.success, task: C.warning, community: C.purple, ai: C.info };
 
+// Fully static render — no state, effects, or handlers in this component
 export default function Profile() {
   return (
+    // Page container: 900px max width
     <div style={{ padding: '28px 32px', maxWidth: '900px' }}>
+      {/* Page title + "Edit Profile" action (action is visual only, not wired up) */}
       <PageHeader title="My Profile" actions={<Btn variant="secondary" size="sm" icon={<IconEdit size={14} />}>Edit Profile</Btn>} />
 
       {/* Profile card */}
@@ -59,6 +73,7 @@ export default function Profile() {
         ))}
       </div>
 
+      {/* Two-column grid: subject coverage (wide) + recent activity (fixed 320px) */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '20px' }}>
         {/* Subject progress */}
         <Card>
@@ -84,6 +99,7 @@ export default function Profile() {
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Recent Activity</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
             {recentActivity.map((a, i) => (
+              // Timeline item: coloured dot + connector line down to the next entry
               <div key={i} style={{ display: 'flex', gap: '12px', paddingBottom: '14px', marginBottom: i < recentActivity.length - 1 ? '0' : '0', position: 'relative' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: typeColors[a.type] + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

@@ -3,6 +3,18 @@ import { useNavigate } from "react-router";
 import { C, Card, StatCard, Badge, Btn, Tabs, Avatar, PageHeader, SearchInput } from "../components/ui";
 import { IconUsers, IconFolder, IconFileText, IconCheck, IconAlertCircle, IconShield, IconTrendingUp, IconBook, IconSettings, IconChevronRight } from "../components/Icons";
 
+/**
+ * Page: Admin (/admin) — admin-only; ProtectedRoute guards this with
+ *   allowedRoles=["admin"] and it renders its OWN full-page nav bar rather
+ *   than the student AppLayout.
+ * Purpose: Platform administration across four tabs (Overview, Users,
+ *   Verification, Reports).
+ * Data source: hard-coded `stats`, `users`, and `pendingResources` arrays.
+ *   Every action button (verify, reject, edit role, delete) is inert — the
+ *   Verify/Reject buttons do not remove items from the queue.
+ */
+
+// The four KPI cards on the overview tab
 const stats = [
   { icon: <IconUsers size={20} />, label: "Total Users", value: "2,847", sub: "+124 this month" },
   { icon: <IconFolder size={20} />, label: "Total Resources", value: "8,312", sub: "Across all departments" },
@@ -10,6 +22,7 @@ const stats = [
   { icon: <IconAlertCircle size={20} />, label: "Pending Verification", value: "34", sub: "Needs review", color: C.warningLight },
 ];
 
+// Student/senior accounts listed in the Users tab
 const users = [
   { name: "Alex Johnson", id: "CSE-2022-007", dept: "CSE", sem: 6, role: "Student", status: "Active", joined: "Jan 2022" },
   { name: "Fahim Hossain", id: "CSE-2021-003", dept: "CSE", sem: 8, role: "Senior", status: "Active", joined: "Jan 2021" },
@@ -18,21 +31,29 @@ const users = [
   { name: "Tanvir Ahmed", id: "ECE-2021-008", dept: "ECE", sem: 8, role: "Senior", status: "Inactive", joined: "Jan 2021" },
 ];
 
+// Upload queue awaiting review, shared by the overview and verification tabs
 const pendingResources = [
   { title: "Advanced Algorithms Notes", uploader: "Tanvir Ahmed", subject: "Algorithms", date: "Dec 11", type: "PDF" },
   { title: "CN Lab Report Sem 6", uploader: "Rifat Karim", subject: "CN", date: "Dec 10", type: "Note" },
   { title: "DBMS Mock Test 2024", uploader: "Batch 2022", subject: "DBMS", date: "Dec 9", type: "QP" },
 ];
 
+// Badge colours per role and per account status
 const roleColors: Record<string, string> = { Student: 'default', Senior: 'purple', Admin: 'error' };
 const statusColors: Record<string, string> = { Active: 'success', Inactive: 'default' };
 
 export default function Admin() {
+  // `navigate` is used by the logo and the back-to-site link in the top bar
   const navigate = useNavigate();
+
+  // Which of the four admin sections is showing
   const [tab, setTab] = useState('overview');
+
+  // Search term for the Users tab table
   const [search, setSearch] = useState('');
 
   return (
+    // Full-height admin shell (not the student AppLayout)
     <div style={{ minHeight: '100vh', backgroundColor: C.bg }}>
       {/* Admin nav */}
       <div style={{ backgroundColor: C.navyMid, padding: '0 32px', display: 'flex', alignItems: 'center', gap: '24px', height: '56px' }}>
@@ -53,7 +74,9 @@ export default function Admin() {
         </div>
       </div>
 
+      {/* Content area — one branch rendered per tab */}
       <div style={{ padding: '28px 32px', maxWidth: '1400px' }}>
+        {/* Overview tab: KPI row, verification queue, and platform activity */}
         {tab === 'overview' && (
           <>
             <PageHeader title="Admin Overview" sub="Study Owl AI platform statistics and management" />
@@ -109,6 +132,7 @@ export default function Admin() {
           </>
         )}
 
+        {/* Users tab: searchable table of accounts */}
         {tab === 'users' && (
           <>
             <PageHeader title="User Management" sub="View, manage, and moderate student accounts" />
@@ -119,6 +143,7 @@ export default function Admin() {
                   <span key={h} style={{ fontSize: '11.5px', fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
                 ))}
               </div>
+              {/* One row per user matching the search term */}
               {users.filter(u => u.name.toLowerCase().includes(search.toLowerCase()) || u.id.toLowerCase().includes(search.toLowerCase())).map((u, i, arr) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 80px 80px 80px 100px 1fr', gap: '12px', padding: '14px 20px', borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : 'none', alignItems: 'center' }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surface2}
@@ -145,6 +170,7 @@ export default function Admin() {
           </>
         )}
 
+        {/* Verification tab: the full review queue with reject/verify actions */}
         {tab === 'verify' && (
           <>
             <PageHeader title="Resource Verification" sub="Review and verify uploaded academic resources" />
@@ -172,6 +198,7 @@ export default function Admin() {
           </>
         )}
 
+        {/* Reports tab: placeholder, no analytics implemented yet */}
         {tab === 'reports' && (
           <><PageHeader title="Reports & Analytics" /><Card><p style={{ color: C.text3, textAlign: 'center', padding: '48px' }}>Advanced analytics coming soon.</p></Card></>
         )}

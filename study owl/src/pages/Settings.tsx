@@ -3,11 +3,30 @@ import { C, Card, Btn, Input, Select, Tabs, Badge, Modal, PageHeader } from "../
 import { IconUser, IconShield, IconBell, IconDrive, IconBrain, IconCheck, IconLink, IconLogout } from "../components/Icons";
 import { useAuth } from "../context/AuthContext";
 
+/**
+ * Page: Settings (/app/settings) — student-only, inside AppLayout.
+ * Purpose: Five-tab preferences panel (Account, Security, Notifications,
+ *   Google Drive, AI Preferences).
+ * Data source: the Account tab is the only genuinely persisted part — it reads
+ *   `user` from AuthContext and writes back through `updateUserSettings`,
+ *   which updates localStorage. The Google Drive connection and notification
+ *   toggles are component state only and reset on reload. The Security and AI
+ *   tabs are entirely non-functional (no handlers on their buttons/inputs).
+ */
 export default function Settings() {
+  // `updateUserSettings` persists the account fields and refreshes context
   const { user, updateUserSettings } = useAuth();
+
+  // Which of the five tabs is showing
   const [tab, setTab] = useState('account');
+
+  // Transient "saved" confirmation banner, auto-cleared after 2.5s
   const [saved, setSaved] = useState(false);
+
+  // Validation message from the save attempt; empty when there is no error
   const [saveError, setSaveError] = useState('');
+
+  // Save in-flight flag driving the button spinner
   const [loading, setLoading] = useState(false);
 
   // Form states for account settings
@@ -19,6 +38,7 @@ export default function Settings() {
   const [batch, setBatch] = useState(user?.batch || '2022');
   const [academicYear, setAcademicYear] = useState(user?.academicYear || '2022-2026');
 
+  // Re-sync the form whenever the context user changes (e.g. right after login)
   useEffect(() => {
     if (user) {
       setFullName(user.name);
@@ -31,9 +51,14 @@ export default function Settings() {
     }
   }, [user]);
 
+  // Whether Google Drive is linked; local only, never persisted
   const [driveConnected, setDriveConnected] = useState(false);
+
+  // Per-channel notification toggles; local only, never persisted
   const [notifs, setNotifs] = useState({ email: true, quiz: true, community: false, weekly: true });
 
+  // Persists the account form. Note `email` is deliberately omitted from the
+  // payload, which is why the email field is disabled below.
   const handleSave = async () => {
     setLoading(true);
     setSaveError('');
@@ -55,6 +80,7 @@ export default function Settings() {
     }
   };
 
+  // Tab definitions, each with its own icon
   const tabs = [
     { id: 'account', label: 'Account', icon: <IconUser size={14} /> },
     { id: 'security', label: 'Security', icon: <IconShield size={14} /> },
@@ -64,12 +90,15 @@ export default function Settings() {
   ];
 
   return (
+    // Page container: narrow 740px — this is a form page, not a dashboard
     <div style={{ padding: '28px 32px', maxWidth: '740px' }}>
+      {/* Page title + subtitle */}
       <PageHeader title="Settings" sub="Manage your account, security, and preferences" />
 
+      {/* Settings tab bar */}
       <Tabs tabs={tabs} active={tab} onChange={setTab} style={{ marginBottom: '24px' }} />
 
-      {/* Account */}
+      {/* Account tab — the only tab that persists changes */}
       {tab === 'account' && (
         <Card>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>Account Information</h3>
@@ -120,6 +149,7 @@ export default function Settings() {
                 onChange={e => setBatch(e.target.value)}
               />
             </div>
+            {/* Footer row: success banner (when saved) + the Save button */}
             <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingTop: '8px', borderTop: `1px solid ${C.border}` }}>
               {saved && (
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-lg animate-fade-in">
@@ -133,7 +163,7 @@ export default function Settings() {
         </Card>
       )}
 
-      {/* Security */}
+      {/* Security tab: change-password form and the danger zone (neither is wired up) */}
       {tab === 'security' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Card>
@@ -156,7 +186,7 @@ export default function Settings() {
         </div>
       )}
 
-      {/* Notifications */}
+      {/* Notifications tab: one toggle switch per channel */}
       {tab === 'notifications' && (
         <Card>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>Notification Preferences</h3>
@@ -166,6 +196,7 @@ export default function Settings() {
               { key: 'quiz', label: 'Quiz Reminders', desc: 'Get reminded about scheduled quizzes' },
               { key: 'community', label: 'Community Replies', desc: 'Notify when someone replies to your posts' },
               { key: 'weekly', label: 'Weekly Progress Report', desc: 'Receive a weekly summary of your study activity' },
+            // One row per channel: label + description on the left, switch on the right
             ].map((n, i, arr) => (
               <div key={n.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: i < arr.length - 1 ? `1px solid ${C.border}` : 'none' }}>
                 <div>
@@ -181,7 +212,7 @@ export default function Settings() {
         </Card>
       )}
 
-      {/* Google Drive */}
+      {/* Google Drive tab: connect/disconnect toggle, state held in memory only */}
       {tab === 'drive' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Card>
@@ -209,7 +240,7 @@ export default function Settings() {
         </div>
       )}
 
-      {/* AI Preferences */}
+      {/* AI Preferences tab: answer language/depth plus optional behaviours (visual only) */}
       {tab === 'ai' && (
         <Card>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>AI Study Assistant Preferences</h3>

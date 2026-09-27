@@ -1,9 +1,20 @@
 import { C, Card, StatCard, PageHeader, ProgressBar, Badge } from "../components/ui";
 import { IconBarChart, IconCheck, IconBook, IconTrendingUp, IconBrain, IconCalendar, IconAward } from "../components/Icons";
 
+/**
+ * Page: Progress (/app/progress) — student-only, inside AppLayout.
+ * Purpose: Analytics dashboard — headline stats, a weekly study bar chart,
+ *   AI insights, per-subject progress bars, and recent quiz results.
+ * Data source: entirely hard-coded constants (`weekData`, `subjectProgress`,
+ *   `quizHistory`, `insights`). The two totals below are derived from them.
+ *   Nothing is fetched or persisted.
+ */
+
+// Study minutes per weekday, Monday first
 const weekData = [40, 65, 30, 80, 55, 70, 45]; // minutes per day
 const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+// Per-subject coverage percentage, quiz average, and display colour
 const subjectProgress = [
   { name: "Software Engineering", code: "CSE-404", progress: 83, quizAvg: 86, color: "#DC2626" },
   { name: "Database Management", code: "CSE-401", progress: 72, quizAvg: 74, color: "#4F46E5" },
@@ -13,6 +24,7 @@ const subjectProgress = [
   { name: "Numerical Methods", code: "CSE-405", progress: 34, quizAvg: 40, color: "#7C3AED" },
 ];
 
+// Most recent quiz attempts (newest first)
 const quizHistory = [
   { date: "Dec 11", subject: "DBMS", score: 80, total: 5 },
   { date: "Dec 10", subject: "Algorithms", score: 60, total: 5 },
@@ -21,6 +33,7 @@ const quizHistory = [
   { date: "Dec 5", subject: "DBMS", score: 75, total: 5 },
 ];
 
+// AI insight bullets; `type` drives the green/amber accent colour
 const insights = [
   { text: "DBMS received the most study time this week — 3.5 hours total.", type: "positive" },
   { text: "Computer Networks has had no study sessions in 4 days.", type: "warning" },
@@ -28,14 +41,20 @@ const insights = [
   { text: "Numerical Methods is your weakest subject by quiz score.", type: "warning" },
 ];
 
+// Tallest bar in the chart, used to scale every bar's height to a percentage
 const maxMin = Math.max(...weekData);
 
 export default function Progress() {
+  // Total study minutes this week, summed from the daily figures
   const totalMin = weekData.reduce((a, b) => a + b, 0);
+
+  // Mean quiz percentage across the history, rounded for display
   const avgScore = Math.round(quizHistory.reduce((a, q) => a + (q.score / q.total * 100), 0) / quizHistory.length);
 
   return (
+    // Page container: 1200px max width
     <div style={{ padding: '28px 32px', maxWidth: '1200px' }}>
+      {/* Page title + subtitle */}
       <PageHeader title="Academic Progress" sub="Track your study activity, quiz performance, and learning consistency" />
 
       {/* Stats */}
@@ -46,11 +65,13 @@ export default function Progress() {
         <StatCard icon={<IconAward size={20} />} label="Quiz Average" value={`${avgScore}%`} sub="Last 5 quizzes" />
       </div>
 
+      {/* Chart column + AI insights sidebar */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px', marginBottom: '24px' }}>
         {/* Weekly study chart */}
         <Card>
           <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>Weekly Study Activity</h3>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', height: '120px' }}>
+            {/* One column per day: minutes label, proportional bar, weekday label */}
             {weekData.map((min, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                 <span style={{ fontSize: '10px', color: C.text3 }}>{min}m</span>
@@ -61,6 +82,7 @@ export default function Progress() {
               </div>
             ))}
           </div>
+          {/* Chart footer summary: total, daily average, best day */}
           <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: '24px' }}>
             {[{ label: 'Total this week', value: `${Math.round(totalMin / 60)}h ${totalMin % 60}m` }, { label: 'Daily average', value: `${Math.round(totalMin / 7)}m` }, { label: 'Best day', value: 'Thursday' }].map(s => (
               <div key={s.label}>
@@ -91,6 +113,7 @@ export default function Progress() {
       <Card style={{ marginBottom: '24px' }}>
         <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>Subject Progress</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          {/* One progress bar per subject, in a 2-column grid */}
           {subjectProgress.map((s, i) => (
             <div key={i}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
@@ -110,6 +133,7 @@ export default function Progress() {
       <Card>
         <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Recent Quiz Results</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* Score ring colour and verbal band both derive from the percentage */}
           {quizHistory.map((q, i) => {
             const pct = Math.round(q.score / q.total * 100);
             const color = pct >= 80 ? C.success : pct >= 60 ? C.indigo : pct >= 40 ? C.warning : C.error;

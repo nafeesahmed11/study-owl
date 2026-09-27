@@ -5,14 +5,39 @@ import { C, Btn, Input } from "../components/ui";
 import { IconAlertCircle } from "../components/Icons";
 
 
+/**
+ * Page: Login (/login) — public, no auth required.
+ * Purpose: Email-or-student-ID sign-in, plus one-click demo credential
+ *   buttons for the student and admin accounts.
+ * Data source: `useAuth().login`, which validates against the localStorage
+ *   users DB (see AuthContext) with SHA-256 hashing and a 5-attempts-per-minute
+ *   rate limit. On success the session token and current user are persisted
+ *   to localStorage by AuthContext; this file only handles routing.
+ * Post-login routing: admins go to /admin, everyone else to /app/dashboard.
+ * The role is re-read straight from localStorage rather than from the login
+ *   return value, so the redirect is correct on the first render.
+ */
 export default function Login() {
+  // Used for the logo, the post-login redirect, and the home link
   const navigate = useNavigate();
+
+  // `login` returns { success, error? } and persists the session on success
   const { login } = useAuth();
+
+  // Accepts either an email address or a student ID
   const [identifier, setIdentifier] = useState("");
+
+  // Password is never stored in plain form; AuthContext hashes it
   const [password, setPassword] = useState("");
+
+  // Submit in-flight flag driving the button spinner
   const [loading, setLoading] = useState(false);
+
+  // Error banner text; empty when there is no error
   const [error, setError] = useState("");
 
+  // Form submit handler: client-side validation, then the auth call, then
+  // a role-based redirect
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -48,6 +73,7 @@ export default function Login() {
     }
   };
 
+  // Fills both fields from a demo-credential button and clears any error
   const fillCredentials = (id: string, pass: string) => {
     setIdentifier(id);
     setPassword(pass);
@@ -55,6 +81,7 @@ export default function Login() {
   };
 
   return (
+    // Outer centered page shell
     <div
       style={{
         minHeight: "100vh",
@@ -67,6 +94,7 @@ export default function Login() {
         boxSizing: "border-box",
       }}
     >
+      {/* Constrained 440px column holding the whole form */}
       <div style={{ width: "100%", maxWidth: "440px" }}>
         {/* Brand Header */}
         <div style={{ textAlign: "center", marginBottom: "28px" }}>
@@ -124,6 +152,7 @@ export default function Login() {
             boxSizing: "border-box",
           }}
         >
+          {/* Error banner, rendered only when `error` is set */}
           {error && (
             <div
               style={{
@@ -144,6 +173,7 @@ export default function Login() {
             </div>
           )}
 
+          {/* The sign-in form: identifier, password, and the submit button */}
           <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
             <Input
               label="Email Address or Student ID"
@@ -154,6 +184,7 @@ export default function Login() {
               autoComplete="username"
             />
 
+            {/* Password row: label + a "Forgot password?" link that only alerts */}
             <div>
               <div
                 style={{
@@ -239,6 +270,7 @@ export default function Login() {
                 gap: "10px",
               }}
             >
+              {/* Demo credential 1: the student account */}
               <button
                 type="button"
                 onClick={() => fillCredentials("alex@university.edu", "student123")}
@@ -289,6 +321,7 @@ export default function Login() {
                 </div>
               </button>
 
+              {/* Demo credential 2: the admin account */}
               <button
                 type="button"
                 onClick={() => fillCredentials("admin@studyowl.edu", "admin123")}

@@ -2,6 +2,14 @@ import { C, Card, Badge, Btn, PageHeader, ProgressBar } from "../components/ui";
 import { IconLightbulb, IconTrendingUp, IconBook, IconSparkles, IconChevronRight } from "../components/Icons";
 import { useNavigate } from "react-router";
 
+/**
+ * Page: Exam Suggestions (/app/exam-suggestions) — student-only, inside AppLayout.
+ * Purpose: Topic-priority recommendations derived from past-paper analysis,
+ *   split into high/medium/low priority bands, plus teacher tips and CTAs.
+ * Data source: hard-coded `suggestions` and `teacherTips` arrays. Fully static
+ *   apart from two navigation buttons — there is no real AI call here.
+ */
+
 const suggestions = [
   {
     category: "High Priority — Very Likely to Appear",
@@ -34,6 +42,7 @@ const suggestions = [
   },
 ];
 
+// Community-sourced exam tips shown in the final card
 const teacherTips = [
   "Dr. Rahman always includes at least one ER diagram question in finals.",
   "Normalization questions often require you to identify functional dependencies first.",
@@ -41,10 +50,13 @@ const teacherTips = [
   "Transaction isolation levels have appeared in the last 3 finals.",
 ];
 
+// Static render; `navigate` is used only by the two CTA buttons at the bottom
 export default function ExamSuggestions() {
   const navigate = useNavigate();
   return (
+    // Page container: 1100px max width
     <div style={{ padding: '28px 32px', maxWidth: '1100px' }}>
+      {/* Page title + subtitle */}
       <PageHeader title="Exam Preparation Suggestions" sub="AI-generated recommendations based on question paper analysis — not guaranteed predictions" />
 
       {/* Disclaimer */}
@@ -55,6 +67,7 @@ export default function ExamSuggestions() {
         </p>
       </div>
 
+      {/* One card per priority band; topics listed inside with a frequency bar */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {suggestions.map((group, gi) => (
           <Card key={gi}>
@@ -63,6 +76,7 @@ export default function ExamSuggestions() {
               <h3 style={{ fontSize: '14px', fontWeight: 700, color: C.navy }}>{group.category}</h3>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {/* Single topic: name, evidence, marks badge, frequency badge, bar */}
               {group.topics.map((t, i) => (
                 <div key={i} style={{ padding: '14px', backgroundColor: group.bg, border: `1px solid ${group.color}20`, borderRadius: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
@@ -100,6 +114,7 @@ export default function ExamSuggestions() {
         </Card>
 
         {/* CTA */}
+        {/* Cross-links to the full analysis and the marks-based answer tool */}
         <div style={{ display: 'flex', gap: '12px' }}>
           <Btn variant="secondary" icon={<IconSparkles size={14} />} onClick={() => navigate('/app/ai-analysis')}>
             View Full Analysis

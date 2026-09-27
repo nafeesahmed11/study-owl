@@ -2,8 +2,17 @@ import { useState } from "react";
 import { C, Card, Badge, Btn, Tabs, PageHeader, Modal, Input, Select, Textarea } from "../components/ui";
 import { IconCalendar, IconPlus, IconCheck, IconTrash, IconEdit, IconChevronRight } from "../components/Icons";
 
+/**
+ * Page: Study Planner (/app/planner) — student-only, inside AppLayout.
+ * Purpose: Task manager bucketed by deadline — Today / Upcoming / Overdue /
+ *   Done — with counts, a per-task done toggle, delete, and an add-task modal.
+ * Data source: seeded from `initTasks` and held in React state only, so tasks
+ *   reset on reload (no persistence yet).
+ */
+
 type Task = { id: number; title: string; subject: string; desc: string; priority: 'High' | 'Medium' | 'Low'; due: string; status: 'Todo' | 'Done' };
 
+// Seed tasks on first mount
 const initTasks: Task[] = [
   { id: 1, title: "Revise Normalization (DBMS)", subject: "DBMS", desc: "Cover 1NF, 2NF, 3NF, BCNF with examples from past papers.", priority: "High", due: "2024-12-12", status: "Todo" },
   { id: 2, title: "Practice Dijkstra's Algorithm", subject: "Algorithms", desc: "Solve at least 3 practice problems from 2022 paper.", priority: "High", due: "2024-12-12", status: "Todo" },
@@ -14,15 +23,27 @@ const initTasks: Task[] = [
   { id: 7, title: "CN Lab Report", subject: "CN", desc: "Write up Lab 4 ping experiment.", priority: "Low", due: "2024-12-09", status: "Done" },
 ];
 
+// Dropdown options and the priority -> badge variant mapping
 const subjects = ['DBMS', 'Algorithms', 'Computer Networks', 'Software Engineering', 'Numerical Methods', 'Compiler Design', 'Other'].map(s => ({ value: s, label: s }));
 const priorities = ['High', 'Medium', 'Low'].map(p => ({ value: p, label: p }));
 const priorityBadge = (p: string) => p === 'High' ? 'error' : p === 'Medium' ? 'warning' : 'default';
 
+/**
+ * Presentational sub-component: one task row.
+ * Shows a completion checkbox, title, subject/due metadata, priority badge,
+ * and a delete icon. Overdue styling is computed locally here.
+ * Both mutations are delegated to the parent via callbacks.
+ */
 function TaskCard({ task, onToggle, onDelete }: { task: Task; onToggle: () => void; onDelete: () => void }) {
+  // Today's date as YYYY-MM-DD, matching the format of the `due` field
   const today = new Date().toISOString().slice(0, 10);
+
+  // A task is overdue when it is still open and its due date is in the past
   const overdue = task.status === 'Todo' && task.due < today;
   return (
+    // Task row; border turns red and the title is struck through when done/overdue
     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', backgroundColor: task.status === 'Done' ? C.surface2 : C.surface, border: `1px solid ${overdue ? C.error + '40' : C.border}`, borderRadius: '12px', transition: 'box-shadow 0.15s' }}>
+      {/* Round checkbox — clicking it flips Todo/Done */}
       <button onClick={onToggle} style={{ width: '22px', height: '22px', borderRadius: '50%', border: `2px solid ${task.status === 'Done' ? C.success : C.border}`, backgroundColor: task.status === 'Done' ? C.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, background: task.status === 'Done' ? C.success : 'none' }}>
         {task.status === 'Done' && <IconCheck size={12} color="#fff" />}
       </button>
@@ -45,15 +66,29 @@ function TaskCard({ task, onToggle, onDelete }: { task: Task; onToggle: () => vo
 }
 
 export default function Planner() {
+  // Master task list — the source of truth for every bucket below
   const [tasks, setTasks] = useState<Task[]>(initTasks);
+
+  // Active bucket shown by the Tabs bar
   const [tab, setTab] = useState('today');
+
+  // Visibility flag for the add-task modal
   const [addOpen, setAddOpen] = useState(false);
+
+  // Draft values for the task being composed in the modal
   const [newTask, setNewTask] = useState({ title: '', subject: 'DBMS', desc: '', priority: 'Medium' as Task['priority'], due: '' });
 
+  // Today's date string, used to split tasks into buckets
   const today = new Date().toISOString().slice(0, 10);
+
+  // Flips a task between Todo and Done
   const toggle = (id: number) => setTasks(ts => ts.map(t => t.id === id ? { ...t, status: t.status === 'Done' ? 'Todo' : 'Done' } : t));
+
+  // Removes a task entirely
   const del = (id: number) => setTasks(ts => ts.filter(t => t.id !== id));
 
+  // Buckets: done tasks are excluded from the date-based buckets so each task
+  // appears in exactly one of today / upcoming / overdue / done
   const filtered = {
     today: tasks.filter(t => t.status === 'Todo' && t.due === today),
     upcoming: tasks.filter(t => t.status === 'Todo' && t.due > today),
@@ -61,9 +96,13 @@ export default function Planner() {
     done: tasks.filter(t => t.status === 'Done'),
   };
 
+  // Per-bucket counts used by both the stat cards and the tab labels
   const counts = { today: filtered.today.length, upcoming: filtered.upcoming.length, overdue: filtered.overdue.length, done: filtered.done.length };
+
+  // The list to render for the active tab
   const currentList = filtered[tab as keyof typeof filtered] || [];
 
+  // Validates the draft (title + due required), prepends the task, resets the form, closes the modal
   const addTask = () => {
     if (!newTask.title || !newTask.due) return;
     const task: Task = { id: Date.now(), title: newTask.title, subject: newTask.subject, desc: newTask.desc, priority: newTask.priority, due: newTask.due, status: 'Todo' };
@@ -73,7 +112,9 @@ export default function Planner() {
   };
 
   return (
+    // Page container: 900px max width
     <div style={{ padding: '28px 32px', maxWidth: '900px' }}>
+      {/* Page title + "Add Task" button that opens the modal */}
       <PageHeader title="Study Planner" sub="Manage your academic tasks, deadlines, and daily study goals"
         actions={<Btn icon={<IconPlus size={14} />} onClick={() => setAddOpen(true)}>Add Task</Btn>}
       />
@@ -88,6 +129,7 @@ export default function Planner() {
         ))}
       </div>
 
+      {/* Bucket tabs, each labelled with its live count */}
       <Tabs tabs={[
         { id: 'today', label: `Today (${counts.today})` },
         { id: 'upcoming', label: `Upcoming (${counts.upcoming})` },
@@ -104,12 +146,14 @@ export default function Planner() {
           </p>
           {tab === 'today' && <Btn size="sm" variant="outline" style={{ marginTop: '14px' }} onClick={() => setAddOpen(true)} icon={<IconPlus size={13} />}>Add a task</Btn>}
         </div>
+        // Task list for the active bucket
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {currentList.map(t => <TaskCard key={t.id} task={t} onToggle={() => toggle(t.id)} onDelete={() => del(t.id)} />)}
         </div>
       )}
 
+      {/* Add-task modal: title, subject + priority, due date, notes, actions */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Study Task">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <Input label="Task Title" placeholder="e.g., Revise Normalization – DBMS" value={newTask.title} onChange={e => setNewTask(f => ({ ...f, title: e.target.value }))} fullWidth />
