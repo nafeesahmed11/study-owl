@@ -23,6 +23,7 @@
   --c-info: #0EA5E9;
   --c-info-light: #F0F9FF;
   --sidebar-w: 260px;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

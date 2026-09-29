@@ -12,6 +12,7 @@ export const IconHome = ic(<><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 
 export const IconBook = ic(<><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></>);
 export const IconFolder = ic(<><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></>);
 export const IconFileText = ic(<><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8" fill="none"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9" fill="none"/></>);
+export const IconTerminal = ic(<><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></>);
 export const IconBrain = ic(<><path d="M12 2a5 5 0 00-5 5v1a5 5 0 0010 0V7a5 5 0 00-5-5z"/><path d="M7 8a5 5 0 00-5 5c0 2.76 2.24 5 5 5"/><path d="M17 8a5 5 0 015 5c0 2.76-2.24 5-5 5"/><path d="M12 13v9"/><path d="M8 18h8"/></>);
 export const IconSparkles = ic(<><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"/><path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75L19 15z"/><path d="M5 19l.5 1.5L7 21l-1.5.5L5 23l-.5-1.5L3 21l1.5-.5L5 19z"/></>);
 export const IconCheck = ic(<><polyline points="20 6 9 17 4 12"/></>);

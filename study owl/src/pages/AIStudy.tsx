@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { C, Card, Btn, Badge, Avatar } from "../components/ui";
-import { IconBrain, IconSend, IconCopy, IconStar, IconRefresh, IconPlus, IconFileText, IconSparkles } from "../components/Icons";
+import { IconBrain, IconSend, IconCopy, IconStar, IconRefresh, IconPlus, IconFileText, IconSparkles, IconCheck, IconChevronRight, IconMessageCircle, IconDownload, IconTerminal } from "../components/Icons";
+import claudeLogo from "../image/clude logo.png";
 
 const ClaudeIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z" />
-  </svg>
+  <img src={claudeLogo} alt="" width={size} height={size} style={{ display: 'block' }} />
 );
 
 const DeepSeekIcon = ({ size = 18 }) => (
@@ -28,6 +27,39 @@ const AI_MODELS = [
   { id: 'gemini', name: 'Gemini', color: '#fff', icon: <img src="/assets/gemini.svg" alt="" width={18} height={18} style={{ display: 'block' }} /> },
 ];
 
+const labNotebookBlocks = [
+  {
+    title: 'Create Database :',
+    subtitle: 'Initialize the database for student management.',
+    code: 'CREATE DATABASE student_mg_table;',
+  },
+  {
+    title: 'Create Tables :',
+    subtitle: 'Create the student table and define its columns.',
+    code: `USE student_mg_table;\nCREATE TABLE student(\n  student_id INT PRIMARY KEY,\n  student_name VARCHAR(20),\n  department VARCHAR(20),\n  email VARCHAR(20),\n  batch VARCHAR(20)\n);`,
+  },
+];
+
+// Generated artifacts listed in the Lab Canvas. Mock data — nothing is written
+// to disk and the download buttons are display-only, matching the page's other
+// non-wired actions (Regenerate, the conversation-history rows). `code` picks
+// the Terminal icon instead of the document icon.
+const notebookArtifacts = [
+  { id: 'marketing', name: 'Bba 2404 marketing...', meta: 'Document • MD', code: false },
+  { id: 'bcom', name: 'Bcom 2404 marketing...', meta: 'Document • MD', code: false },
+  { id: 'sql', name: 'student_table.sql', meta: 'SQL Code', code: true },
+  { id: 'notes', name: 'class_notes.md', meta: 'Document • MD', code: false },
+];
+
+// Source documents referenced by the conversation, shown as thumbnails in the
+// "Content" grid. Mock data.
+const sourceDocuments = [
+  { id: 's1', name: 'Bcom 2404 Marketing', format: 'PDF' },
+  { id: 's2', name: 'Marketing Class Note', format: 'PDF' },
+  { id: 's3', name: 'DBMS Unit 4 Slides', format: 'PDF' },
+  { id: 's4', name: 'Normalization Notes', format: 'PDF' },
+];
+
 /**
  * Page: AI Study Chat (/app/ai-study) — student-only, inside AppLayout.
  * Purpose: Chat-style AI tutor with a conversation history sidebar, a model
@@ -36,10 +68,13 @@ const AI_MODELS = [
  *   1.2s, then always replies with the same canned `aiResponses.default`
  *   text regardless of the question or the selected model. Choosing a model
  *   only changes the avatar colour/icon, not the response.
- * Layout: a three-column full-height shell (240px history / flex chat /
- *   220px context) rather than a normal scrolling page. It stretches to the
- *   space between the AppLayout top bar and the app footer, and scrolls only
- *   inside its own columns.
+ * Layout: a split-pane full-height shell rather than a normal scrolling page.
+ *   Three flex children of `.ai-study-panes` — conversation history (23%,
+ *   collapsing to 64px), the chat column (flex 47%, expanding to 100% on
+ *   mobile), and the Lab Canvas (30%, hidden below 1024px). The shell stretches
+ *   to the space between the AppLayout top bar and the app footer, and each
+ *   column scrolls on its own. The Lab Canvas holds three stacked sections:
+ *   an artifacts list, a grid of referenced sources, and the code blocks.
  */
 
 type Message = { id: number; role: 'user' | 'assistant'; content: string; saved?: boolean };
@@ -68,6 +103,9 @@ const initMessages: Message[] = [
 ];
 
 export default function AIStudy() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024);
+  const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
+
   // The full conversation, oldest first
   const [messages, setMessages] = useState<Message[]>(initMessages);
 
@@ -116,189 +154,293 @@ export default function AIStudy() {
   // Stars/unstars an assistant message
   const toggleSave = (id: number) => setMessages(m => m.map(msg => msg.id === id ? { ...msg, saved: !msg.saved } : msg));
 
+  const copyNotebookCode = async (title: string, code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedBlock(title);
+      window.setTimeout(() => setCopiedBlock(current => current === title ? null : current), 1800);
+    } catch {
+      setCopiedBlock(null);
+    }
+  };
+
   return (
-    // Three-column full-height shell: history | chat | context.
-    // `height: 100%` (not viewport math) so it fills exactly the space left
-    // between the TopBar and the AppFooter rendered by AppLayout.
-    <div style={{ display: 'flex', height: '100%', minHeight: 0, overflow: 'hidden' }}>
-      {/* Left: History sidebar */}
-      <div style={{ width: '240px', borderRight: `1px solid ${C.border}`, backgroundColor: C.surface, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-        <div style={{ padding: '16px', borderBottom: `1px solid ${C.border}` }}>
-          <Btn fullWidth size="sm" variant="secondary" icon={<IconPlus size={14} />} onClick={() => setMessages(initMessages)}>
-            New Conversation
-          </Btn>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '8px 8px 4px' }}>Recent</p>
-          {history.map(h => (
-            <button key={h.id} style={{ width: '100%', textAlign: 'left', padding: '10px', borderRadius: '8px', background: 'none', border: 'none', cursor: 'pointer' }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surface2}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-              <p style={{ fontSize: '13px', fontWeight: 500, color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.title}</p>
-              <p style={{ fontSize: '11px', color: C.text3, marginTop: '2px' }}>{h.date}</p>
-            </button>
-          ))}
-        </div>
-        {/* Model picker: one coloured button per provider, green dot = active */}
-        <div style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: `1px solid ${C.border}` }}>
-          {AI_MODELS.map(model => (
-            <button
-              key={model.id}
-              onClick={() => setSelectedModel(model.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '10px 14px',
-                borderRadius: '8px',
-                  backgroundColor: model.id === 'gemini' ? '#fff' : model.color,
-                  border: model.id === 'gemini' ? '1px solid rgb(209 209 209)' : 'none',
-                cursor: 'pointer',
-                color: model.id === 'gemini' ? C.text : '#fff',
-                fontWeight: 600,
-                fontSize: '13.5px',
-                transition: 'background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {model.icon}
-                {model.name}
-              </div>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80', border: '1px solid rgb(209 209 209)', opacity: selectedModel === model.id ? 1 : 0, transform: selectedModel === model.id ? 'scale(1)' : 'scale(0.65)', transition: 'opacity 180ms ease, transform 180ms ease', pointerEvents: 'none' }} />
-            </button>
-          ))}
-        </div>
+    <div className="ai-study-layout">
+      <style>{`
+        .ai-study-layout { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; position: relative; }
+        .ai-study-mobile-toolbar { display: none; }
+        .ai-study-panes { display: flex; flex: 1; min-width: 0; min-height: 0; overflow: hidden; position: relative; }
+        .ai-study-sidebar { display: flex; flex: 0 0 23%; flex-direction: column; height: 100%; max-width: 320px; min-width: 220px; overflow: hidden; background: ${C.surface}; border-right: 1px solid ${C.border}; transition: flex-basis 240ms ease, min-width 240ms ease, transform 240ms ease; z-index: 21; }
+        .ai-study-sidebar.is-collapsed { flex-basis: 64px; max-width: 64px; min-width: 64px; }
+        .ai-study-chat-pane { display: flex; flex: 1 1 47%; flex-direction: column; min-width: 0; overflow: hidden; }
+        .ai-study-notebook-pane { display: flex; flex: 0 0 30%; flex-direction: column; height: 100%; min-height: 0; min-width: 240px; overflow-y: auto; background: #F1F5F9; border-left: 1px solid ${C.border}; }
+        .ai-study-notebook-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 18px 14px; background: #F1F5F9; border-bottom: 1px solid #D8E0E9; }
+        .ai-study-notebook-subheader { margin: 20px 18px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748B; }
+        .ai-study-artifact-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 18px; background: none; border: 0; border-bottom: 1px solid #E2E8F0; text-align: left; cursor: pointer; transition: background 140ms ease; }
+        .ai-study-artifact-row:hover { background: #F8FAFC; }
+        .ai-study-source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 18px; }
+        .ai-study-source-preview { height: 64px; display: flex; flex-direction: column; gap: 5px; padding: 9px 10px; background: #E2E8F0; }
+        .ai-study-sidebar-backdrop { display: none; }
+        @media (max-width: 1023px) {
+          .ai-study-mobile-toolbar { display: flex; align-items: center; flex: 0 0 44px; gap: 8px; padding: 0 12px; background: ${C.surface}; border-bottom: 1px solid ${C.border}; }
+          .ai-study-panes { overflow: hidden; }
+          .ai-study-sidebar, .ai-study-sidebar.is-collapsed { position: absolute; top: 0; bottom: 0; left: 0; width: min(320px, 85vw); max-width: none; min-width: 0; flex: none; transform: translateX(-105%); box-shadow: none; }
+          .ai-study-sidebar.is-open { transform: translateX(0); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18); }
+          .ai-study-notebook-pane { display: none; }
+          .ai-study-chat-pane { flex: 1 1 100%; width: 100%; }
+          .ai-study-sidebar-backdrop { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.25); border: 0; z-index: 20; }
+        }
+      `}</style>
+      <div className="ai-study-mobile-toolbar">
+        <button type="button" onClick={() => setIsSidebarOpen(open => !open)} aria-expanded={isSidebarOpen} aria-label={isSidebarOpen ? 'Close conversation menu' : 'Open conversation menu'} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', background: 'none', border: 'none', color: C.text2, cursor: 'pointer' }}>
+          <IconChevronRight size={16} style={{ transform: isSidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms ease' }} />
+          Conversations
+        </button>
       </div>
-
-      {/* Center: Chat */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        {/* Header */}
-        <div style={{ padding: '12px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: C.surface }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo }}>
-            <IconBrain size={17} />
+      <div className="ai-study-panes">
+        {isSidebarOpen && <button type="button" className="ai-study-sidebar-backdrop" aria-label="Close conversation menu" onClick={() => setIsSidebarOpen(false)} />}
+        <aside className={`ai-study-sidebar ${isSidebarOpen ? 'is-open' : 'is-collapsed'}`}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarOpen ? 'space-between' : 'center', minHeight: '56px', padding: isSidebarOpen ? '12px 16px' : '12px 6px', borderBottom: `1px solid ${C.border}` }}>
+            {isSidebarOpen && <span style={{ fontSize: '14px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap' }}>Study Owl AI</span>}
+            <button type="button" onClick={() => setIsSidebarOpen(open => !open)} aria-expanded={isSidebarOpen} aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'} title={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', border: 'none', borderRadius: '8px', background: 'transparent', color: C.text2, cursor: 'pointer', flexShrink: 0 }}>
+              <IconChevronRight size={16} style={{ transform: isSidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms ease' }} />
+            </button>
           </div>
-          <div>
-            <p style={{ fontSize: '14px', fontWeight: 700, color: C.navy }}>AI Study Assistant</p>
-            <p style={{ fontSize: '11.5px', color: C.text3 }}>Academic tutor · DBMS, Algorithms, CN and more</p>
+          <div style={{ padding: isSidebarOpen ? '12px' : '12px 6px' }}>
+            <Btn fullWidth size="sm" variant="secondary" icon={<IconPlus size={14} />} onClick={() => setMessages(initMessages)}>
+              {isSidebarOpen && 'New Conversation'}
+            </Btn>
           </div>
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
-            <Badge variant="success">Online</Badge>
-          </div>
-        </div>
-
-        {/* Scrollable message list; user turns are right-aligned via row-reverse */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: C.bg }}>
-          {messages.map(msg => (
-            <div key={msg.id} style={{ display: 'flex', gap: '10px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
-              {msg.role === 'assistant' ? (
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: selectedModelData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
-                  {selectedModelData.icon}
-                </div>
-              ) : (
-                <Avatar name="Alex Johnson" size={32} />
-              )}
-              <div style={{ maxWidth: '72%' }}>
-                <div style={{ padding: '14px 16px', borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px', backgroundColor: msg.role === 'user' ? C.indigo : C.surface, color: msg.role === 'user' ? '#fff' : C.text, border: msg.role === 'assistant' ? `1px solid ${C.border}` : 'none', lineHeight: 1.65 }}>
-                  {/* `**` prefixed lines are emphasised as headings */}
-                  {msg.content.split('\n').map((line, i) => (
-                    <p key={i} style={{ fontSize: '13.5px', fontWeight: line.startsWith('**') ? 600 : 400, color: msg.role === 'user' ? '#fff' : (line.startsWith('**') ? C.navy : C.text), marginBottom: line === '' ? '8px' : '2px' }}>
-                      {line.replace(/\*\*/g, '')}
-                    </p>
-                  ))}
-                </div>
-                {msg.role === 'assistant' && (
-                  <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
-                    <button onClick={() => { navigator.clipboard.writeText(msg.content); }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '11.5px', color: C.text3, cursor: 'pointer' }}>
-                      <IconCopy size={11} /> Copy
-                    </button>
-                    <button onClick={() => toggleSave(msg.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${msg.saved ? C.indigo : C.border}`, borderRadius: '6px', fontSize: '11.5px', color: msg.saved ? C.indigo : C.text3, cursor: 'pointer' }}>
-                      <IconStar size={11} /> {msg.saved ? 'Saved' : 'Save'}
-                    </button>
-                    <button onClick={() => { }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '11.5px', color: C.text3, cursor: 'pointer' }}>
-                      <IconRefresh size={11} /> Regenerate
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {loading && (
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: selectedModelData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
-                {selectedModelData.icon}
-              </div>
-              <div style={{ padding: '14px 16px', borderRadius: '4px 16px 16px 16px', backgroundColor: C.surface, border: `1px solid ${C.border}` }}>
-                <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '20px' }}>
-                  {[0, 1, 2].map(i => (
-                    <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: C.text3, animation: `bounce 1.2s ${i * 0.2}s infinite` }} />
-                  ))}
-                  <style>{`@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}`}</style>
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
-
-        {/* Suggestions */}
-        <div style={{ padding: '12px 20px 0', borderTop: `1px solid ${C.border}`, backgroundColor: C.surface }}>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px' }}>
-            {suggestions.map(s => (
-              <button key={s} onClick={() => send(s)} style={{ padding: '6px 12px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: '99px', fontSize: '12.5px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                {s}
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: isSidebarOpen ? '8px' : '8px 4px' }}>
+            {isSidebarOpen && <p style={{ fontSize: '11px', fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '8px 8px 4px' }}>Recent</p>}
+            {history.map(h => (
+              <button key={h.id} title={h.title} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', textAlign: 'left', padding: '10px', borderRadius: '8px', background: 'none', border: 'none', cursor: 'pointer', color: C.text2 }}
+                onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surface2}
+                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
+                <IconMessageCircle size={16} />
+                {isSidebarOpen && <span style={{ minWidth: 0 }}><span style={{ display: 'block', fontSize: '13px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.title}</span><span style={{ display: 'block', fontSize: '11px', color: C.text3, marginTop: '2px' }}>{h.date}</span></span>}
               </button>
             ))}
           </div>
-        </div>
+          <div style={{ padding: isSidebarOpen ? '16px 12px' : '12px 6px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: `1px solid ${C.border}` }}>
+            {AI_MODELS.map(model => (
+              <button
+                key={model.id}
+                onClick={() => setSelectedModel(model.id)}
+                title={model.name}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: isSidebarOpen ? 'space-between' : 'center',
+                  position: 'relative',
+                  padding: isSidebarOpen ? '10px 14px' : '10px',
+                  borderRadius: '8px',
+                  backgroundColor: model.id === 'gemini' ? '#fff' : model.color,
+                  border: model.id === 'gemini' ? '1px solid rgb(209 209 209)' : 'none',
+                  cursor: 'pointer',
+                  color: model.id === 'gemini' ? C.text : '#fff',
+                  fontWeight: 600,
+                  fontSize: '13.5px',
+                  transition: 'background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {model.icon}
+                  {isSidebarOpen && model.name}
+                </div>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80', border: '1px solid rgb(209 209 209)', opacity: selectedModel === model.id ? 1 : 0, transform: selectedModel === model.id ? 'scale(1)' : 'scale(0.65)', transition: 'opacity 180ms ease, transform 180ms ease', pointerEvents: 'none', position: isSidebarOpen ? 'static' : 'absolute', top: '5px', right: '5px' }} />
+              </button>
+            ))}
+          </div>
+        </aside>
 
-        {/* Input */}
-        <div style={{ padding: '12px 20px 16px', backgroundColor: C.surface }}>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <textarea
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-                placeholder="Ask me anything academic… (Enter to send, Shift+Enter for new line)"
-                rows={2}
-                style={{ width: '100%', padding: '10px 14px', fontSize: '14px', borderRadius: '12px', border: `1.5px solid ${C.border}`, outline: 'none', resize: 'none', fontFamily: 'inherit', color: C.text, lineHeight: 1.5 }}
-                onFocus={e => e.target.style.borderColor = C.indigo}
-                onBlur={e => e.target.style.borderColor = C.border}
-              />
+        {/* Center: Chat */}
+        <div className="ai-study-chat-pane" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Header */}
+          <div style={{ padding: '12px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: C.surface }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo }}>
+              <IconBrain size={17} />
             </div>
-            <button onClick={() => send()} disabled={!input.trim() || loading} style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: C.indigo, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: !input.trim() || loading ? 0.5 : 1, flexShrink: 0 }}>
-              <IconSend size={17} color="#fff" />
-            </button>
+            <div>
+              <p style={{ fontSize: '14px', fontWeight: 700, color: C.navy }}>AI Study Assistant</p>
+              <p style={{ fontSize: '11.5px', color: C.text3 }}>Academic tutor · DBMS, Algorithms, CN and more</p>
+            </div>
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
+              <Badge variant="success">Online</Badge>
+            </div>
           </div>
-          <p style={{ fontSize: '11px', color: C.text3, marginTop: '6px' }}>Study Owl AI · Answers are AI-generated for academic study purposes.</p>
-        </div>
-      </div>
 
-      {/* Right: Context panel */}
-      <div style={{ width: '220px', borderLeft: `1px solid ${C.border}`, backgroundColor: C.surface, padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px', flexShrink: 0, overflowY: 'auto' }}>
-        <div>
-          <p style={{ fontSize: '11.5px', fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>Context</p>
-          <div style={{ padding: '10px 12px', backgroundColor: C.indigoLight, borderRadius: '10px', border: `1px solid ${C.indigo}30` }}>
-            <p style={{ fontSize: '12.5px', fontWeight: 600, color: C.indigo }}>DBMS – 6th Sem</p>
-            <p style={{ fontSize: '11.5px', color: C.text2, marginTop: '2px' }}>Dr. A.K. Rahman</p>
+          {/* Scrollable message list; user turns are right-aligned via row-reverse */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: C.bg }}>
+            {messages.map(msg => (
+              <div key={msg.id} style={{ display: 'flex', gap: '10px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
+                {msg.role === 'assistant' ? (
+                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: selectedModelData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
+                    {selectedModelData.icon}
+                  </div>
+                ) : (
+                  <Avatar name="Alex Johnson" size={32} />
+                )}
+                <div style={{ maxWidth: '72%' }}>
+                  <div style={{ padding: '14px 16px', borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px', backgroundColor: msg.role === 'user' ? C.indigo : C.surface, color: msg.role === 'user' ? '#fff' : C.text, border: msg.role === 'assistant' ? `1px solid ${C.border}` : 'none', lineHeight: 1.65 }}>
+                    {/* `**` prefixed lines are emphasised as headings */}
+                    {msg.content.split('\n').map((line, i) => (
+                      <p key={i} style={{ fontSize: '13.5px', fontWeight: line.startsWith('**') ? 600 : 400, color: msg.role === 'user' ? '#fff' : (line.startsWith('**') ? C.navy : C.text), marginBottom: line === '' ? '8px' : '2px' }}>
+                        {line.replace(/\*\*/g, '')}
+                      </p>
+                    ))}
+                  </div>
+                  {msg.role === 'assistant' && (
+                    <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
+                      <button onClick={() => { navigator.clipboard.writeText(msg.content); }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '11.5px', color: C.text3, cursor: 'pointer' }}>
+                        <IconCopy size={11} /> Copy
+                      </button>
+                      <button onClick={() => toggleSave(msg.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${msg.saved ? C.indigo : C.border}`, borderRadius: '6px', fontSize: '11.5px', color: msg.saved ? C.indigo : C.text3, cursor: 'pointer' }}>
+                        <IconStar size={11} /> {msg.saved ? 'Saved' : 'Save'}
+                      </button>
+                      <button onClick={() => { }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '11.5px', color: C.text3, cursor: 'pointer' }}>
+                        <IconRefresh size={11} /> Regenerate
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {loading && (
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: selectedModelData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
+                  {selectedModelData.icon}
+                </div>
+                <div style={{ padding: '14px 16px', borderRadius: '4px 16px 16px 16px', backgroundColor: C.surface, border: `1px solid ${C.border}` }}>
+                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '20px' }}>
+                    {[0, 1, 2].map(i => (
+                      <div key={i} style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: C.text3, animation: `bounce 1.2s ${i * 0.2}s infinite` }} />
+                    ))}
+                    <style>{`@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}`}</style>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          {/* Suggestions */}
+          <div style={{ padding: '12px 20px 0', borderTop: `1px solid ${C.border}`, backgroundColor: C.surface }}>
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px' }}>
+              {suggestions.map(s => (
+                <button key={s} onClick={() => send(s)} style={{ padding: '6px 12px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: '99px', fontSize: '12.5px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Input */}
+          <div style={{ padding: '12px 20px 16px', backgroundColor: C.surface }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
+              <div style={{ flex: 1, position: 'relative' }}>
+                <textarea
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+                  placeholder="Ask me anything academic… (Enter to send, Shift+Enter for new line)"
+                  rows={2}
+                  style={{ width: '100%', padding: '10px 14px', fontSize: '14px', borderRadius: '12px', border: `1.5px solid ${C.border}`, outline: 'none', resize: 'none', fontFamily: 'inherit', color: C.text, lineHeight: 1.5 }}
+                  onFocus={e => e.target.style.borderColor = C.indigo}
+                  onBlur={e => e.target.style.borderColor = C.border}
+                />
+              </div>
+              <button onClick={() => send()} disabled={!input.trim() || loading} style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: C.indigo, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: !input.trim() || loading ? 0.5 : 1, flexShrink: 0 }}>
+                <IconSend size={17} color="#fff" />
+              </button>
+            </div>
+            <p style={{ fontSize: '11px', color: C.text3, marginTop: '6px' }}>Study Owl AI · Answers are AI-generated for academic study purposes.</p>
           </div>
         </div>
-        <div>
-          <p style={{ fontSize: '11.5px', fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>AI Tools</p>
-          {[
-            { label: 'Generate MCQs', icon: <IconSparkles size={13} /> },
-            { label: 'Summarize Chapter', icon: <IconFileText size={13} /> },
-            { label: 'Make Study Notes', icon: <IconStar size={13} /> },
-            // Quick-action shortcut; sends its own label as the prompt
-          ].map(a => (
-            <button key={a.label} onClick={() => send(a.label)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '12.5px', color: C.text2, cursor: 'pointer', marginBottom: '6px', textAlign: 'left' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.borderColor = C.indigo; e.currentTarget.style.color = C.indigo; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.text2; }}>
-              {a.icon}{a.label}
+
+        {/* Right: Lab Canvas — artifacts, referenced content, and code blocks */}
+        <aside className="ai-study-notebook-pane">
+          {/* Sticky actions header */}
+          <div className="ai-study-notebook-header">
+            <div>
+              <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: '4px' }}>DBMS · 6th Semester</p>
+              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#1E293B' }}>Artifacts</h2>
+            </div>
+            <button
+              type="button"
+              title="Download all artifacts"
+              aria-label="Download all artifacts"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, padding: '6px 10px', background: '#FFFFFF', border: '1px solid #D8E0E9', borderRadius: '8px', color: '#475569', fontSize: '12px', fontWeight: 500, cursor: 'pointer', transition: 'background 140ms ease, color 140ms ease' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#F8FAFC'; e.currentTarget.style.color = '#1E293B'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.color = '#475569'; }}
+            >
+              <IconDownload size={14} />Download all
             </button>
+          </div>
+
+          {/* Generated artifacts */}
+          {notebookArtifacts.map(artifact => (
+            <div key={artifact.id} className="ai-study-artifact-row">
+              <span style={{ display: 'flex', flexShrink: 0, color: artifact.code ? '#4F46E5' : '#64748B' }}>
+                {artifact.code ? <IconTerminal size={17} /> : <IconFileText size={17} />}
+              </span>
+              <span style={{ flex: 1, minWidth: 0 }}>
+                <span style={{ display: 'block', fontSize: '12.5px', fontWeight: 500, color: '#1E293B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{artifact.name}</span>
+                <span style={{ display: 'block', fontSize: '11px', color: '#94A3B8', marginTop: '1px' }}>{artifact.meta}</span>
+              </span>
+              <button
+                type="button"
+                title={`Download ${artifact.name}`}
+                aria-label={`Download ${artifact.name}`}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: '26px', height: '26px', border: 'none', borderRadius: '6px', background: 'transparent', color: '#64748B', cursor: 'pointer', transition: 'background 140ms ease, color 140ms ease' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#E2E8F0'; e.currentTarget.style.color = '#1E293B'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#64748B'; }}
+              >
+                <IconDownload size={14} />
+              </button>
+            </div>
           ))}
-        </div>
+
+          {/* Referenced content sources */}
+          <p className="ai-study-notebook-subheader">Content</p>
+          <div className="ai-study-source-grid">
+            {sourceDocuments.map(source => (
+              <div key={source.id} style={{ border: '1px solid #D8E0E9', borderRadius: '8px', overflow: 'hidden', background: '#FFFFFF' }}>
+                {/* Light-grey page-layout placeholder */}
+                <div className="ai-study-source-preview">
+                  <span style={{ width: '70%', height: '5px', borderRadius: '2px', background: '#CBD5E1' }} />
+                  <span style={{ width: '100%', height: '4px', borderRadius: '2px', background: '#CBD5E1' }} />
+                  <span style={{ width: '85%', height: '4px', borderRadius: '2px', background: '#CBD5E1' }} />
+                  <span style={{ width: '45%', height: '4px', borderRadius: '2px', background: '#CBD5E1' }} />
+                </div>
+                <div style={{ borderTop: '1px solid #E2E8F0', padding: '7px 8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ padding: '2px 6px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '4px', fontSize: '9.5px', fontWeight: 700, letterSpacing: '0.04em', color: '#64748B' }}>{source.format}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: '11px', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{source.name}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Code blocks */}
+          <p className="ai-study-notebook-subheader">Lab Notebook</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '0 18px 18px' }}>
+            {labNotebookBlocks.map(block => (
+              <section key={block.title}>
+                <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '5px' }}>{block.title}</h3>
+                <p style={{ fontSize: '12px', lineHeight: 1.5, color: '#64748B', marginBottom: '10px' }}>{block.subtitle}</p>
+                <div style={{ overflow: 'hidden', border: '1px solid #D8E0E9', borderRadius: '8px', background: '#eef2f6' }}>
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 8px 0' }}>
+                    <button type="button" onClick={() => copyNotebookCode(block.title, block.code)} aria-label={`Copy ${block.title} code`} title={copiedBlock === block.title ? 'Copied' : 'Copy code'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', border: 'none', borderRadius: '6px', background: 'transparent', color: copiedBlock === block.title ? '#15803D' : '#64748B', cursor: 'pointer' }}>
+                      {copiedBlock === block.title ? <IconCheck size={15} /> : <IconCopy size={15} />}
+                    </button>
+                  </div>
+                  <pre style={{ overflowX: 'auto', padding: '4px 12px 12px', margin: 0, color: '#1E293B', fontFamily: 'var(--font-mono)', fontSize: '11.5px', lineHeight: 1.6, whiteSpace: 'pre' }}><code>{block.code}</code></pre>
+                </div>
+              </section>
+            ))}
+          </div>
+        </aside>
       </div>
     </div>
   );
