@@ -64,7 +64,7 @@ export function Btn({
       style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
         padding: btnPad[size], fontSize: btnFont[size], fontWeight: 500,
-        borderRadius: '8px', cursor: rest.disabled ? 'not-allowed' : 'pointer',
+        borderRadius: 'var(--r-md)', cursor: rest.disabled ? 'not-allowed' : 'pointer',
         transition: 'background 0.15s, opacity 0.15s',
         opacity: (rest.disabled || loading) ? 0.55 : 1,
         width: fullWidth ? '100%' : undefined,
@@ -102,7 +102,7 @@ export function Badge({ variant = 'default', children, style }: {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: '4px',
-      padding: '2px 8px', borderRadius: '99px',
+      padding: '2px 8px', borderRadius: 'var(--r-pill)',
       fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap',
       backgroundColor: bg, color: fg, ...style,
     }}>
@@ -121,9 +121,9 @@ export function Card({ children, style, padding = 24, hover = false }: {
       onMouseEnter={() => hover && setHov(true)}
       onMouseLeave={() => hover && setHov(false)}
       style={{
-        backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px',
+        backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--r-3xl)',
         padding, transition: 'box-shadow 0.2s, transform 0.2s',
-        boxShadow: hov ? '0 8px 20px rgba(0,0,0,0.07)' : 'none',
+        boxShadow: hov ? 'var(--sh-2)' : 'none',
         transform: hov ? 'translateY(-2px)' : 'none',
         ...style,
       }}
@@ -158,7 +158,7 @@ export function Input({ label, error, icon, fullWidth, style, ...rest }: InputPr
           onBlur={e => { setFocus(false); rest.onBlur?.(e); }}
           style={{
             width: '100%', padding: icon ? '9px 12px 9px 34px' : '9px 12px',
-            fontSize: '14px', borderRadius: '8px',
+            fontSize: '14px', borderRadius: 'var(--r-md)',
             border: `1.5px solid ${error ? C.error : focus ? C.indigo : C.border}`,
             backgroundColor: C.surface, color: C.text, outline: 'none',
             transition: 'border-color 0.15s',
@@ -310,7 +310,7 @@ export function StatCard({ icon, label, value, sub, color, style }: {
           {sub && <p style={{ fontSize: '12px', color: C.text3, marginTop: '4px' }}>{sub}</p>}
         </div>
         <div style={{
-          width: '44px', height: '44px', borderRadius: '12px',
+          width: '44px', height: '44px', borderRadius: 'var(--r-xl)',
           backgroundColor: color || C.indigoLight,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: C.indigo, flexShrink: 0,
@@ -328,7 +328,7 @@ export function EmptyState({ icon, title, desc, action }: {
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 24px', textAlign: 'center' }}>
-      <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: C.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', color: C.text3 }}>{icon}</div>
+      <div style={{ width: '56px', height: '56px', borderRadius: 'var(--r-3xl)', backgroundColor: C.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', color: C.text3 }}>{icon}</div>
       <p style={{ fontSize: '16px', fontWeight: 600, color: C.text, marginBottom: '8px' }}>{title}</p>
       {desc && <p style={{ fontSize: '14px', color: C.text2, maxWidth: '320px', lineHeight: 1.6 }}>{desc}</p>}
       {action && <div style={{ marginTop: '20px' }}>{action}</div>}
@@ -358,7 +358,7 @@ export function Modal({ open, onClose, title, children, width = 480 }: {
   if (!open) return null;
   return (
     <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-      <div style={{ backgroundColor: C.surface, borderRadius: '16px', width: '100%', maxWidth: width, boxShadow: '0 20px 60px rgba(0,0,0,0.15)', overflow: 'hidden' }}>
+      <div style={{ backgroundColor: C.surface, borderRadius: 'var(--r-3xl)', width: '100%', maxWidth: width, boxShadow: 'var(--sh-3)', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${C.border}` }}>
           <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>{title}</h3>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.text3, cursor: 'pointer', display: 'flex', padding: '4px' }}>
@@ -386,7 +386,7 @@ export function SearchInput({ placeholder = 'Search…', value, onChange, style 
         value={value} onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
         style={{
-          width: '100%', padding: '8px 12px 8px 32px', fontSize: '14px', borderRadius: '8px',
+          width: '100%', padding: '8px 12px 8px 32px', fontSize: '14px', borderRadius: 'var(--r-md)',
           border: `1.5px solid ${C.border}`, backgroundColor: C.surface, color: C.text,
           outline: 'none', transition: 'border-color 0.15s',
         }}
@@ -414,9 +414,9 @@ export function Toast({ type, message, onClose }: {
     <div style={{
       position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
       backgroundColor: bg, border: `1px solid ${border}`,
-      borderRadius: '10px', padding: '12px 16px',
+      borderRadius: 'var(--r-lg)', padding: '12px 16px',
       display: 'flex', alignItems: 'center', gap: '10px',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.08)', maxWidth: '360px',
+      boxShadow: 'var(--sh-2)', maxWidth: '360px',
     }}>
       {icon}
       <span style={{ fontSize: '14px', color: C.text, flex: 1 }}>{message}</span>

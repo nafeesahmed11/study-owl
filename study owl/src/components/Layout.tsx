@@ -38,7 +38,7 @@ function NavGroup({ label, items, onClose }: { label: string; items: typeof navI
   const location = useLocation();
   return (
     <div style={{ marginBottom: '4px' }}>
-      <p style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.text3, padding: '8px 16px 4px', userSelect: 'none' }}>
+      <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.text2, padding: '10px 16px 6px', userSelect: 'none' }}>
         {label}
       </p>
       {items.map(item => {
@@ -47,11 +47,12 @@ function NavGroup({ label, items, onClose }: { label: string; items: typeof navI
           <NavLink key={item.path} to={item.path} style={{ textDecoration: 'none' }}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '8px 14px', margin: '1px 8px', borderRadius: '8px',
+              padding: '9px 12px', margin: '1px 8px', borderRadius: 'var(--r-md)',
               fontSize: '13.5px', fontWeight: active ? 600 : 400,
               color: active ? C.indigo : C.text2,
               backgroundColor: active ? C.indigoLight : 'transparent',
-              transition: 'background 0.12s, color 0.12s',
+              boxShadow: active ? `inset 2px 0 0 ${C.indigo}` : 'none',
+              transition: 'background 0.12s, color 0.12s, box-shadow 0.12s',
               cursor: 'pointer',
             }}
             onClick={() => onClose?.()}
@@ -151,7 +152,7 @@ function TopBar({ onMenuClick, isSidebarOpen }: { onMenuClick?: () => void; isSi
     <div style={{
       height: '56px', borderBottom: `1px solid ${C.border}`,
       backgroundColor: C.surface, display: 'flex', alignItems: 'center',
-      padding: '0 24px', gap: '12px', position: 'sticky', top: 0, zIndex: 50,
+      padding: '0 20px', gap: '12px', position: 'sticky', top: 0, zIndex: 50,
     }}>
       {/* Hamburger — mobile only; the desktop layout keeps the static sidebar */}
       <button
@@ -167,16 +168,17 @@ function TopBar({ onMenuClick, isSidebarOpen }: { onMenuClick?: () => void; isSi
       </button>
 
       {/* Search — desktop only, so the mobile bar has room for the controls */}
-      <div className="desktop-only" style={{ position: 'relative', flex: 1, maxWidth: '380px' }}>
+      <div className="desktop-only" style={{ position: 'relative', flex: 1, maxWidth: '320px' }}>
         <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: C.text3, display: 'flex' }}>
           <IconSearch size={15} />
         </span>
         <input
           value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Search resources, papers, topics…"
+          aria-label="Search resources, papers and topics"
           style={{
             width: '100%', padding: '7px 12px 7px 32px', fontSize: '13.5px',
-            borderRadius: '8px', border: `1.5px solid ${C.border}`, backgroundColor: C.surface2,
+            borderRadius: 'var(--r-md)', border: `1.5px solid ${C.border}`, backgroundColor: C.surface2,
             color: C.text, outline: 'none',
           }}
           onFocus={e => e.target.style.borderColor = C.indigo}
@@ -188,14 +190,18 @@ function TopBar({ onMenuClick, isSidebarOpen }: { onMenuClick?: () => void; isSi
         {/* Quick add — desktop only */}
         <button className="desktop-only" style={{
           display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px',
-          backgroundColor: C.indigo, color: '#fff', border: 'none', borderRadius: '8px',
+          backgroundColor: C.indigo, color: '#fff', border: 'none', borderRadius: 'var(--r-md)',
           fontSize: '13px', fontWeight: 500, cursor: 'pointer',
-        }}>
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoHover; }}
+        onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.indigo; }}
+      >
           <IconPlus size={14} color="#fff" /> New
         </button>
 
         {/* Notifications */}
-        <button style={{ position: 'relative', background: 'none', border: 'none', color: C.text2, padding: '7px', display: 'flex', borderRadius: '8px', cursor: 'pointer' }}
+        <button aria-label="Notifications" style={{ position: 'relative', background: 'none', border: 'none', color: C.text2, padding: '7px', display: 'flex', borderRadius: 'var(--r-md)', cursor: 'pointer' }}
           onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surface2}
           onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
           <IconBell size={18} />
@@ -206,7 +212,11 @@ function TopBar({ onMenuClick, isSidebarOpen }: { onMenuClick?: () => void; isSi
         <div style={{ position: 'relative' }}>
           <button
             onClick={() => setProfileOpen(o => !o)}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 10px 5px 5px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '10px', cursor: 'pointer' }}
+            aria-label="Account menu"
+            aria-expanded={profileOpen}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '5px 10px 5px 5px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: 'var(--r-lg)', cursor: 'pointer', transition: 'background 0.12s, border-color 0.12s' }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.borderColor = C.indigo; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = C.border; }}
           >
             <div style={{ width: '28px', height: '28px', borderRadius: '50%', backgroundColor: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: '#fff' }}>A</div>
             <span style={{ fontSize: '13px', fontWeight: 500, color: C.text }}>Alex J.</span>

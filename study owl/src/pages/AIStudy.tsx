@@ -105,6 +105,9 @@ const initMessages: Message[] = [
 export default function AIStudy() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024);
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
+  // Lab Canvas drawer for < 1024px. Previously the pane was simply hidden on
+  // small screens, which made its artifacts unreachable; it is now toggleable.
+  const [isNotebookOpen, setIsNotebookOpen] = useState(false);
 
   // The full conversation, oldest first
   const [messages, setMessages] = useState<Message[]>(initMessages);
@@ -185,10 +188,18 @@ export default function AIStudy() {
           .ai-study-mobile-toolbar { display: flex; align-items: center; flex: 0 0 44px; gap: 8px; padding: 0 12px; background: ${C.surface}; border-bottom: 1px solid ${C.border}; }
           .ai-study-panes { overflow: hidden; }
           .ai-study-sidebar, .ai-study-sidebar.is-collapsed { position: absolute; top: 0; bottom: 0; left: 0; width: min(320px, 85vw); max-width: none; min-width: 0; flex: none; transform: translateX(-105%); box-shadow: none; }
-          .ai-study-sidebar.is-open { transform: translateX(0); box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18); }
-          .ai-study-notebook-pane { display: none; }
+          .ai-study-sidebar.is-open { transform: translateX(0); box-shadow: var(--sh-3); }
+          .ai-study-notebook-pane { position: absolute; top: 0; bottom: 0; right: 0; z-index: 22; display: flex; width: min(340px, 88vw); max-width: none; min-width: 0; flex: none; transform: translateX(100%); transition: transform 240ms ease; box-shadow: none; }
+          .ai-study-notebook-pane.is-open { transform: translateX(0); box-shadow: var(--sh-3); }
           .ai-study-chat-pane { flex: 1 1 100%; width: 100%; }
-          .ai-study-sidebar-backdrop { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.25); border: 0; z-index: 20; }
+          .ai-study-sidebar-backdrop, .ai-study-notebook-backdrop { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.25); border: 0; z-index: 20; }
+        }
+        /* Tablet (768-1023px): the conversation rail stays inline as a
+           structural column; only the Lab Canvas becomes a drawer. Declared
+           after the 1023px block so it wins on equal specificity. */
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .ai-study-sidebar { position: relative; top: 0; bottom: auto; left: auto; width: 240px; max-width: 240px; min-width: 0; flex: 0 0 240px; transform: none; box-shadow: none; }
+          .ai-study-sidebar.is-collapsed { width: 64px; max-width: 64px; flex: 0 0 64px; }
         }
       `}</style>
       <div className="ai-study-mobile-toolbar">
@@ -196,9 +207,20 @@ export default function AIStudy() {
           <IconChevronRight size={16} style={{ transform: isSidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms ease' }} />
           Conversations
         </button>
+        <button
+          type="button"
+          onClick={() => setIsNotebookOpen(open => !open)}
+          aria-expanded={isNotebookOpen}
+          aria-label={isNotebookOpen ? 'Close Lab Canvas' : 'Open Lab Canvas'}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto', padding: '6px 8px', background: 'none', border: 'none', color: isNotebookOpen ? C.indigo : C.text2, cursor: 'pointer' }}
+        >
+          <IconFileText size={16} />
+          Lab Canvas
+        </button>
       </div>
       <div className="ai-study-panes">
         {isSidebarOpen && <button type="button" className="ai-study-sidebar-backdrop" aria-label="Close conversation menu" onClick={() => setIsSidebarOpen(false)} />}
+        {isNotebookOpen && <button type="button" className="ai-study-notebook-backdrop" aria-label="Close Lab Canvas" onClick={() => setIsNotebookOpen(false)} />}
         <aside className={`ai-study-sidebar ${isSidebarOpen ? 'is-open' : 'is-collapsed'}`}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarOpen ? 'space-between' : 'center', minHeight: '56px', padding: isSidebarOpen ? '12px 16px' : '12px 6px', borderBottom: `1px solid ${C.border}` }}>
             {isSidebarOpen && <span style={{ fontSize: '14px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap' }}>Study Owl AI</span>}
@@ -212,13 +234,13 @@ export default function AIStudy() {
             </Btn>
           </div>
           <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: isSidebarOpen ? '8px' : '8px 4px' }}>
-            {isSidebarOpen && <p style={{ fontSize: '11px', fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', padding: '8px 8px 4px' }}>Recent</p>}
+            {isSidebarOpen && <p style={{ fontSize: '11px', fontWeight: 600, color: C.text2, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 8px 6px' }}>Recent</p>}
             {history.map(h => (
-              <button key={h.id} title={h.title} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', textAlign: 'left', padding: '10px', borderRadius: '8px', background: 'none', border: 'none', cursor: 'pointer', color: C.text2 }}
+              <button key={h.id} title={h.title} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', textAlign: 'left', padding: '9px 10px', borderRadius: 'var(--r-md)', background: 'none', border: 'none', cursor: 'pointer', color: C.text2, transition: 'background 0.12s' }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surface2}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                 <IconMessageCircle size={16} />
-                {isSidebarOpen && <span style={{ minWidth: 0 }}><span style={{ display: 'block', fontSize: '13px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.title}</span><span style={{ display: 'block', fontSize: '11px', color: C.text3, marginTop: '2px' }}>{h.date}</span></span>}
+                {isSidebarOpen && <span style={{ minWidth: 0 }}><span style={{ display: 'block', fontSize: '13.5px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.title}</span><span style={{ display: 'block', fontSize: '11px', color: C.text3, marginTop: '2px' }}>{h.date}</span></span>}
               </button>
             ))}
           </div>
@@ -262,8 +284,8 @@ export default function AIStudy() {
               <IconBrain size={17} />
             </div>
             <div>
-              <p style={{ fontSize: '14px', fontWeight: 700, color: C.navy }}>AI Study Assistant</p>
-              <p style={{ fontSize: '11.5px', color: C.text3 }}>Academic tutor · DBMS, Algorithms, CN and more</p>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>AI Study Assistant</p>
+              <p style={{ fontSize: '12px', color: C.text3 }}>Academic tutor · DBMS, Algorithms, CN and more</p>
             </div>
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
               <Badge variant="success">Online</Badge>
@@ -271,7 +293,7 @@ export default function AIStudy() {
           </div>
 
           {/* Scrollable message list; user turns are right-aligned via row-reverse */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px', backgroundColor: C.bg }}>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px', backgroundColor: C.bg }}>
             {messages.map(msg => (
               <div key={msg.id} style={{ display: 'flex', gap: '10px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
                 {msg.role === 'assistant' ? (
@@ -281,8 +303,8 @@ export default function AIStudy() {
                 ) : (
                   <Avatar name="Alex Johnson" size={32} />
                 )}
-                <div style={{ maxWidth: '72%' }}>
-                  <div style={{ padding: '14px 16px', borderRadius: msg.role === 'user' ? '16px 4px 16px 16px' : '4px 16px 16px 16px', backgroundColor: msg.role === 'user' ? C.indigo : C.surface, color: msg.role === 'user' ? '#fff' : C.text, border: msg.role === 'assistant' ? `1px solid ${C.border}` : 'none', lineHeight: 1.65 }}>
+                <div style={{ maxWidth: 'min(72%, 640px)' }}>
+                  <div style={{ padding: '14px 16px', borderRadius: msg.role === 'user' ? 'var(--r-3xl) var(--r-xs) var(--r-3xl) var(--r-3xl)' : 'var(--r-xs) var(--r-3xl) var(--r-3xl) var(--r-3xl)', backgroundColor: msg.role === 'user' ? C.indigo : C.surface, color: msg.role === 'user' ? '#fff' : C.text, border: msg.role === 'assistant' ? `1px solid ${C.border}` : 'none', lineHeight: 1.65 }}>
                     {/* `**` prefixed lines are emphasised as headings */}
                     {msg.content.split('\n').map((line, i) => (
                       <p key={i} style={{ fontSize: '13.5px', fontWeight: line.startsWith('**') ? 600 : 400, color: msg.role === 'user' ? '#fff' : (line.startsWith('**') ? C.navy : C.text), marginBottom: line === '' ? '8px' : '2px' }}>
@@ -292,13 +314,13 @@ export default function AIStudy() {
                   </div>
                   {msg.role === 'assistant' && (
                     <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
-                      <button onClick={() => { navigator.clipboard.writeText(msg.content); }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '11.5px', color: C.text3, cursor: 'pointer' }}>
+                      <button onClick={() => { navigator.clipboard.writeText(msg.content); }} aria-label="Copy message" style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', background: 'none', border: `1px solid ${C.border}`, borderRadius: 'var(--r-sm)', fontSize: '11.5px', color: C.text3, cursor: 'pointer', transition: 'background 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text3; }}>
                         <IconCopy size={11} /> Copy
                       </button>
-                      <button onClick={() => toggleSave(msg.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${msg.saved ? C.indigo : C.border}`, borderRadius: '6px', fontSize: '11.5px', color: msg.saved ? C.indigo : C.text3, cursor: 'pointer' }}>
+                      <button onClick={() => toggleSave(msg.id)} aria-label={msg.saved ? 'Remove from saved' : 'Save message'} aria-pressed={!!msg.saved} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', background: 'none', border: `1px solid ${msg.saved ? C.indigo : C.border}`, borderRadius: 'var(--r-sm)', fontSize: '11.5px', color: msg.saved ? C.indigo : C.text3, cursor: 'pointer', transition: 'background 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; if (!msg.saved) e.currentTarget.style.color = C.text2; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = msg.saved ? C.indigo : C.text3; }}>
                         <IconStar size={11} /> {msg.saved ? 'Saved' : 'Save'}
                       </button>
-                      <button onClick={() => { }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '11.5px', color: C.text3, cursor: 'pointer' }}>
+                      <button onClick={() => { }} aria-label="Regenerate response" style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', background: 'none', border: `1px solid ${C.border}`, borderRadius: 'var(--r-sm)', fontSize: '11.5px', color: C.text3, cursor: 'pointer', transition: 'background 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text3; }}>
                         <IconRefresh size={11} /> Regenerate
                       </button>
                     </div>
@@ -329,7 +351,9 @@ export default function AIStudy() {
           <div style={{ padding: '12px 20px 0', borderTop: `1px solid ${C.border}`, backgroundColor: C.surface }}>
             <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px' }}>
               {suggestions.map(s => (
-                <button key={s} onClick={() => send(s)} style={{ padding: '6px 12px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: '99px', fontSize: '12.5px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                <button key={s} onClick={() => send(s)} style={{ padding: '7px 14px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-pill)', fontSize: '12px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'background 0.12s, color 0.12s, border-color 0.12s' }}
+                  onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; e.currentTarget.style.color = C.indigo; e.currentTarget.style.borderColor = C.indigo; }}
+                  onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; e.currentTarget.style.borderColor = C.border; }}>
                   {s}
                 </button>
               ))}
@@ -345,13 +369,16 @@ export default function AIStudy() {
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
                   placeholder="Ask me anything academic… (Enter to send, Shift+Enter for new line)"
-                  rows={2}
-                  style={{ width: '100%', padding: '10px 14px', fontSize: '14px', borderRadius: '12px', border: `1.5px solid ${C.border}`, outline: 'none', resize: 'none', fontFamily: 'inherit', color: C.text, lineHeight: 1.5 }}
+                  rows={3}
+                  aria-label="Message the AI tutor"
+                  style={{ width: '100%', padding: '12px 14px', fontSize: '14px', borderRadius: 'var(--r-xl)', border: `1.5px solid ${C.border}`, outline: 'none', resize: 'none', fontFamily: 'inherit', color: C.text, lineHeight: 1.5, transition: 'border-color 0.15s' }}
                   onFocus={e => e.target.style.borderColor = C.indigo}
                   onBlur={e => e.target.style.borderColor = C.border}
                 />
               </div>
-              <button onClick={() => send()} disabled={!input.trim() || loading} style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: C.indigo, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', opacity: !input.trim() || loading ? 0.5 : 1, flexShrink: 0 }}>
+              <button onClick={() => send()} disabled={!input.trim() || loading} aria-label="Send message" title="Send message" style={{ width: '44px', height: '44px', borderRadius: 'var(--r-xl)', backgroundColor: C.indigo, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: !input.trim() || loading ? 'not-allowed' : 'pointer', opacity: !input.trim() || loading ? 0.45 : 1, flexShrink: 0, transition: 'background 0.15s, opacity 0.15s' }}
+                onMouseEnter={e => { if (input.trim() && !loading) e.currentTarget.style.backgroundColor = C.indigoHover; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.indigo; }}>
                 <IconSend size={17} color="#fff" />
               </button>
             </div>
@@ -360,11 +387,11 @@ export default function AIStudy() {
         </div>
 
         {/* Right: Lab Canvas — artifacts, referenced content, and code blocks */}
-        <aside className="ai-study-notebook-pane">
+        <aside className={`ai-study-notebook-pane${isNotebookOpen ? ' is-open' : ''}`} aria-label="Lab Canvas">
           {/* Sticky actions header */}
           <div className="ai-study-notebook-header">
             <div>
-              <p style={{ fontSize: '10px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase', marginBottom: '4px' }}>DBMS · 6th Semester</p>
+              <p style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>DBMS · 6th Semester</p>
               <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#1E293B' }}>Artifacts</h2>
             </div>
             <button

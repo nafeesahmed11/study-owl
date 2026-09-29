@@ -24,6 +24,21 @@
   --c-info-light: #F0F9FF;
   --sidebar-w: 260px;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  /* Corner-radius scale. These values are the ones already in use across the
+     app (6 of them cover ~93% of every borderRadius literal), so replacing the
+     literals with tokens is a no-op visually. */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 8px;
+  --r-lg: 10px;
+  --r-xl: 12px;
+  --r-2xl: 14px;
+  --r-3xl: 16px;
+  --r-pill: 99px;
+  /* Soft elevation scale — three tiers, no hard drop shadows. */
+  --sh-1: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --sh-2: 0 4px 12px rgba(15, 23, 42, 0.06);
+  --sh-3: 0 12px 32px rgba(15, 23, 42, 0.12);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -44,3 +59,12 @@ body {
 a { text-decoration: none; color: inherit; }
 button { cursor: pointer; font-family: inherit; }
 input, textarea, select { font-family: inherit; }
+
+/* Keyboard focus ring. The app previously had no visible focus styles on
+   interactive elements, so this is purely additive — it cannot change how
+   anything behaves, only make keyboard navigation visible. */
+:focus-visible {
+  outline: 2px solid var(--c-indigo);
+  outline-offset: 1px;
+  border-radius: var(--r-sm);
+}
