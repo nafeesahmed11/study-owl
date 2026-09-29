@@ -15,8 +15,9 @@ const DeepSeekIcon = ({ size = 18 }) => (
 );
 
 const ChatGPTIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .5849-.344l3.3644-5.8344a.0664.0664 0 0 1 .064-.0333l5.5878.0042a4.4996 4.4996 0 0 1-3.9576 6.3776zm13.1118-4.0483a4.4727 4.4727 0 0 1-2.3323 1.968l-.1338-.0931-4.783-2.7582a.7797.7797 0 0 0-.7767-.0014l-5.8302 3.3725a.0655.0655 0 0 1-.09-.0598v-5.5826a4.504 4.504 0 0 1 8.4516-1.8831zm-1.8105-9.1026a4.4699 4.4699 0 0 1 2.8687 1.043l-.141-.0814-4.7783 2.7587a.784.784 0 0 0-.3918.6817v6.7364l-2.0205-1.1672a.0697.0697 0 0 1-.038-.0526V4.1818a4.503 4.503 0 0 1 4.499-4.4949zm9.6655 4.1258a4.4727 4.4727 0 0 1 .5365 3.0123l-.142-.0848-4.783-2.7586a.7816.7816 0 0 0-.5854.3444l-3.3644 5.8344a.0664.0664 0 0 1-.064.0329l-5.5878-.0042a4.504 4.504 0 0 1 3.9666-6.3813zm-13.1166 4.048a4.4736 4.4736 0 0 1 2.3323-1.9675l.1338.0927 4.783 2.7586a.7816.7816 0 0 0 .7767.0019l5.8302-3.3724a.065.065 0 0 1 .0905.0594v5.5826a4.504 4.504 0 0 1-8.4516 1.8836z" />
+  <svg width={size} height={size} viewBox="0 0 512 509.639" fillRule="evenodd" clipRule="evenodd">
+    <path fill="#fff" d="M115.612 0h280.775C459.974 0 512 52.026 512 115.612v278.415c0 63.587-52.026 115.613-115.613 115.613H115.612C52.026 509.64 0 457.614 0 394.027V115.612C0 52.026 52.026 0 115.612 0z" />
+    <path fillRule="nonzero" d="M412.037 221.764a90.834 90.834 0 004.648-28.67 90.79 90.79 0 00-12.443-45.87c-16.37-28.496-46.738-46.089-79.605-46.089-6.466 0-12.943.683-19.264 2.04a90.765 90.765 0 00-67.881-30.515h-.576c-.059.002-.149.002-.216.002-39.807 0-75.108 25.686-87.346 63.554-25.626 5.239-47.748 21.31-60.682 44.03a91.873 91.873 0 00-12.407 46.077 91.833 91.833 0 0023.694 61.553 90.802 90.802 0 00-4.649 28.67 90.804 90.804 0 0012.442 45.87c16.369 28.504 46.74 46.087 79.61 46.087a91.81 91.81 0 0019.253-2.04 90.783 90.783 0 0067.887 30.516h.576l.234-.001c39.829 0 75.119-25.686 87.357-63.588 25.626-5.242 47.748-21.312 60.682-44.033a91.718 91.718 0 0012.383-46.035 91.83 91.83 0 00-23.693-61.553l-.004-.005zM275.102 413.161h-.094a68.146 68.146 0 01-43.611-15.8 56.936 56.936 0 002.155-1.221l72.54-41.901a11.799 11.799 0 005.962-10.251V241.651l30.661 17.704c.326.163.55.479.596.84v84.693c-.042 37.653-30.554 68.198-68.21 68.273h.001zm-146.689-62.649a68.128 68.128 0 01-9.152-34.085c0-3.904.341-7.817 1.005-11.663.539.323 1.48.897 2.155 1.285l72.54 41.901a11.832 11.832 0 0011.918-.002l88.563-51.137v35.408a1.1 1.1 0 01-.438.94l-73.33 42.339a68.43 68.43 0 01-34.11 9.12 68.359 68.359 0 01-59.15-34.11l-.001.004zm-19.083-158.36a68.044 68.044 0 0135.538-29.934c0 .625-.036 1.731-.036 2.5v83.801l-.001.07a11.79 11.79 0 005.954 10.242l88.564 51.13-30.661 17.704a1.096 1.096 0 01-1.034.093l-73.337-42.375a68.36 68.36 0 01-34.095-59.143 68.412 68.412 0 019.112-34.085l-.004-.003zm251.907 58.621l-88.563-51.137 30.661-17.697a1.097 1.097 0 011.034-.094l73.337 42.339c21.109 12.195 34.132 34.746 34.132 59.132 0 28.604-17.849 54.199-44.686 64.078v-86.308c.004-.032.004-.065.004-.096 0-4.219-2.261-8.119-5.919-10.217zm30.518-45.93c-.539-.331-1.48-.898-2.155-1.286l-72.54-41.901a11.842 11.842 0 00-5.958-1.611c-2.092 0-4.15.558-5.957 1.611l-88.564 51.137v-35.408l-.001-.061a1.1 1.1 0 01.44-.88l73.33-42.303a68.301 68.301 0 0134.108-9.129c37.704 0 68.281 30.577 68.281 68.281a68.69 68.69 0 01-.984 11.545v.005zm-191.843 63.109l-30.668-17.704a1.09 1.09 0 01-.596-.84v-84.692c.016-37.685 30.593-68.236 68.281-68.236a68.332 68.332 0 0143.689 15.804 63.09 63.09 0 00-2.155 1.222l-72.54 41.9a11.794 11.794 0 00-5.961 10.248v.068l-.05 102.23zm16.655-35.91l39.445-22.782 39.444 22.767v45.55l-39.444 22.767-39.445-22.767v-45.535z" />
   </svg>
 );
 
@@ -24,6 +25,7 @@ const AI_MODELS = [
   { id: 'claude', name: 'Claude', color: '#D97757', icon: <ClaudeIcon /> },
   { id: 'deepseek', name: 'Deep Seek', color: '#4D6BFE', icon: <DeepSeekIcon /> },
   { id: 'chatgpt', name: 'Chat gpt', color: '#000000', icon: <ChatGPTIcon /> },
+  { id: 'gemini', name: 'Gemini', color: '#fff', icon: <img src="/assets/gemini.svg" alt="" width={18} height={18} style={{ display: 'block' }} /> },
 ];
 
 /**
@@ -34,8 +36,10 @@ const AI_MODELS = [
  *   1.2s, then always replies with the same canned `aiResponses.default`
  *   text regardless of the question or the selected model. Choosing a model
  *   only changes the avatar colour/icon, not the response.
- * Layout: a fixed three-column full-height shell (240px history / flex chat /
- *   220px context) rather than a normal scrolling page.
+ * Layout: a three-column full-height shell (240px history / flex chat /
+ *   220px context) rather than a normal scrolling page. It stretches to the
+ *   space between the AppLayout top bar and the app footer, and scrolls only
+ *   inside its own columns.
  */
 
 type Message = { id: number; role: 'user' | 'assistant'; content: string; saved?: boolean };
@@ -113,8 +117,10 @@ export default function AIStudy() {
   const toggleSave = (id: number) => setMessages(m => m.map(msg => msg.id === id ? { ...msg, saved: !msg.saved } : msg));
 
   return (
-    // Three-column full-height shell: history | chat | context
-    <div style={{ display: 'flex', height: 'calc(100vh - 56px)', overflow: 'hidden' }}>
+    // Three-column full-height shell: history | chat | context.
+    // `height: 100%` (not viewport math) so it fills exactly the space left
+    // between the TopBar and the AppFooter rendered by AppLayout.
+    <div style={{ display: 'flex', height: '100%', minHeight: 0, overflow: 'hidden' }}>
       {/* Left: History sidebar */}
       <div style={{ width: '240px', borderRight: `1px solid ${C.border}`, backgroundColor: C.surface, display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '16px', borderBottom: `1px solid ${C.border}` }}>
@@ -145,22 +151,20 @@ export default function AIStudy() {
                 justifyContent: 'space-between',
                 padding: '10px 14px',
                 borderRadius: '8px',
-                backgroundColor: model.color,
-                border: 'none',
+                  backgroundColor: model.id === 'gemini' ? '#fff' : model.color,
+                  border: model.id === 'gemini' ? '1px solid rgb(209 209 209)' : 'none',
                 cursor: 'pointer',
-                color: '#fff',
+                color: model.id === 'gemini' ? C.text : '#fff',
                 fontWeight: 600,
                 fontSize: '13.5px',
-                transition: 'transform 0.1s'
+                transition: 'background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 {model.icon}
                 {model.name}
               </div>
-              {selectedModel === model.id && (
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80' }} />
-              )}
+              <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80', border: '1px solid rgb(209 209 209)', opacity: selectedModel === model.id ? 1 : 0, transform: selectedModel === model.id ? 'scale(1)' : 'scale(0.65)', transition: 'opacity 180ms ease, transform 180ms ease', pointerEvents: 'none' }} />
             </button>
           ))}
         </div>
@@ -210,7 +214,7 @@ export default function AIStudy() {
                     <button onClick={() => toggleSave(msg.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${msg.saved ? C.indigo : C.border}`, borderRadius: '6px', fontSize: '11.5px', color: msg.saved ? C.indigo : C.text3, cursor: 'pointer' }}>
                       <IconStar size={11} /> {msg.saved ? 'Saved' : 'Save'}
                     </button>
-                    <button onClick={() => {}} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '11.5px', color: C.text3, cursor: 'pointer' }}>
+                    <button onClick={() => { }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '3px 8px', background: 'none', border: `1px solid ${C.border}`, borderRadius: '6px', fontSize: '11.5px', color: C.text3, cursor: 'pointer' }}>
                       <IconRefresh size={11} /> Regenerate
                     </button>
                   </div>

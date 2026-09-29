@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
 import { C } from "./ui";
+import { AppFooter } from "./AppFooter";
 import { useAuth } from "../context/AuthContext";
 import {
   IconHome, IconBook, IconFolder, IconFileText, IconBrain, IconSparkles,
   IconCheck, IconCalendar, IconBarChart, IconUsers, IconUser, IconSettings,
   IconSearch, IconBell, IconChevronDown, IconPlus, IconLightbulb, IconZap,
-  IconMessageCircle, IconShield, IconLogout,
+  IconMessageCircle, IconShield, IconLogout, IconMenu, IconX,
 } from "./Icons";
 
 const navItems = [
@@ -33,7 +34,7 @@ const communityItems = [
   { label: "Community", path: "/app/community", icon: <IconUsers size={17} /> },
 ];
 
-function NavGroup({ label, items }: { label: string; items: typeof navItems }) {
+function NavGroup({ label, items, onClose }: { label: string; items: typeof navItems; onClose?: () => void }) {
   const location = useLocation();
   return (
     <div style={{ marginBottom: '4px' }}>
@@ -53,6 +54,7 @@ function NavGroup({ label, items }: { label: string; items: typeof navItems }) {
               transition: 'background 0.12s, color 0.12s',
               cursor: 'pointer',
             }}
+            onClick={() => onClose?.()}
             onMouseEnter={e => { if (!active) e.currentTarget.style.backgroundColor = C.surface2; }}
             onMouseLeave={e => { if (!active) e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
@@ -66,14 +68,17 @@ function NavGroup({ label, items }: { label: string; items: typeof navItems }) {
   );
 }
 
-function Sidebar() {
+function Sidebar({ onClose }: { onClose?: () => void }) {
   const navigate = useNavigate();
   return (
+    // `height: 100%` — the height now comes from the wrapper: the desktop
+    // <aside> passes 100vh, the mobile drawer passes inset-y-0. Using 100vh
+    // inside the fixed drawer would overshoot on mobile browser toolbars.
     <div style={{
       width: 'var(--sidebar-w, 260px)', flexShrink: 0,
       borderRight: `1px solid ${C.border}`, backgroundColor: C.surface,
-      display: 'flex', flexDirection: 'column', height: '100vh',
-      position: 'sticky', top: 0, overflowY: 'auto',
+      display: 'flex', flexDirection: 'column', height: '100%',
+      overflowY: 'auto',
     }}>
       {/* Logo */}
       <div style={{ padding: '18px 20px 14px', borderBottom: `1px solid ${C.border}` }}>
@@ -83,15 +88,27 @@ function Sidebar() {
             <p style={{ fontSize: '13px', fontWeight: 700, color: C.navy, lineHeight: 1.2 }}>Study Owl AI</p>
             <p style={{ fontSize: '10px', color: C.text3, lineHeight: 1 }}>Academic Platform</p>
           </div>
+          {/* Drawer-only close button; only the mobile instance gets onClose */}
+          {onClose && (
+            <button
+              onClick={e => { e.stopPropagation(); onClose(); }}
+              aria-label="Close menu"
+              style={{ marginLeft: 'auto', background: 'none', border: 'none', color: C.text3, display: 'flex', alignItems: 'center', padding: '4px', borderRadius: '6px', cursor: 'pointer' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+            >
+              <IconX size={18} />
+            </button>
+          )}
         </div>
       </div>
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
-        <NavGroup label="Main" items={navItems} />
-        <NavGroup label="AI Tools" items={aiItems} />
-        <NavGroup label="Practice" items={practiceItems} />
-        <NavGroup label="Community" items={communityItems} />
+        <NavGroup label="Main" items={navItems} onClose={onClose} />
+        <NavGroup label="AI Tools" items={aiItems} onClose={onClose} />
+        <NavGroup label="Practice" items={practiceItems} onClose={onClose} />
+        <NavGroup label="Community" items={communityItems} onClose={onClose} />
       </nav>
 
       {/* Bottom */}
@@ -109,6 +126,7 @@ function Sidebar() {
                   color: isActive ? C.indigo : C.text2, backgroundColor: isActive ? C.indigoLight : 'transparent',
                   cursor: 'pointer',
                 }}
+                onClick={() => onClose?.()}
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = C.surface2; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
@@ -124,7 +142,7 @@ function Sidebar() {
   );
 }
 
-function TopBar() {
+function TopBar({ onMenuClick, isSidebarOpen }: { onMenuClick?: () => void; isSidebarOpen?: boolean }) {
   const [search, setSearch] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
@@ -135,8 +153,21 @@ function TopBar() {
       backgroundColor: C.surface, display: 'flex', alignItems: 'center',
       padding: '0 24px', gap: '12px', position: 'sticky', top: 0, zIndex: 50,
     }}>
-      {/* Search */}
-      <div style={{ position: 'relative', flex: 1, maxWidth: '380px' }}>
+      {/* Hamburger — mobile only; the desktop layout keeps the static sidebar */}
+      <button
+        className="mobile-only"
+        onClick={onMenuClick}
+        aria-label="Open menu"
+        aria-expanded={!!isSidebarOpen}
+        style={{ display: 'none', background: 'none', border: 'none', color: C.text2, padding: '7px', marginLeft: '-7px', borderRadius: '8px', cursor: 'pointer' }}
+        onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; }}
+        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+      >
+        <IconMenu size={20} />
+      </button>
+
+      {/* Search — desktop only, so the mobile bar has room for the controls */}
+      <div className="desktop-only" style={{ position: 'relative', flex: 1, maxWidth: '380px' }}>
         <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: C.text3, display: 'flex' }}>
           <IconSearch size={15} />
         </span>
@@ -154,8 +185,8 @@ function TopBar() {
       </div>
 
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {/* Quick add */}
-        <button style={{
+        {/* Quick add — desktop only */}
+        <button className="desktop-only" style={{
           display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px',
           backgroundColor: C.indigo, color: '#fff', border: 'none', borderRadius: '8px',
           fontSize: '13px', fontWeight: 500, cursor: 'pointer',
@@ -240,29 +271,93 @@ function MobileNav() {
 }
 
 export function AppLayout() {
+  // Mobile drawer visibility; the desktop sidebar ignores this entirely
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Auto-close the drawer whenever the route changes (covers deep links and
+  // browser back/forward, which do not always fire a nav-link click)
+  useEffect(() => { setIsSidebarOpen(false); }, [location.pathname]);
+
+  // Escape closes the drawer; the listener only exists while it is open
+  useEffect(() => {
+    if (!isSidebarOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsSidebarOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isSidebarOpen]);
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: C.bg }}>
       <style>{`
         .sidebar-desktop { display: none; }
+        .app-footer { display: none; }
         @media (min-width: 1024px) {
           .sidebar-desktop { display: block !important; }
+          .app-footer { display: flex !important; }
         }
         @media (max-width: 1023px) {
           .mobile-nav-show { display: flex !important; }
+          .mobile-only { display: flex !important; }
+          .desktop-only { display: none !important; }
+        }
+
+        /* Mobile drawer: fixed overlay panel, slid with a 300ms transform.
+           z-index must clear the sticky TopBar (50) and MobileNav (100), so
+           the drawer sits at 210 and the backdrop at 200. */
+        .mobile-drawer {
+          display: flex;
+          position: fixed;
+          inset: 0 auto 0 0;
+          z-index: 210;
+          transform: translateX(-100%);
+          transition: transform 300ms ease-in-out;
+          box-shadow: 0 0 24px rgba(0,0,0,0.18);
+        }
+        .mobile-drawer.open { transform: translateX(0); }
+        @media (min-width: 1024px) {
+          .mobile-drawer { display: none !important; }
+          .mobile-backdrop { display: none !important; }
+        }
+
+        /* Translucent scrim behind the open drawer; tap to dismiss */
+        .mobile-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 200;
+          background-color: rgba(0,0,0,0.4);
         }
       `}</style>
 
-      {/* Desktop sidebar - rendered only once */}
-      <aside className="sidebar-desktop">
+      {/* Desktop sidebar - permanently visible, rendered only once.
+          The 100vh height + sticky live on this wrapper so the child Sidebar
+          can stay height:100% for the fixed drawer. */}
+      <aside className="sidebar-desktop" style={{ height: '100vh', position: 'sticky', top: 0, flexShrink: 0 }}>
         <Sidebar />
       </aside>
 
+      {/* Mobile drawer - same Sidebar, overlaid and collapsible */}
+      <aside
+        className={`mobile-drawer${isSidebarOpen ? ' open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Main navigation"
+      >
+        <Sidebar onClose={() => setIsSidebarOpen(false)} />
+      </aside>
+
+      {/* Backdrop; click anywhere outside the drawer to close it */}
+      {isSidebarOpen && (
+        <div className="mobile-backdrop" aria-hidden="true" onClick={() => setIsSidebarOpen(false)} />
+      )}
+
       {/* Main content */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopBar />
-        <main style={{ flex: 1, overflowY: 'auto', paddingBottom: '80px' }}>
+        <TopBar onMenuClick={() => setIsSidebarOpen(true)} isSidebarOpen={isSidebarOpen} />
+        <main style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: '80px' }}>
           <Outlet />
         </main>
+        <AppFooter />
       </div>
 
       {/* Mobile bottom nav */}
