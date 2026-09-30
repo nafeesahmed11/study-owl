@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   IconHome, IconBook, IconFolder, IconFileText, IconBrain, IconSparkles,
   IconCheck, IconCalendar, IconBarChart, IconUsers, IconUser, IconSettings,
-  IconSearch, IconBell, IconChevronDown, IconPlus, IconLightbulb, IconZap,
+  IconSearch, IconBell, IconChevronDown, IconChevronLeft, IconChevronRight, IconPlus, IconLightbulb, IconZap,
   IconMessageCircle, IconShield, IconLogout, IconMenu, IconX,
 } from "./Icons";
 
@@ -34,18 +34,18 @@ const communityItems = [
   { label: "Community", path: "/app/community", icon: <IconUsers size={17} /> },
 ];
 
-function NavGroup({ label, items, onClose }: { label: string; items: typeof navItems; onClose?: () => void }) {
+function NavGroup({ label, items, onClose, collapsed }: { label: string; items: typeof navItems; onClose?: () => void; collapsed?: boolean }) {
   const location = useLocation();
   return (
     <div style={{ marginBottom: '4px' }}>
-      <p style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.text2, padding: '10px 16px 6px', userSelect: 'none' }}>
+      <p className="app-nav-group-label" style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: C.text2, padding: '10px 16px 6px', userSelect: 'none' }}>
         {label}
       </p>
       {items.map(item => {
         const active = location.pathname.startsWith(item.path);
         return (
           <NavLink key={item.path} to={item.path} style={{ textDecoration: 'none' }}>
-            <div style={{
+            <div className="app-nav-item" title={collapsed ? item.label : undefined} style={{
               display: 'flex', alignItems: 'center', gap: '10px',
               padding: '9px 12px', margin: '1px 8px', borderRadius: 'var(--r-md)',
               fontSize: '13.5px', fontWeight: active ? 600 : 400,
@@ -60,7 +60,7 @@ function NavGroup({ label, items, onClose }: { label: string; items: typeof navI
             onMouseLeave={e => { if (!active) e.currentTarget.style.backgroundColor = 'transparent'; }}
             >
               <span style={{ display: 'flex', color: active ? C.indigo : C.text3, flexShrink: 0 }}>{item.icon}</span>
-              {item.label}
+              <span className="app-nav-label" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
             </div>
           </NavLink>
         );
@@ -69,23 +69,27 @@ function NavGroup({ label, items, onClose }: { label: string; items: typeof navI
   );
 }
 
-function Sidebar({ onClose }: { onClose?: () => void }) {
+function Sidebar({ onClose, collapsed = false }: { onClose?: () => void; collapsed?: boolean }) {
   const navigate = useNavigate();
   return (
     // `height: 100%` — the height now comes from the wrapper: the desktop
     // <aside> passes 100vh, the mobile drawer passes inset-y-0. Using 100vh
     // inside the fixed drawer would overshoot on mobile browser toolbars.
-    <div style={{
-      width: 'var(--sidebar-w, 260px)', flexShrink: 0,
+    // `collapsed` is only ever true for the desktop instance: the rail shrinks
+    // to icons and, because the workspace row is a flex container, the content
+    // column reflows into the freed width on its own.
+    <div className={`app-sidebar${collapsed ? ' is-collapsed' : ''}`} style={{
+      width: collapsed ? '72px' : 'var(--sidebar-w, 240px)', flexShrink: 0,
       borderRight: `1px solid ${C.border}`, backgroundColor: C.surface,
       display: 'flex', flexDirection: 'column', height: '100%',
-      overflowY: 'auto',
+      overflowY: 'auto', overflowX: 'hidden',
+      transition: 'width 200ms ease',
     }}>
       {/* Logo */}
-      <div style={{ padding: '18px 20px 14px', borderBottom: `1px solid ${C.border}` }}>
-        <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-          <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '32px', width: 'auto' }} />
-          <div>
+      <div className="app-sidebar-head" style={{ padding: '18px 20px 14px', borderBottom: `1px solid ${C.border}` }}>
+        <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', gap: '10px', cursor: 'pointer' }}>
+          <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '32px', width: 'auto', flexShrink: 0 }} />
+          <div className="app-sidebar-brand-text">
             <p style={{ fontSize: '13px', fontWeight: 700, color: C.navy, lineHeight: 1.2 }}>Study Owl AI</p>
             <p style={{ fontSize: '10px', color: C.text3, lineHeight: 1 }}>Academic Platform</p>
           </div>
@@ -106,10 +110,10 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
 
       {/* Nav */}
       <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
-        <NavGroup label="Main" items={navItems} onClose={onClose} />
-        <NavGroup label="AI Tools" items={aiItems} onClose={onClose} />
-        <NavGroup label="Practice" items={practiceItems} onClose={onClose} />
-        <NavGroup label="Community" items={communityItems} onClose={onClose} />
+        <NavGroup label="Main" items={navItems} onClose={onClose} collapsed={collapsed} />
+        <NavGroup label="AI Tools" items={aiItems} onClose={onClose} collapsed={collapsed} />
+        <NavGroup label="Practice" items={practiceItems} onClose={onClose} collapsed={collapsed} />
+        <NavGroup label="Community" items={communityItems} onClose={onClose} collapsed={collapsed} />
       </nav>
 
       {/* Bottom */}
@@ -121,7 +125,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
           return (
             <NavLink key={item.path} to={item.path} style={{ textDecoration: 'none' }}>
               {({ isActive }) => (
-                <div style={{
+                <div className="app-nav-item app-sidebar-foot-item" title={collapsed ? item.label : undefined} style={{
                   display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 14px',
                   borderRadius: '8px', fontSize: '13.5px', fontWeight: isActive ? 600 : 400,
                   color: isActive ? C.indigo : C.text2, backgroundColor: isActive ? C.indigoLight : 'transparent',
@@ -131,8 +135,8 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = C.surface2; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}
                 >
-                  <span style={{ color: isActive ? C.indigo : C.text3 }}>{item.icon}</span>
-                  {item.label}
+                  <span style={{ color: isActive ? C.indigo : C.text3, display: 'flex', flexShrink: 0 }}>{item.icon}</span>
+                  <span className="app-nav-label" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
                 </div>
               )}
             </NavLink>
@@ -143,7 +147,7 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
   );
 }
 
-function TopBar({ onMenuClick, isSidebarOpen }: { onMenuClick?: () => void; isSidebarOpen?: boolean }) {
+function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { onMenuClick?: () => void; isSidebarOpen?: boolean; onToggleNav?: () => void; isNavCollapsed?: boolean }) {
   const [search, setSearch] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
   const navigate = useNavigate();
@@ -165,6 +169,21 @@ function TopBar({ onMenuClick, isSidebarOpen }: { onMenuClick?: () => void; isSi
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
       >
         <IconMenu size={20} />
+      </button>
+
+      {/* Collapse the navigation rail — desktop only. Collapsing hands the
+          freed width straight to the page content (flex sibling, no overlay). */}
+      <button
+        className="desktop-only"
+        onClick={onToggleNav}
+        aria-label={isNavCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+        aria-expanded={!isNavCollapsed}
+        title={isNavCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+        style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', color: C.text2, padding: '7px', marginLeft: '-7px', borderRadius: '8px', cursor: 'pointer' }}
+        onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; }}
+        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+      >
+        {isNavCollapsed ? <IconChevronRight size={18} /> : <IconChevronLeft size={18} />}
       </button>
 
       {/* Search — desktop only, so the mobile bar has room for the controls */}
@@ -283,6 +302,10 @@ function MobileNav() {
 export function AppLayout() {
   // Mobile drawer visibility; the desktop sidebar ignores this entirely
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Desktop-only icon rail. Purely presentational: the content column is a
+  // flex sibling, so it widens into the freed space automatically.
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
   const location = useLocation();
 
   // Auto-close the drawer whenever the route changes (covers deep links and
@@ -298,7 +321,16 @@ export function AppLayout() {
   }, [isSidebarOpen]);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: C.bg }}>
+    // Outer frame: exactly one screen tall, column direction, clipped. Nothing
+    // may grow it — every scroll happens inside `main`.
+    <div
+      className="app-shell"
+      style={{
+        display: 'flex', flexDirection: 'column',
+        height: '100vh', maxHeight: '100vh', width: '100%',
+        overflow: 'hidden', backgroundColor: C.bg,
+      }}
+    >
       <style>{`
         .sidebar-desktop { display: none; }
         .app-footer { display: none; }
@@ -310,11 +342,35 @@ export function AppLayout() {
           .mobile-nav-show { display: flex !important; }
           .mobile-only { display: flex !important; }
           .desktop-only { display: none !important; }
+          /* Clearance for the fixed MobileNav — only where it exists. */
+          .app-main { padding-bottom: 80px !important; }
+        }
+
+        /* Desktop navigation rail. Collapsing hides the labels visually but
+           keeps them in the accessibility tree, so every item keeps its name
+           (and shows a tooltip). Purely CSS - no item is ever unmounted. */
+        @media (min-width: 1024px) {
+          .app-sidebar.is-collapsed .app-nav-label {
+            position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+            overflow: hidden; white-space: nowrap; clip-path: inset(50%);
+          }
+          .app-sidebar.is-collapsed .app-nav-group-label,
+          .app-sidebar.is-collapsed .app-sidebar-brand-text { display: none; }
+          .app-sidebar.is-collapsed .app-nav-item {
+            justify-content: center; padding-left: 0; padding-right: 0;
+          }
+          .app-sidebar.is-collapsed .app-sidebar-head { padding-left: 8px; padding-right: 8px; }
+        }
+
+        /* Prefer the dynamic viewport unit where supported so mobile browser
+           toolbars cannot push the footer out of view. */
+        @supports (height: 100dvh) {
+          .app-shell { height: 100dvh !important; max-height: 100dvh !important; }
         }
 
         /* Mobile drawer: fixed overlay panel, slid with a 300ms transform.
-           z-index must clear the sticky TopBar (50) and MobileNav (100), so
-           the drawer sits at 210 and the backdrop at 200. */
+           z-index must clear the TopBar (50) and MobileNav (100), so the
+           drawer sits at 210 and the backdrop at 200. */
         .mobile-drawer {
           display: flex;
           position: fixed;
@@ -339,36 +395,50 @@ export function AppLayout() {
         }
       `}</style>
 
-      {/* Desktop sidebar - permanently visible, rendered only once.
-          The 100vh height + sticky live on this wrapper so the child Sidebar
-          can stay height:100% for the fixed drawer. */}
-      <aside className="sidebar-desktop" style={{ height: '100vh', position: 'sticky', top: 0, flexShrink: 0 }}>
-        <Sidebar />
-      </aside>
+      {/* Middle workspace: fills every pixel between the top of the screen and
+          the footer. `minHeight: 0` stops inner panes from stretching the shell
+          downward instead of scrolling themselves. */}
+      <div style={{ flex: 1, display: 'flex', minHeight: 0, overflow: 'hidden' }}>
 
-      {/* Mobile drawer - same Sidebar, overlaid and collapsible */}
-      <aside
-        className={`mobile-drawer${isSidebarOpen ? ' open' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Main navigation"
-      >
-        <Sidebar onClose={() => setIsSidebarOpen(false)} />
-      </aside>
+        {/* Desktop sidebar - rendered once; collapses to an icon rail via the
+            TopBar toggle. Its height comes from the workspace row, so it ends
+            at the footer's top edge instead of running past it. */}
+        <aside className="sidebar-desktop" style={{ height: '100%', flexShrink: 0 }}>
+          <Sidebar collapsed={isNavCollapsed} />
+        </aside>
 
-      {/* Backdrop; click anywhere outside the drawer to close it */}
-      {isSidebarOpen && (
-        <div className="mobile-backdrop" aria-hidden="true" onClick={() => setIsSidebarOpen(false)} />
-      )}
+        {/* Mobile drawer - same Sidebar, overlaid and collapsible */}
+        <aside
+          className={`mobile-drawer${isSidebarOpen ? ' open' : ''}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Main navigation"
+        >
+          <Sidebar onClose={() => setIsSidebarOpen(false)} />
+        </aside>
 
-      {/* Main content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <TopBar onMenuClick={() => setIsSidebarOpen(true)} isSidebarOpen={isSidebarOpen} />
-        <main style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: '80px' }}>
-          <Outlet />
-        </main>
-        <AppFooter />
+        {/* Backdrop; click anywhere outside the drawer to close it */}
+        {isSidebarOpen && (
+          <div className="mobile-backdrop" aria-hidden="true" onClick={() => setIsSidebarOpen(false)} />
+        )}
+
+        {/* Content column: top bar plus the single scrolling region */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0 }}>
+          <TopBar
+            onMenuClick={() => setIsSidebarOpen(true)}
+            isSidebarOpen={isSidebarOpen}
+            onToggleNav={() => setIsNavCollapsed(v => !v)}
+            isNavCollapsed={isNavCollapsed}
+          />
+          <main className="app-main" style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+            <Outlet />
+          </main>
+        </div>
       </div>
+
+      {/* Global footer: a flat child of the shell, so it spans the full width
+          (including under the sidebar) and pins to the bottom edge. */}
+      <AppFooter />
 
       {/* Mobile bottom nav */}
       <div className="mobile-nav-show" style={{ display: 'none' }}>

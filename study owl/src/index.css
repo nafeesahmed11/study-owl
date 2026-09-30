@@ -22,7 +22,7 @@
   --c-error-light: #FEF2F2;
   --c-info: #0EA5E9;
   --c-info-light: #F0F9FF;
-  --sidebar-w: 260px;
+  --sidebar-w: 240px;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   /* Corner-radius scale. These values are the ones already in use across the
      app (6 of them cover ~93% of every borderRadius literal), so replacing the

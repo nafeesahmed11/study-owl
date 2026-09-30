@@ -69,12 +69,19 @@ const sourceDocuments = [
  *   text regardless of the question or the selected model. Choosing a model
  *   only changes the avatar colour/icon, not the response.
  * Layout: a split-pane full-height shell rather than a normal scrolling page.
- *   Three flex children of `.ai-study-panes` — conversation history (23%,
- *   collapsing to 64px), the chat column (flex 47%, expanding to 100% on
- *   mobile), and the Lab Canvas (30%, hidden below 1024px). The shell stretches
- *   to the space between the AppLayout top bar and the app footer, and each
- *   column scrolls on its own. The Lab Canvas holds three stacked sections:
- *   an artifacts list, a grid of referenced sources, and the code blocks.
+ *   Three flex children of `.ai-study-panes`. The history rail and the Lab
+ *   Canvas are compact fixed rails (240px and 300px, both min-width:0) while
+ *   the chat column is flex:1, so the conversation always receives every pixel
+ *   the side panels do not claim and can never be squeezed by them.
+ *   On desktop the history rail rests as a 56px icon strip (the header chevron
+ *   expands it to the labelled 240px column) and the Lab Canvas collapses to
+ *   zero width. At 1440px and up the Lab Canvas sits inline; below that both
+ *   rails become overlay drawers (closed by default) so the chat keeps the full
+ *   width, and below 1024px the in-page toolbar carries both toggles. The shell
+ *   stretches to the space between the AppLayout top bar and the app footer,
+ *   and each column scrolls on its own. The Lab Canvas holds three stacked
+ *   sections: an artifacts list, a grid of referenced sources, and the code
+ *   blocks.
  */
 
 type Message = { id: number; role: 'user' | 'assistant'; content: string; saved?: boolean };
@@ -103,11 +110,15 @@ const initMessages: Message[] = [
 ];
 
 export default function AIStudy() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1024);
+  // Conversation rail. At rest this is the 56px icon strip on desktop and the
+  // closed overlay drawer below 1024px; the header chevron (desktop) and the
+  // toolbar button (mobile) flip it to the labelled 240px column / 300px drawer.
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
-  // Lab Canvas drawer for < 1024px. Previously the pane was simply hidden on
-  // small screens, which made its artifacts unreachable; it is now toggleable.
-  const [isNotebookOpen, setIsNotebookOpen] = useState(false);
+  // Lab Canvas: an inline column from 1440px up, an overlay drawer below. It
+  // starts open exactly where it is inline, so narrower screens give the full
+  // width to the conversation without losing access to the canvas.
+  const [isNotebookOpen, setIsNotebookOpen] = useState(() => window.innerWidth >= 1440);
 
   // The full conversation, oldest first
   const [messages, setMessages] = useState<Message[]>(initMessages);
@@ -138,6 +149,30 @@ export default function AIStudy() {
   // Scroll to the newest message whenever the conversation grows
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
+  // Keep the Lab Canvas in step with the 1440px inline/drawer switch, so
+  // resizing the window never leaves it stuck closed or half off-screen.
+  useEffect(() => {
+    const inline = window.matchMedia('(min-width: 1440px)');
+    const onChange = (e: MediaQueryListEvent) => setIsNotebookOpen(e.matches);
+    inline.addEventListener('change', onChange);
+    return () => inline.removeEventListener('change', onChange);
+  }, []);
+
+  // Escape closes whichever overlay drawer is open - the same affordance the
+  // AppLayout mobile navigation offers. Only bound while a drawer is actually
+  // overlaying, so it never hijacks Escape on wide inline layouts.
+  useEffect(() => {
+    const drawerOpen = (isSidebarOpen && window.innerWidth < 1024) || (isNotebookOpen && window.innerWidth < 1440);
+    if (!drawerOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      setIsSidebarOpen(false);
+      setIsNotebookOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isSidebarOpen, isNotebookOpen]);
+
   // Sends a message: appends the user turn, clears the input, then fakes a
   // 1.2s round-trip before appending the canned assistant reply
   const send = (text?: string) => {
@@ -167,49 +202,103 @@ export default function AIStudy() {
     }
   };
 
+  // Below 1024px both side rails are overlay drawers. Keeping them mutually
+  // exclusive means one can never end up covering the other; above that the
+  // conversation rail is inline, so the two panels are independent.
+  const toggleConversations = () => {
+    const next = !isSidebarOpen;
+    if (next && window.innerWidth < 1024) setIsNotebookOpen(false);
+    setIsSidebarOpen(next);
+  };
+
+  const toggleCanvas = () => {
+    const next = !isNotebookOpen;
+    if (next && window.innerWidth < 1024) setIsSidebarOpen(false);
+    setIsNotebookOpen(next);
+  };
+
   return (
     <div className="ai-study-layout">
       <style>{`
-        .ai-study-layout { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; position: relative; }
+        .ai-study-layout { display: flex; flex-direction: column; height: 100%; min-width: 0; min-height: 0; overflow: hidden; position: relative; }
         .ai-study-mobile-toolbar { display: none; }
-        .ai-study-panes { display: flex; flex: 1; min-width: 0; min-height: 0; overflow: hidden; position: relative; }
-        .ai-study-sidebar { display: flex; flex: 0 0 23%; flex-direction: column; height: 100%; max-width: 320px; min-width: 220px; overflow: hidden; background: ${C.surface}; border-right: 1px solid ${C.border}; transition: flex-basis 240ms ease, min-width 240ms ease, transform 240ms ease; z-index: 21; }
-        .ai-study-sidebar.is-collapsed { flex-basis: 64px; max-width: 64px; min-width: 64px; }
-        .ai-study-chat-pane { display: flex; flex: 1 1 47%; flex-direction: column; min-width: 0; overflow: hidden; }
-        .ai-study-notebook-pane { display: flex; flex: 0 0 30%; flex-direction: column; height: 100%; min-height: 0; min-width: 240px; overflow-y: auto; background: #F1F5F9; border-left: 1px solid ${C.border}; }
+        .ai-study-panes { display: flex; flex: 1 1 auto; min-width: 0; min-height: 0; overflow: hidden; position: relative; }
+
+        /* Conversation history: a compact fixed rail that rests as a narrow icon
+           strip (56px - one icon plus minimal padding). The chat pane is flex:1,
+           so every pixel freed here goes straight to the conversation - never
+           overlaps, never squeezes. The .is-collapsed modifier is the desktop
+           rest state; the header chevron expands it back to the labelled 240px
+           column. 56px is only the box: the 4px body padding is symmetric and
+           every child is centre-aligned, so all icons share the rail's centre
+           axis. */
+        .ai-study-sidebar { display: flex; flex: 0 0 240px; flex-direction: column; width: 240px; max-width: 240px; min-width: 0; height: 100%; overflow: hidden; background: ${C.surface}; border-right: 1px solid ${C.border}; transition: flex-basis 220ms ease, width 220ms ease, transform 240ms ease; z-index: 21; }
+        .ai-study-sidebar.is-collapsed { flex-basis: 56px; width: 56px; max-width: 56px; }
+
+        /* AI model switchers. Their geometry lives here so the tiles follow both
+           rail states instead of squishing: 82% of the labelled column when
+           expanded, a fixed 40px square when the rail is collapsed. align-self
+           keeps every tile on the rail's centre axis in either state, and the
+           width/height transitions let the square shrink back down smoothly
+           when the chevron collapses the rail. */
+        .ai-study-model-btn { display: flex; align-items: center; justify-content: center; align-self: center; padding: 10px 0; border-radius: 8px; cursor: pointer; color: #fff; font-weight: 600; font-size: 13.5px; transition: background-color 180ms, color 180ms, border-color 180ms, transform 180ms, width 180ms, height 180ms; }
+        .ai-study-sidebar.is-open .ai-study-model-btn { width: 82%; }
+        .ai-study-sidebar.is-collapsed .ai-study-model-btn { width: 40px; height: 40px; }
+        /* Every tile keeps its own brand fill in both states; the active provider
+           is marked by the green border and the light ring alone. There is no
+           dot and no black override. */
+        .ai-study-model-btn.is-active { border: 2px solid #059669; color: rgb(255, 255, 255); box-shadow: rgb(238, 242, 255) 0px 0px 0px 2px; }
+
+        /* Center workspace: takes all remaining width, never crushed. */
+        .ai-study-chat-pane { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; overflow: hidden; }
+
+        /* Lab Canvas: compact rail, collapsible to zero width on wide desktops
+           and an overlay drawer below 1440px. */
+        .ai-study-notebook-pane { display: flex; flex: 0 0 300px; flex-direction: column; width: 300px; max-width: 300px; min-width: 0; height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden; background: #F1F5F9; border-left: 1px solid ${C.border}; transition: flex-basis 220ms ease, width 220ms ease, transform 240ms ease; }
+        .ai-study-notebook-pane.is-collapsed { flex-basis: 0; width: 0; max-width: 0; overflow: hidden; border-left-width: 0; }
         .ai-study-notebook-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 18px 14px; background: #F1F5F9; border-bottom: 1px solid #D8E0E9; }
         .ai-study-notebook-subheader { margin: 20px 18px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748B; }
         .ai-study-artifact-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 18px; background: none; border: 0; border-bottom: 1px solid #E2E8F0; text-align: left; cursor: pointer; transition: background 140ms ease; }
         .ai-study-artifact-row:hover { background: #F8FAFC; }
         .ai-study-source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 18px; }
         .ai-study-source-preview { height: 64px; display: flex; flex-direction: column; gap: 5px; padding: 9px 10px; background: #E2E8F0; }
-        .ai-study-sidebar-backdrop { display: none; }
+        .ai-study-sidebar-backdrop, .ai-study-notebook-backdrop { display: none; }
+        .ai-study-desktop-only { display: none; }
+
+        /* Lab Canvas: below 1440px it becomes an overlay drawer (closed by
+           default) so the chat never has to share width with it. z-index
+           order is strict — scrims 20, drawers 22 — so a drawer sits above its
+           own scrim and no panel can cover another. */
+        @media (max-width: 1439px) {
+          .ai-study-notebook-pane, .ai-study-notebook-pane.is-collapsed { position: absolute; top: 0; bottom: 0; right: 0; z-index: 22; display: flex; width: min(320px, 88vw); max-width: none; min-width: 0; flex: none; overflow-y: auto; transform: translateX(100%); transition: transform 240ms ease; box-shadow: none; border-left: 1px solid ${C.border}; }
+          .ai-study-notebook-pane.is-open { transform: translateX(0); box-shadow: var(--sh-3); }
+          .ai-study-notebook-backdrop { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.25); border: 0; z-index: 20; }
+        }
+
+        /* Below 1024px the conversation rail is a drawer too, leaving the chat
+           the whole width, and the in-page toolbar carries both toggles. */
         @media (max-width: 1023px) {
           .ai-study-mobile-toolbar { display: flex; align-items: center; flex: 0 0 44px; gap: 8px; padding: 0 12px; background: ${C.surface}; border-bottom: 1px solid ${C.border}; }
           .ai-study-panes { overflow: hidden; }
-          .ai-study-sidebar, .ai-study-sidebar.is-collapsed { position: absolute; top: 0; bottom: 0; left: 0; width: min(320px, 85vw); max-width: none; min-width: 0; flex: none; transform: translateX(-105%); box-shadow: none; }
+          .ai-study-sidebar, .ai-study-sidebar.is-collapsed { position: absolute; top: 0; bottom: 0; left: 0; z-index: 22; width: min(300px, 82vw); max-width: none; min-width: 0; flex: none; transform: translateX(-105%); transition: transform 240ms ease; box-shadow: none; border-right: 1px solid ${C.border}; }
           .ai-study-sidebar.is-open { transform: translateX(0); box-shadow: var(--sh-3); }
-          .ai-study-notebook-pane { position: absolute; top: 0; bottom: 0; right: 0; z-index: 22; display: flex; width: min(340px, 88vw); max-width: none; min-width: 0; flex: none; transform: translateX(100%); transition: transform 240ms ease; box-shadow: none; }
-          .ai-study-notebook-pane.is-open { transform: translateX(0); box-shadow: var(--sh-3); }
           .ai-study-chat-pane { flex: 1 1 100%; width: 100%; }
-          .ai-study-sidebar-backdrop, .ai-study-notebook-backdrop { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.25); border: 0; z-index: 20; }
+          .ai-study-sidebar-backdrop { position: absolute; inset: 0; display: block; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.25); border: 0; z-index: 20; }
         }
-        /* Tablet (768-1023px): the conversation rail stays inline as a
-           structural column; only the Lab Canvas becomes a drawer. Declared
-           after the 1023px block so it wins on equal specificity. */
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .ai-study-sidebar { position: relative; top: 0; bottom: auto; left: auto; width: 240px; max-width: 240px; min-width: 0; flex: 0 0 240px; transform: none; box-shadow: none; }
-          .ai-study-sidebar.is-collapsed { width: 64px; max-width: 64px; flex: 0 0 64px; }
+
+        /* Desktops: the chat header carries the Lab Canvas collapse control. */
+        @media (min-width: 1024px) {
+          .ai-study-desktop-only { display: flex; }
         }
       `}</style>
       <div className="ai-study-mobile-toolbar">
-        <button type="button" onClick={() => setIsSidebarOpen(open => !open)} aria-expanded={isSidebarOpen} aria-label={isSidebarOpen ? 'Close conversation menu' : 'Open conversation menu'} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', background: 'none', border: 'none', color: C.text2, cursor: 'pointer' }}>
+        <button type="button" onClick={toggleConversations} aria-expanded={isSidebarOpen} aria-label={isSidebarOpen ? 'Close conversation menu' : 'Open conversation menu'} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 8px', background: 'none', border: 'none', color: C.text2, cursor: 'pointer' }}>
           <IconChevronRight size={16} style={{ transform: isSidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms ease' }} />
           Conversations
         </button>
         <button
           type="button"
-          onClick={() => setIsNotebookOpen(open => !open)}
+          onClick={toggleCanvas}
           aria-expanded={isNotebookOpen}
           aria-label={isNotebookOpen ? 'Close Lab Canvas' : 'Open Lab Canvas'}
           style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto', padding: '6px 8px', background: 'none', border: 'none', color: isNotebookOpen ? C.indigo : C.text2, cursor: 'pointer' }}
@@ -222,21 +311,25 @@ export default function AIStudy() {
         {isSidebarOpen && <button type="button" className="ai-study-sidebar-backdrop" aria-label="Close conversation menu" onClick={() => setIsSidebarOpen(false)} />}
         {isNotebookOpen && <button type="button" className="ai-study-notebook-backdrop" aria-label="Close Lab Canvas" onClick={() => setIsNotebookOpen(false)} />}
         <aside className={`ai-study-sidebar ${isSidebarOpen ? 'is-open' : 'is-collapsed'}`}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarOpen ? 'space-between' : 'center', minHeight: '56px', padding: isSidebarOpen ? '12px 16px' : '12px 6px', borderBottom: `1px solid ${C.border}` }}>
+          {/* Collapsed there is no side padding, so the 32px chevron button sits
+              centred on the same axis as every icon below it. */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarOpen ? 'space-between' : 'center', minHeight: '56px', padding: isSidebarOpen ? '12px 16px' : '12px 0', borderBottom: `1px solid ${C.border}` }}>
             {isSidebarOpen && <span style={{ fontSize: '14px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap' }}>Study Owl AI</span>}
             <button type="button" onClick={() => setIsSidebarOpen(open => !open)} aria-expanded={isSidebarOpen} aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'} title={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', border: 'none', borderRadius: '8px', background: 'transparent', color: C.text2, cursor: 'pointer', flexShrink: 0 }}>
               <IconChevronRight size={16} style={{ transform: isSidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms ease' }} />
             </button>
           </div>
-          <div style={{ padding: isSidebarOpen ? '12px' : '12px 6px' }}>
-            <Btn fullWidth size="sm" variant="secondary" icon={<IconPlus size={14} />} onClick={() => setMessages(initMessages)}>
+          <div style={{ padding: isSidebarOpen ? '12px' : '10px 4px' }}>
+            {/* Keep collapsed controls narrower than the rail and centered. */}
+            <Btn fullWidth size="sm" variant="secondary" icon={<IconPlus size={14} />} onClick={() => setMessages(initMessages)}
+              style={isSidebarOpen ? undefined : { width: '32px', padding: '6px 0', gap: 0, margin: '0 auto' }}>
               {isSidebarOpen && 'New Conversation'}
             </Btn>
           </div>
-          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: isSidebarOpen ? '8px' : '8px 4px' }}>
+          <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: isSidebarOpen ? '8px' : '6px 4px' }}>
             {isSidebarOpen && <p style={{ fontSize: '11px', fontWeight: 600, color: C.text2, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 8px 6px' }}>Recent</p>}
             {history.map(h => (
-              <button key={h.id} title={h.title} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', textAlign: 'left', padding: '9px 10px', borderRadius: 'var(--r-md)', background: 'none', border: 'none', cursor: 'pointer', color: C.text2, transition: 'background 0.12s' }}
+              <button key={h.id} title={h.title} style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarOpen ? 'flex-start' : 'center', gap: isSidebarOpen ? '10px' : 0, width: isSidebarOpen ? '100%' : '32px', margin: isSidebarOpen ? undefined : '0 auto', textAlign: 'left', padding: isSidebarOpen ? '9px 10px' : '9px 0', borderRadius: 'var(--r-md)', background: 'none', border: 'none', cursor: 'pointer', color: C.text2, transition: 'background 0.12s' }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surface2}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                 <IconMessageCircle size={16} />
@@ -244,58 +337,78 @@ export default function AIStudy() {
               </button>
             ))}
           </div>
-          <div style={{ padding: isSidebarOpen ? '16px 12px' : '12px 6px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: `1px solid ${C.border}` }}>
+          {/* Model switchers. Geometry lives in .ai-study-model-btn so each tile
+              follows both rail states: 82% wide when the column is expanded, a
+              fixed 40px square when it is collapsed, never squished. The active
+              provider is marked by its highlighted border alone - nothing else. */}
+          <div style={{ padding: isSidebarOpen ? '16px 12px' : '12px 4px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: `1px solid ${C.border}` }}>
             {AI_MODELS.map(model => (
               <button
                 key={model.id}
                 onClick={() => setSelectedModel(model.id)}
                 title={model.name}
+                aria-pressed={selectedModel === model.id}
+                className={`ai-study-model-btn${selectedModel === model.id ? ' is-active' : ''}`}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: isSidebarOpen ? 'space-between' : 'center',
-                  position: 'relative',
-                  padding: isSidebarOpen ? '10px 14px' : '10px',
-                  borderRadius: '8px',
+                  /* Brand backdrop and text colour hold in BOTH states, so the
+                     active tile keeps its own colour (Claude orange, DeepSeek
+                     blue, ChatGPT black, Gemini white). The green border and the
+                     ring come from .is-active, so only the 2px base border is
+                     needed while inactive - it keeps both states the same size. */
                   backgroundColor: model.id === 'gemini' ? '#fff' : model.color,
-                  border: model.id === 'gemini' ? '1px solid rgb(209 209 209)' : 'none',
-                  cursor: 'pointer',
                   color: model.id === 'gemini' ? C.text : '#fff',
-                  fontWeight: 600,
-                  fontSize: '13.5px',
-                  transition: 'background-color 180ms ease, color 180ms ease, border-color 180ms ease, transform 180ms ease'
+                  ...(selectedModel === model.id ? null : {
+                    border: model.id === 'gemini' ? '2px solid rgb(209 209 209)' : '2px solid transparent',
+                  }),
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: isSidebarOpen ? '10px' : 0 }}>
                   {model.icon}
                   {isSidebarOpen && model.name}
                 </div>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4ade80', border: '1px solid rgb(209 209 209)', opacity: selectedModel === model.id ? 1 : 0, transform: selectedModel === model.id ? 'scale(1)' : 'scale(0.65)', transition: 'opacity 180ms ease, transform 180ms ease', pointerEvents: 'none', position: isSidebarOpen ? 'static' : 'absolute', top: '5px', right: '5px' }} />
               </button>
             ))}
           </div>
         </aside>
 
-        {/* Center: Chat */}
-        <div className="ai-study-chat-pane" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Center: Chat — flex:1 in CSS, so it absorbs all remaining width */}
+        <div className="ai-study-chat-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Header */}
-          <div style={{ padding: '12px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: C.surface }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo }}>
+          <div style={{ padding: '12px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: C.surface, flexShrink: 0 }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, flexShrink: 0 }}>
               <IconBrain size={17} />
             </div>
-            <div>
-              <p style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>AI Study Assistant</p>
-              <p style={{ fontSize: '12px', color: C.text3 }}>Academic tutor · DBMS, Algorithms, CN and more</p>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>AI Study Assistant</p>
+              <p style={{ fontSize: '12px', color: C.text3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Academic tutor · DBMS, Algorithms, CN and more</p>
             </div>
-            <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+              {/* Lab Canvas toggle — shown from 1024px up, where the in-page
+                  toolbar is hidden. Below that the toolbar button does the job. */}
+              <button
+                type="button"
+                className="ai-study-desktop-only"
+                onClick={toggleCanvas}
+                aria-expanded={isNotebookOpen}
+                aria-label={isNotebookOpen ? 'Collapse Lab Canvas' : 'Expand Lab Canvas'}
+                title={isNotebookOpen ? 'Collapse Lab Canvas' : 'Expand Lab Canvas'}
+                style={{ alignItems: 'center', gap: '6px', padding: '6px 10px', backgroundColor: isNotebookOpen ? C.indigoLight : C.surface, border: `1px solid ${isNotebookOpen ? C.indigo : C.border}`, borderRadius: 'var(--r-md)', color: isNotebookOpen ? C.indigo : C.text2, fontSize: '12.5px', fontWeight: 500, cursor: 'pointer', transition: 'background 140ms ease, border-color 140ms ease, color 140ms ease' }}
+                onMouseEnter={e => { if (!isNotebookOpen) e.currentTarget.style.backgroundColor = C.surface2; }}
+                onMouseLeave={e => { if (!isNotebookOpen) e.currentTarget.style.backgroundColor = C.surface; }}
+              >
+                <IconFileText size={14} />
+                Lab Canvas
+              </button>
               <Badge variant="success">Online</Badge>
             </div>
           </div>
 
-          {/* Scrollable message list; user turns are right-aligned via row-reverse */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px', backgroundColor: C.bg }}>
+          {/* Scrollable message list; user turns are right-aligned via row-reverse.
+              `minWidth: 0` + wrapping keeps long words and code from ever forcing
+              the pane to overflow horizontally. */}
+          <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px', backgroundColor: C.bg }}>
             {messages.map(msg => (
-              <div key={msg.id} style={{ display: 'flex', gap: '10px', flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
+              <div key={msg.id} style={{ display: 'flex', gap: '10px', minWidth: 0, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
                 {msg.role === 'assistant' ? (
                   <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: selectedModelData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
                     {selectedModelData.icon}
@@ -303,7 +416,7 @@ export default function AIStudy() {
                 ) : (
                   <Avatar name="Alex Johnson" size={32} />
                 )}
-                <div style={{ maxWidth: 'min(72%, 640px)' }}>
+                <div style={{ maxWidth: 'min(72%, 640px)', minWidth: 0, overflowWrap: 'break-word' }}>
                   <div style={{ padding: '14px 16px', borderRadius: msg.role === 'user' ? 'var(--r-3xl) var(--r-xs) var(--r-3xl) var(--r-3xl)' : 'var(--r-xs) var(--r-3xl) var(--r-3xl) var(--r-3xl)', backgroundColor: msg.role === 'user' ? C.indigo : C.surface, color: msg.role === 'user' ? '#fff' : C.text, border: msg.role === 'assistant' ? `1px solid ${C.border}` : 'none', lineHeight: 1.65 }}>
                     {/* `**` prefixed lines are emphasised as headings */}
                     {msg.content.split('\n').map((line, i) => (
@@ -348,8 +461,8 @@ export default function AIStudy() {
           </div>
 
           {/* Suggestions */}
-          <div style={{ padding: '12px 20px 0', borderTop: `1px solid ${C.border}`, backgroundColor: C.surface }}>
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px' }}>
+          <div style={{ padding: '12px 20px 0', borderTop: `1px solid ${C.border}`, backgroundColor: C.surface, flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', minWidth: 0 }}>
               {suggestions.map(s => (
                 <button key={s} onClick={() => send(s)} style={{ padding: '7px 14px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-pill)', fontSize: '12px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'background 0.12s, color 0.12s, border-color 0.12s' }}
                   onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; e.currentTarget.style.color = C.indigo; e.currentTarget.style.borderColor = C.indigo; }}
@@ -360,16 +473,17 @@ export default function AIStudy() {
             </div>
           </div>
 
-          {/* Input */}
-          <div style={{ padding: '12px 20px 16px', backgroundColor: C.surface }}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end' }}>
-              <div style={{ flex: 1, position: 'relative' }}>
+          {/* Input — a fixed-height footer row, so it can never be pushed out
+              of the viewport by a long conversation. */}
+          <div style={{ padding: '12px 20px 16px', backgroundColor: C.surface, flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
                 <textarea
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
                   placeholder="Ask me anything academic… (Enter to send, Shift+Enter for new line)"
-                  rows={3}
+                  rows={2}
                   aria-label="Message the AI tutor"
                   style={{ width: '100%', padding: '12px 14px', fontSize: '14px', borderRadius: 'var(--r-xl)', border: `1.5px solid ${C.border}`, outline: 'none', resize: 'none', fontFamily: 'inherit', color: C.text, lineHeight: 1.5, transition: 'border-color 0.15s' }}
                   onFocus={e => e.target.style.borderColor = C.indigo}
@@ -387,7 +501,7 @@ export default function AIStudy() {
         </div>
 
         {/* Right: Lab Canvas — artifacts, referenced content, and code blocks */}
-        <aside className={`ai-study-notebook-pane${isNotebookOpen ? ' is-open' : ''}`} aria-label="Lab Canvas">
+        <aside className={`ai-study-notebook-pane${isNotebookOpen ? ' is-open' : ' is-collapsed'}`} aria-label="Lab Canvas">
           {/* Sticky actions header */}
           <div className="ai-study-notebook-header">
             <div>
