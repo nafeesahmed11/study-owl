@@ -27,12 +27,6 @@ export function AppFooter() {
         flexShrink: 0,
       }}
     >
-      {/* Logo + wordmark, same asset and type scale as the Landing footer */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '22px' }} />
-        <span style={{ fontSize: '13px', fontWeight: 600, color: C.navy }}>Study Owl AI</span>
-      </div>
-
       <p style={{ fontSize: '12.5px', color: C.text3 }}>© 2026 Study Owl AI. All rights reserved.</p>
 
       <div style={{ display: 'flex', gap: '20px' }}>

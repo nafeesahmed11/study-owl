@@ -115,34 +115,6 @@ function Sidebar({ onClose, collapsed = false }: { onClose?: () => void; collaps
         <NavGroup label="Practice" items={practiceItems} onClose={onClose} collapsed={collapsed} />
         <NavGroup label="Community" items={communityItems} onClose={onClose} collapsed={collapsed} />
       </nav>
-
-      {/* Bottom */}
-      <div style={{ borderTop: `1px solid ${C.border}`, padding: '12px 8px' }}>
-        {[
-          { label: 'Profile', path: '/app/profile', icon: <IconUser size={16} /> },
-          { label: 'Settings', path: '/app/settings', icon: <IconSettings size={16} /> },
-        ].map(item => {
-          return (
-            <NavLink key={item.path} to={item.path} style={{ textDecoration: 'none' }}>
-              {({ isActive }) => (
-                <div className="app-nav-item app-sidebar-foot-item" title={collapsed ? item.label : undefined} style={{
-                  display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 14px',
-                  borderRadius: '8px', fontSize: '13.5px', fontWeight: isActive ? 600 : 400,
-                  color: isActive ? C.indigo : C.text2, backgroundColor: isActive ? C.indigoLight : 'transparent',
-                  cursor: 'pointer',
-                }}
-                onClick={() => onClose?.()}
-                onMouseEnter={e => { if (!isActive) e.currentTarget.style.backgroundColor = C.surface2; }}
-                onMouseLeave={e => { if (!isActive) e.currentTarget.style.backgroundColor = 'transparent'; }}
-                >
-                  <span style={{ color: isActive ? C.indigo : C.text3, display: 'flex', flexShrink: 0 }}>{item.icon}</span>
-                  <span className="app-nav-label" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
-                </div>
-              )}
-            </NavLink>
-          );
-        })}
-      </div>
     </div>
   );
 }

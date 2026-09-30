@@ -319,10 +319,10 @@ export default function AIStudy() {
               <IconChevronRight size={16} style={{ transform: isSidebarOpen ? 'rotate(180deg)' : 'none', transition: 'transform 180ms ease' }} />
             </button>
           </div>
-          <div style={{ padding: isSidebarOpen ? '12px' : '10px 4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isSidebarOpen ? '12px' : '10px 4px' }}>
             {/* Keep collapsed controls narrower than the rail and centered. */}
             <Btn fullWidth size="sm" variant="secondary" icon={<IconPlus size={14} />} onClick={() => setMessages(initMessages)}
-              style={isSidebarOpen ? undefined : { width: '32px', padding: '6px 0', gap: 0, margin: '0 auto' }}>
+              style={isSidebarOpen ? undefined : { width: '32px', padding: '6px 0', gap: 0 }}>
               {isSidebarOpen && 'New Conversation'}
             </Btn>
           </div>
