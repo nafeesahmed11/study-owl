@@ -51,6 +51,10 @@ export const IconLink = ic(<><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7
 export const IconDrive = ic(<><path d="M21.83 16.32l-6.77-12A2 2 0 0013.31 3H10.7a2 2 0 00-1.75 1.03l-6.77 12A2 2 0 004 19h16a2 2 0 001.83-2.68z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></>);
 export const IconLogout = ic(<><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></>);
 export const IconShield = ic(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>);
+// Stylised "G" glyph for Google-branded surfaces (stroke style, like its neighbours)
+export const IconGoogle = ic(<><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12h4.2"/><path d="M15.9 10.6A4.4 4.4 0 1 0 12 16.4"/></>);
+// Presentation board standing for a Classroom course
+export const IconClassroom = ic(<><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4"/><path d="M9 20h6"/></>);
 export const IconEdit = ic(<><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></>);
 export const IconTrash = ic(<><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></>);
 export const IconPencil = ic(<><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></>);

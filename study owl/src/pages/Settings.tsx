@@ -2,16 +2,17 @@ import { useState, useEffect } from "react";
 import { C, Card, Btn, Input, Select, Tabs, Badge, Modal, PageHeader } from "../components/ui";
 import { IconUser, IconShield, IconBell, IconDrive, IconBrain, IconCheck, IconLink, IconLogout } from "../components/Icons";
 import { useAuth } from "../context/AuthContext";
+import { GoogleConnectCard } from "../components/GoogleConnectCard";
 
 /**
  * Page: Settings (/app/settings) — student-only, inside AppLayout.
  * Purpose: Five-tab preferences panel (Account, Security, Notifications,
  *   Google Drive, AI Preferences).
- * Data source: the Account tab is the only genuinely persisted part — it reads
- *   `user` from AuthContext and writes back through `updateUserSettings`,
- *   which updates localStorage. The Google Drive connection and notification
- *   toggles are component state only and reset on reload. The Security and AI
- *   tabs are entirely non-functional (no handlers on their buttons/inputs).
+ * Data source: the Account tab reads `user` from AuthContext and writes back
+ *   through `updateUserSettings`, which updates localStorage. The Google Drive
+ *   tab renders `GoogleConnectCard`, which is backed by the real Google OAuth
+ *   integration through `useIntegration()`. Notification toggles remain
+ *   component state only, and the Security and AI tabs are still visual-only.
  */
 export default function Settings() {
   // `updateUserSettings` persists the account fields and refreshes context
@@ -50,9 +51,6 @@ export default function Settings() {
       if (user.academicYear) setAcademicYear(user.academicYear);
     }
   }, [user]);
-
-  // Whether Google Drive is linked; local only, never persisted
-  const [driveConnected, setDriveConnected] = useState(false);
 
   // Per-channel notification toggles; local only, never persisted
   const [notifs, setNotifs] = useState({ email: true, quiz: true, community: false, weekly: true });
@@ -212,33 +210,8 @@ export default function Settings() {
         </Card>
       )}
 
-      {/* Google Drive tab: connect/disconnect toggle, state held in memory only */}
-      {tab === 'drive' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <Card>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: driveConnected ? C.successLight : C.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <IconDrive size={22} color={driveConnected ? C.success : C.text3} />
-              </div>
-              <div>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>Google Drive</h3>
-                <Badge variant={driveConnected ? 'success' : 'default'}>{driveConnected ? 'Connected' : 'Not Connected'}</Badge>
-              </div>
-            </div>
-            <p style={{ fontSize: '13.5px', color: C.text2, lineHeight: 1.6, marginBottom: '16px' }}>
-              Connect your Google Drive to store large academic files. Study Owl AI manages the metadata while your files stay in your own Drive — giving you control and unlimited storage.
-            </p>
-            {driveConnected ? (
-              <div style={{ padding: '12px 16px', backgroundColor: C.successLight, border: `1px solid ${C.success}30`, borderRadius: '10px', marginBottom: '14px', fontSize: '13.5px', color: C.success }}>
-                ✓ Connected as alex@gmail.com · 2.1 GB of Drive used for academic files
-              </div>
-            ) : null}
-            <Btn variant={driveConnected ? 'danger' : 'primary'} icon={<IconLink size={14} />} onClick={() => setDriveConnected(d => !d)}>
-              {driveConnected ? 'Disconnect Google Drive' : 'Connect Google Drive'}
-            </Btn>
-          </Card>
-        </div>
-      )}
+      {/* Google Drive tab: the real OAuth integration (connect / sync / disconnect) */}
+      {tab === 'drive' && <GoogleConnectCard />}
 
       {/* AI Preferences tab: answer language/depth plus optional behaviours (visual only) */}
       {tab === 'ai' && (

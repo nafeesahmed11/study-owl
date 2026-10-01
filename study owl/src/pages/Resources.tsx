@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { C, Card, Badge, Btn, PageHeader, SearchInput, EmptyState, Select, Modal, Input, Textarea } from "../components/ui";
-import { IconFileText, IconFolder, IconUpload, IconDownload, IconEye, IconStar, IconShare, IconGrid, IconList, IconFilter } from "../components/Icons";
+import { IconFileText, IconFolder, IconUpload, IconDownload, IconEye, IconStar, IconShare, IconGrid, IconList, IconFilter, IconLink } from "../components/Icons";
+import { useIntegration } from "../context/IntegrationContext";
+import { ImportDialog } from "../components/ImportDialog";
+import { SyncStatus } from "../components/SyncStatus";
 
 /**
  * Page: Resources (/app/resources) — student-only, inside AppLayout.
  * Purpose: Searchable/filterable resource library with a grid/list view
- *   toggle, a stats row, and an upload modal.
- * Data source: the in-file `allResources` mock array. Each card keeps its own
- *   `saved` flag in local state, and the upload modal is purely visual — its
- *   submit handler just closes the dialog and adds nothing to the library.
+ *   toggle, a stats row, an upload modal and a Google import dialog.
+ * Data source: the seeded `allResources` mock array, merged with any Drive /
+ *   Classroom rows imported through the Google integration (read via
+ *   `useIntegration()`). Each card keeps its own `saved` flag in local state,
+ *   and the upload modal is still purely visual.
  */
 
 // Library contents; `verified`, `saved`, and `drive` drive the badges
@@ -23,9 +27,23 @@ const allResources = [
   { id: 8, title: "OOP Design Patterns Reference Guide", type: "Reference", subject: "SE", dept: "CSE", semester: 6, year: 2024, by: "Batch 2021", date: "Oct 20, 2024", verified: true, saved: false, views: 312, rating: 4.6, drive: true },
 ];
 
-// Badge colour per resource type
+/**
+ * A library row: the seeded mock shape, optionally carrying a Google link so an
+ * imported item can open its file in Drive/Classroom rather than downloading it.
+ * `id` is widened because imported rows use stable string keys
+ * (`user:<id>:<source>:<externalId>`) while the seeded rows use numbers.
+ */
+type LibraryResource = Omit<(typeof allResources)[number], 'id'> & {
+  id: string | number;
+  webViewLink?: string;
+  source?: 'drive' | 'classroom';
+};
+
+// Badge colour per resource type. The Drive mime mapper can also emit Slides,
+// Sheet, Doc and Video, so those labels are mapped here too.
 const typeColors: Record<string, string> = {
   PDF: 'error', Note: 'info', Assignment: 'warning', QP: 'purple', Reference: 'success',
+  Slides: 'purple', Sheet: 'success', Doc: 'info', Video: 'error',
 };
 
 /**
@@ -34,7 +52,7 @@ const typeColors: Record<string, string> = {
  * from the resource's `saved` field, so starring a card does not affect the
  * parent list or the "Saved" stat count.
  */
-function ResourceCard({ r, grid }: { r: typeof allResources[0]; grid: boolean }) {
+function ResourceCard({ r, grid }: { r: LibraryResource; grid: boolean }) {
   // Local star state for this card
   const [saved, setSaved] = useState(r.saved);
 
@@ -56,7 +74,13 @@ function ResourceCard({ r, grid }: { r: typeof allResources[0]; grid: boolean })
       <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
         <Btn size="xs" variant="ghost" icon={<IconEye size={13} />}>{r.views}</Btn>
         <Btn size="xs" variant={saved ? 'primary' : 'ghost'} icon={<IconStar size={13} />} onClick={() => setSaved(s => !s)} />
-        <Btn size="xs" variant="secondary" icon={<IconDownload size={13} />}>Download</Btn>
+        {r.webViewLink ? (
+          <a href={r.webViewLink} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+            <Btn size="xs" variant="secondary" icon={<IconLink size={13} />}>Open</Btn>
+          </a>
+        ) : (
+          <Btn size="xs" variant="secondary" icon={<IconDownload size={13} />}>Download</Btn>
+        )}
       </div>
     </Card>
   );
@@ -78,11 +102,18 @@ function ResourceCard({ r, grid }: { r: typeof allResources[0]; grid: boolean })
       <p style={{ fontSize: '11.5px', color: C.text3, marginBottom: '14px' }}>By {r.by} · {r.date}</p>
       {r.drive && (
         <div style={{ padding: '6px 10px', backgroundColor: C.surface2, borderRadius: '6px', fontSize: '11.5px', color: C.text2, marginBottom: '12px' }}>
-          📁 Stored in Google Drive
+          📁 {r.source === 'classroom' ? 'Synced from Google Classroom' : 'Stored in Google Drive'}
         </div>
       )}
       <div style={{ display: 'flex', gap: '6px' }}>
-        <Btn size="xs" variant="secondary" icon={<IconEye size={13} />} style={{ flex: 1 }}>Open</Btn>
+        {/* Imported rows open in Google's own viewer; nothing is downloaded. */}
+        {r.webViewLink ? (
+          <a href={r.webViewLink} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textDecoration: 'none' }}>
+            <Btn size="xs" variant="secondary" icon={<IconLink size={13} />} style={{ width: '100%' }}>Open</Btn>
+          </a>
+        ) : (
+          <Btn size="xs" variant="secondary" icon={<IconEye size={13} />} style={{ flex: 1 }}>Open</Btn>
+        )}
         <Btn size="xs" variant={saved ? 'primary' : 'ghost'} icon={<IconStar size={13} />} onClick={() => setSaved(s => !s)} />
         <Btn size="xs" variant="ghost" icon={<IconShare size={13} />} />
       </div>
@@ -107,24 +138,61 @@ export default function Resources() {
   // Draft values for the resource being uploaded
   const [uploadForm, setUploadForm] = useState({ title: '', type: 'PDF', subject: '', desc: '' });
 
+  // Visibility flag for the Google import dialog
+  const [importOpen, setImportOpen] = useState(false);
+
+  // Rows imported from Drive / Classroom, plus whether Google is connected
+  const { resources: imported, connection } = useIntegration();
+
+  /** Maps an imported metadata row onto the shape the library cards render. */
+  const toLibrary = (row: (typeof imported)[number]): LibraryResource => ({
+    id: row.id,
+    title: row.title,
+    type: row.type,
+    subject: row.subject ?? 'General',
+    dept: 'CSE',
+    semester: 6,
+    year: new Date(row.importedAt).getFullYear(),
+    by: row.source === 'classroom' ? (row.courseName ?? 'Google Classroom') : 'Google Drive',
+    date: row.date,
+    verified: false,
+    saved: false,
+    views: 0,
+    rating: 0,
+    drive: true,
+    webViewLink: row.webViewLink,
+    source: row.source,
+  });
+
+  // Seeded demo content, plus everything imported from Google
+  const library: LibraryResource[] = [...allResources, ...imported.map(toLibrary)];
+
   // Combined filter: must satisfy search AND both dropdowns
-  const filtered = allResources.filter(r => {
+  const filtered = library.filter(r => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) || r.subject.toLowerCase().includes(search.toLowerCase());
     const matchType = typeFilter === 'all' || r.type === typeFilter;
     const matchSubject = subjectFilter === 'all' || r.subject === subjectFilter;
     return matchSearch && matchType && matchSubject;
   });
 
-  // Filter dropdown options; subjects are deduped from the dataset
-  const subjects = ['all', ...Array.from(new Set(allResources.map(r => r.subject)))].map(s => ({ value: s, label: s === 'all' ? 'All Subjects' : s }));
-  const types = ['all', 'PDF', 'Note', 'Assignment', 'QP', 'Reference'].map(t => ({ value: t, label: t === 'all' ? 'All Types' : t }));
+  // Filter dropdown options; subjects are deduped from the merged dataset
+  const subjects = ['all', ...Array.from(new Set(library.map(r => r.subject)))].map(s => ({ value: s, label: s === 'all' ? 'All Subjects' : s }));
+  const types = ['all', ...Object.keys(typeColors)].map(t => ({ value: t, label: t === 'all' ? 'All Types' : t }));
 
   return (
     // Page container: wide 1400px to fit the library grid
     <div style={{ padding: '28px 32px', maxWidth: '1400px' }}>
-      {/* Page title + "Upload Resource" button that opens the modal */}
+      {/* Page title + Google import / sync / upload actions */}
       <PageHeader title="Resource Library" sub="Academic resources organized by subject, type, and semester"
-        actions={<Btn icon={<IconUpload size={14} />} onClick={() => setUploadOpen(true)}>Upload Resource</Btn>}
+        actions={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {connection && <SyncStatus compact />}
+            <Btn variant="secondary" icon={<IconLink size={14} />} onClick={() => setImportOpen(true)}>
+              Import from Google
+            </Btn>
+            <Btn icon={<IconUpload size={14} />} onClick={() => setUploadOpen(true)}>Upload Resource</Btn>
+          </div>
+        }
       />
 
       {/* Filters */}
@@ -144,7 +212,7 @@ export default function Resources() {
 
       {/* Stats row */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        {[{ label: 'All Resources', count: allResources.length }, { label: 'Verified', count: allResources.filter(r => r.verified).length }, { label: 'Drive Files', count: allResources.filter(r => r.drive).length }, { label: 'Saved', count: allResources.filter(r => r.saved).length }].map(s => (
+        {[{ label: 'All Resources', count: library.length }, { label: 'Verified', count: library.filter(r => r.verified).length }, { label: 'Drive Files', count: library.filter(r => r.drive).length }, { label: 'Saved', count: library.filter(r => r.saved).length }].map(s => (
           <div key={s.label} style={{ padding: '6px 14px', backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13px', color: C.text2 }}>
             <strong style={{ color: C.navy }}>{s.count}</strong> {s.label}
           </div>
@@ -186,6 +254,9 @@ export default function Resources() {
           </div>
         </div>
       </Modal>
+
+      {/* Google import browser (Drive + Classroom) */}
+      <ImportDialog open={importOpen} onClose={() => setImportOpen(false)} />
     </div>
   );
 }

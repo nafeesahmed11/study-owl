@@ -97,7 +97,7 @@ export default function Login() {
       {/* Constrained 440px column holding the whole form */}
       <div style={{ width: "100%", maxWidth: "440px" }}>
         {/* Brand Header */}
-        <div style={{ textAlign: "center", marginBottom: "28px" }}>
+        <div className="login-brand-header">
           <div
             onClick={() => navigate("/")}
             style={{
