@@ -241,13 +241,13 @@ export default function AIStudy() {
            keeps every tile on the rail's centre axis in either state, and the
            width/height transitions let the square shrink back down smoothly
            when the chevron collapses the rail. */
-        .ai-study-model-btn { display: flex; align-items: center; justify-content: center; align-self: center; padding: 10px 0; border-radius: 8px; cursor: pointer; color: #fff; font-weight: 600; font-size: 13.5px; transition: background-color 180ms, color 180ms, border-color 180ms, transform 180ms, width 180ms, height 180ms; }
-        .ai-study-sidebar.is-open .ai-study-model-btn { width: 82%; }
-        .ai-study-sidebar.is-collapsed .ai-study-model-btn { width: 40px; height: 40px; }
+        .ai-study-model-btn { display: flex; align-items: center; justify-content: center; align-self: center; min-height: 42px; padding: 0 12px; border-radius: 12px; cursor: pointer; color: #fff; font-weight: 600; font-size: 13.5px; transition: background-color 180ms, color 180ms, border-color 180ms, transform 180ms, box-shadow 180ms, width 180ms, height 180ms; }
+        .ai-study-sidebar.is-open .ai-study-model-btn { width: 86%; }
+        .ai-study-sidebar.is-collapsed .ai-study-model-btn { width: 42px; height: 42px; padding: 0; }
         /* Every tile keeps its own brand fill in both states; the active provider
-           is marked by the green border and the light ring alone. There is no
+           is marked by the indigo border and the light ring alone. There is no
            dot and no black override. */
-        .ai-study-model-btn.is-active { border: 2px solid #059669; color: rgb(255, 255, 255); box-shadow: rgb(238, 242, 255) 0px 0px 0px 2px; }
+        .ai-study-model-btn.is-active { border: 2px solid #4F46E5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18); transform: translateY(-1px); }
 
         /* Center workspace: takes all remaining width, never crushed. */
         .ai-study-chat-pane { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; overflow: hidden; }
@@ -256,12 +256,12 @@ export default function AIStudy() {
            and an overlay drawer below 1440px. */
         .ai-study-notebook-pane { display: flex; flex: 0 0 300px; flex-direction: column; width: 300px; max-width: 300px; min-width: 0; height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden; background: #F1F5F9; border-left: 1px solid ${C.border}; transition: flex-basis 220ms ease, width 220ms ease, transform 240ms ease; }
         .ai-study-notebook-pane.is-collapsed { flex-basis: 0; width: 0; max-width: 0; overflow: hidden; border-left-width: 0; }
-        .ai-study-notebook-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 18px 14px; background: #F1F5F9; border-bottom: 1px solid #D8E0E9; }
+        .ai-study-notebook-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 18px 14px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
         .ai-study-notebook-subheader { margin: 20px 18px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748B; }
-        .ai-study-artifact-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 18px; background: none; border: 0; border-bottom: 1px solid #E2E8F0; text-align: left; cursor: pointer; transition: background 140ms ease; }
-        .ai-study-artifact-row:hover { background: #F8FAFC; }
+        .ai-study-artifact-row { display: flex; align-items: center; gap: 10px; width: calc(100% - 20px); margin: 0 10px 8px; padding: 10px 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-align: left; cursor: pointer; transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }
+        .ai-study-artifact-row:hover { background: #F8FAFC; border-color: #CBD5E1; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06); }
         .ai-study-source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 18px; }
-        .ai-study-source-preview { height: 64px; display: flex; flex-direction: column; gap: 5px; padding: 9px 10px; background: #E2E8F0; }
+        .ai-study-source-preview { height: 68px; display: flex; flex-direction: column; gap: 5px; padding: 10px; background: #EEF2F7; }
         .ai-study-sidebar-backdrop, .ai-study-notebook-backdrop { display: none; }
         .ai-study-desktop-only { display: none; }
 
@@ -352,7 +352,7 @@ export default function AIStudy() {
                 style={{
                   /* Brand backdrop and text colour hold in BOTH states, so the
                      active tile keeps its own colour (Claude orange, DeepSeek
-                     blue, ChatGPT black, Gemini white). The green border and the
+                     blue, ChatGPT black, Gemini white). The indigo border and the
                      ring come from .is-active, so only the 2px base border is
                      needed while inactive - it keeps both states the same size. */
                   backgroundColor: model.id === 'gemini' ? '#fff' : model.color,
@@ -374,15 +374,15 @@ export default function AIStudy() {
         {/* Center: Chat — flex:1 in CSS, so it absorbs all remaining width */}
         <div className="ai-study-chat-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Header */}
-          <div style={{ padding: '12px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: C.surface, flexShrink: 0 }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '10px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, flexShrink: 0 }}>
-              <IconBrain size={17} />
+          <div style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '14px', backgroundColor: C.surface, flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, flexShrink: 0, boxShadow: 'inset 0 0 0 1px rgba(79, 70, 229, 0.1)' }}>
+              <IconBrain size={21} />
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
-              <p style={{ fontSize: '15px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>AI Study Assistant</p>
-              <p style={{ fontSize: '12px', color: C.text3, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Academic tutor · DBMS, Algorithms, CN and more</p>
+              <p style={{ fontSize: '16px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em' }}>AI Study Assistant</p>
+              <p style={{ fontSize: '12.5px', color: C.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '1px' }}>Academic tutor · DBMS, Algorithms, CN and more</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
               {/* Lab Canvas toggle — shown from 1024px up, where the in-page
                   toolbar is hidden. Below that the toolbar button does the job. */}
               <button
@@ -392,49 +392,52 @@ export default function AIStudy() {
                 aria-expanded={isNotebookOpen}
                 aria-label={isNotebookOpen ? 'Collapse Lab Canvas' : 'Expand Lab Canvas'}
                 title={isNotebookOpen ? 'Collapse Lab Canvas' : 'Expand Lab Canvas'}
-                style={{ alignItems: 'center', gap: '6px', padding: '6px 10px', backgroundColor: isNotebookOpen ? C.indigoLight : C.surface, border: `1px solid ${isNotebookOpen ? C.indigo : C.border}`, borderRadius: 'var(--r-md)', color: isNotebookOpen ? C.indigo : C.text2, fontSize: '12.5px', fontWeight: 500, cursor: 'pointer', transition: 'background 140ms ease, border-color 140ms ease, color 140ms ease' }}
-                onMouseEnter={e => { if (!isNotebookOpen) e.currentTarget.style.backgroundColor = C.surface2; }}
-                onMouseLeave={e => { if (!isNotebookOpen) e.currentTarget.style.backgroundColor = C.surface; }}
+                style={{ alignItems: 'center', gap: '6px', padding: '8px 14px', backgroundColor: isNotebookOpen ? C.indigoLight : C.surface, border: `1px solid ${isNotebookOpen ? C.indigo : C.border}`, borderRadius: 'var(--r-md)', color: isNotebookOpen ? C.indigo : C.text2, fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', boxShadow: isNotebookOpen ? 'none' : '0 1px 2px rgba(0,0,0,0.04)' }}
+                onMouseEnter={e => { if (!isNotebookOpen) { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text; } }}
+                onMouseLeave={e => { if (!isNotebookOpen) { e.currentTarget.style.backgroundColor = C.surface; e.currentTarget.style.color = C.text2; } }}
               >
-                <IconFileText size={14} />
+                <IconFileText size={16} />
                 Lab Canvas
               </button>
-              <Badge variant="success">Online</Badge>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '5px 10px', backgroundColor: C.successLight, border: `1px solid rgba(5, 150, 105, 0.2)`, borderRadius: 'var(--r-md)' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: C.success }} />
+                <span style={{ fontSize: '11px', fontWeight: 600, color: C.success, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Online</span>
+              </div>
             </div>
           </div>
 
           {/* Scrollable message list; user turns are right-aligned via row-reverse.
               `minWidth: 0` + wrapping keeps long words and code from ever forcing
               the pane to overflow horizontally. */}
-          <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', padding: '18px', display: 'flex', flexDirection: 'column', gap: '14px', backgroundColor: C.bg }}>
+          <div style={{ flex: 1, minWidth: 0, overflowY: 'auto', overflowX: 'hidden', padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: '20px', backgroundColor: C.bg, justifyContent: messages.length <= 1 ? 'center' : 'flex-start' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', width: '100%', maxWidth: '1040px', margin: '0 auto', minWidth: 0 }}>
             {messages.map(msg => (
-              <div key={msg.id} style={{ display: 'flex', gap: '10px', minWidth: 0, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
+              <div key={msg.id} style={{ display: 'flex', gap: '16px', minWidth: 0, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
                 {msg.role === 'assistant' ? (
-                  <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: selectedModelData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: selectedModelData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
                     {selectedModelData.icon}
                   </div>
                 ) : (
-                  <Avatar name="Alex Johnson" size={32} />
+                  <Avatar name="Alex Johnson" size={36} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }} />
                 )}
-                <div style={{ maxWidth: 'min(72%, 640px)', minWidth: 0, overflowWrap: 'break-word' }}>
-                  <div style={{ padding: '14px 16px', borderRadius: msg.role === 'user' ? 'var(--r-3xl) var(--r-xs) var(--r-3xl) var(--r-3xl)' : 'var(--r-xs) var(--r-3xl) var(--r-3xl) var(--r-3xl)', backgroundColor: msg.role === 'user' ? C.indigo : C.surface, color: msg.role === 'user' ? '#fff' : C.text, border: msg.role === 'assistant' ? `1px solid ${C.border}` : 'none', lineHeight: 1.65 }}>
-                    {/* `**` prefixed lines are emphasised as headings */}
+                <div style={{ maxWidth: 'min(75%, 720px)', minWidth: 0, overflowWrap: 'break-word', display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                  <div style={{ padding: '18px 22px', borderRadius: msg.role === 'user' ? '20px 20px 6px 20px' : '20px 20px 20px 6px', backgroundColor: msg.role === 'user' ? C.indigo : C.surface, color: msg.role === 'user' ? '#fff' : C.text, border: msg.role === 'assistant' ? `1px solid ${C.border}` : 'none', lineHeight: 1.75, boxShadow: msg.role === 'user' ? '0 4px 12px rgba(79, 70, 229, 0.15)' : '0 2px 10px rgba(15, 23, 42, 0.05)' }}>
                     {msg.content.split('\n').map((line, i) => (
-                      <p key={i} style={{ fontSize: '13.5px', fontWeight: line.startsWith('**') ? 600 : 400, color: msg.role === 'user' ? '#fff' : (line.startsWith('**') ? C.navy : C.text), marginBottom: line === '' ? '8px' : '2px' }}>
+                      <p key={i} style={{ fontSize: '14px', fontWeight: line.startsWith('**') ? 600 : 400, color: msg.role === 'user' ? '#fff' : (line.startsWith('**') ? C.navy : C.text), marginBottom: line === '' ? '12px' : '4px', letterSpacing: '0.01em' }}>
                         {line.replace(/\*\*/g, '')}
                       </p>
                     ))}
                   </div>
                   {msg.role === 'assistant' && (
-                    <div style={{ display: 'flex', gap: '4px', marginTop: '6px' }}>
-                      <button onClick={() => { navigator.clipboard.writeText(msg.content); }} aria-label="Copy message" style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', background: 'none', border: `1px solid ${C.border}`, borderRadius: 'var(--r-sm)', fontSize: '11.5px', color: C.text3, cursor: 'pointer', transition: 'background 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text3; }}>
-                        <IconCopy size={11} /> Copy
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '10px', paddingLeft: '4px' }}>
+                      <button onClick={() => { navigator.clipboard.writeText(msg.content); }} aria-label="Copy message" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--r-md)', fontSize: '12px', fontWeight: 500, color: C.text2, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.navy; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.surface; e.currentTarget.style.color = C.text2; }}>
+                        <IconCopy size={14} /> Copy
                       </button>
-                      <button onClick={() => toggleSave(msg.id)} aria-label={msg.saved ? 'Remove from saved' : 'Save message'} aria-pressed={!!msg.saved} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', background: 'none', border: `1px solid ${msg.saved ? C.indigo : C.border}`, borderRadius: 'var(--r-sm)', fontSize: '11.5px', color: msg.saved ? C.indigo : C.text3, cursor: 'pointer', transition: 'background 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; if (!msg.saved) e.currentTarget.style.color = C.text2; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = msg.saved ? C.indigo : C.text3; }}>
-                        <IconStar size={11} /> {msg.saved ? 'Saved' : 'Save'}
+                      <button onClick={() => toggleSave(msg.id)} aria-label={msg.saved ? 'Remove from saved' : 'Save message'} aria-pressed={!!msg.saved} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: msg.saved ? C.indigoLight : C.surface, border: `1px solid ${msg.saved ? C.indigo : C.border}`, borderRadius: 'var(--r-md)', fontSize: '12px', fontWeight: 500, color: msg.saved ? C.indigo : C.text2, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; if (!msg.saved) e.currentTarget.style.color = C.navy; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = msg.saved ? C.indigoLight : C.surface; e.currentTarget.style.color = msg.saved ? C.indigo : C.text2; }}>
+                        <IconStar size={14} /> {msg.saved ? 'Saved' : 'Save'}
                       </button>
-                      <button onClick={() => { }} aria-label="Regenerate response" style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', background: 'none', border: `1px solid ${C.border}`, borderRadius: 'var(--r-sm)', fontSize: '11.5px', color: C.text3, cursor: 'pointer', transition: 'background 0.12s, color 0.12s' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text3; }}>
-                        <IconRefresh size={11} /> Regenerate
+                      <button onClick={() => { }} aria-label="Regenerate response" style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--r-md)', fontSize: '12px', fontWeight: 500, color: C.text2, cursor: 'pointer', transition: 'all 0.2s', boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }} onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.navy; }} onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.surface; e.currentTarget.style.color = C.text2; }}>
+                        <IconRefresh size={14} /> Regenerate
                       </button>
                     </div>
                   )}
@@ -458,13 +461,14 @@ export default function AIStudy() {
               </div>
             )}
             <div ref={bottomRef} />
+            </div>
           </div>
 
           {/* Suggestions */}
           <div style={{ padding: '12px 20px 0', borderTop: `1px solid ${C.border}`, backgroundColor: C.surface, flexShrink: 0 }}>
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', minWidth: 0 }}>
+            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', minWidth: 0, width: '100%', maxWidth: '1040px', margin: '0 auto' }}>
               {suggestions.map(s => (
-                <button key={s} onClick={() => send(s)} style={{ padding: '7px 14px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-pill)', fontSize: '12px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'background 0.12s, color 0.12s, border-color 0.12s' }}
+                <button key={s} onClick={() => send(s)} style={{ display: 'inline-flex', alignItems: 'center', minHeight: '34px', padding: '0 14px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-md)', fontSize: '12px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'background 0.12s, color 0.12s, border-color 0.12s' }}
                   onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; e.currentTarget.style.color = C.indigo; e.currentTarget.style.borderColor = C.indigo; }}
                   onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; e.currentTarget.style.borderColor = C.border; }}>
                   {s}
@@ -476,7 +480,7 @@ export default function AIStudy() {
           {/* Input — a fixed-height footer row, so it can never be pushed out
               of the viewport by a long conversation. */}
           <div style={{ padding: '12px 20px 16px', backgroundColor: C.surface, flexShrink: 0 }}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', minWidth: 0 }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', minWidth: 0, width: '100%', maxWidth: '1040px', margin: '0 auto' }}>
               <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
                 <textarea
                   value={input}
@@ -485,12 +489,12 @@ export default function AIStudy() {
                   placeholder="Ask me anything academic… (Enter to send, Shift+Enter for new line)"
                   rows={2}
                   aria-label="Message the AI tutor"
-                  style={{ width: '100%', padding: '12px 14px', fontSize: '14px', borderRadius: 'var(--r-xl)', border: `1.5px solid ${C.border}`, outline: 'none', resize: 'none', fontFamily: 'inherit', color: C.text, lineHeight: 1.5, transition: 'border-color 0.15s' }}
-                  onFocus={e => e.target.style.borderColor = C.indigo}
-                  onBlur={e => e.target.style.borderColor = C.border}
+                  style={{ width: '100%', padding: '14px 16px', fontSize: '14px', borderRadius: 'var(--r-2xl)', border: `1.5px solid ${C.border}`, outline: 'none', resize: 'none', fontFamily: 'inherit', color: C.text, lineHeight: 1.5, transition: 'border-color 0.15s' }}
+                  onFocus={e => { e.target.style.borderColor = C.indigo; e.target.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.12)'; }}
+                  onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
-              <button onClick={() => send()} disabled={!input.trim() || loading} aria-label="Send message" title="Send message" style={{ width: '44px', height: '44px', borderRadius: 'var(--r-xl)', backgroundColor: C.indigo, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: !input.trim() || loading ? 'not-allowed' : 'pointer', opacity: !input.trim() || loading ? 0.45 : 1, flexShrink: 0, transition: 'background 0.15s, opacity 0.15s' }}
+              <button onClick={() => send()} disabled={!input.trim() || loading} aria-label="Send message" title="Send message" style={{ width: '46px', height: '46px', borderRadius: 'var(--r-2xl)', backgroundColor: C.indigo, border: 'none', boxShadow: '0 2px 6px rgba(79, 70, 229, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: !input.trim() || loading ? 'not-allowed' : 'pointer', opacity: !input.trim() || loading ? 0.45 : 1, flexShrink: 0, transition: 'background 0.15s, opacity 0.15s' }}
                 onMouseEnter={e => { if (input.trim() && !loading) e.currentTarget.style.backgroundColor = C.indigoHover; }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.indigo; }}>
                 <IconSend size={17} color="#fff" />
