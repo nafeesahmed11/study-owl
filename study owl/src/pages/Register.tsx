@@ -47,9 +47,27 @@ export default function Register() {
     <div style={{ minHeight: '100vh', backgroundColor: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       {/* Constrained 480px column holding the whole form */}
       <div style={{ width: '100%', maxWidth: '480px' }}>
+        <button
+          type="button"
+          onClick={() => navigate('/')}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginBottom: '20px',
+            padding: 0,
+            border: 'none',
+            background: 'none',
+            color: C.text3,
+            fontSize: '14px',
+            fontWeight: 400,
+          }}
+        >
+          <span aria-hidden="true">←</span> Back to home
+        </button>
         {/* Brand block: logo, page title, tagline */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '40px', marginBottom: '12px' }} />
+          <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '40px', width: 'auto', margin: '0 auto 12px' }} />
           <h1 style={{ fontFamily: "'Merriweather', serif", fontSize: '22px', fontWeight: 700, color: C.navy }}>Create your account</h1>
           <p style={{ fontSize: '14px', color: C.text2, marginTop: '4px' }}>Join thousands of students on Study Owl AI</p>
         </div>
