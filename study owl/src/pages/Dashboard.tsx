@@ -67,16 +67,16 @@ export default function Dashboard() {
   const batch = user?.batch || '2022';
 
   return (
-    // Page container: wide 1400px for the dashboard grid
-    <div style={{ padding: '28px 32px', maxWidth: '1400px' }}>
+    // Page container: wide 1400px for the dashboard grid (responsive padding via .dash-page)
+    <div className="dash-page">
       {/* Welcome block: greeting, academic details, and two header actions */}
       <div style={{ marginBottom: '28px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
         <div>
-          <h1 style={{ fontFamily: "'Merriweather', serif", fontSize: '24px', fontWeight: 700, color: C.navy, marginBottom: '4px' }}>
+          <h1 style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--text-display-size)', fontWeight: 'var(--text-display-weight)' as any, lineHeight: 'var(--text-display-lh)', letterSpacing: 'var(--text-display-track)', color: C.navy, marginBottom: '6px' }}>
             Good morning, {firstName} 👋
           </h1>
-          <p style={{ fontSize: '14px', color: C.text2 }}>
-            {dept} · {sem}th Semester · Batch {batch} · <span style={{ color: C.indigo, fontWeight: 500 }}>Finals in 23 days</span>
+          <p style={{ fontSize: '14px', lineHeight: 1.55, color: C.text2 }}>
+            {dept} · {sem}th Semester · Batch {batch} · <span style={{ color: C.indigo, fontWeight: 600 }}>Finals in 23 days</span>
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -94,9 +94,9 @@ export default function Dashboard() {
 
       {/* Quick actions */}
       {/* Quick-action shortcuts: six buttons, each navigating to a feature */}
-      <Card style={{ marginBottom: '28px', padding: '20px' }}>
-        <p style={{ fontSize: '13px', fontWeight: 600, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '14px' }}>Quick Actions</p>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+      <Card style={{ marginBottom: '28px', padding: '20px 20px 18px' }}>
+        <p style={{ fontSize: '12px', fontWeight: 700, color: C.textMuted, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.4, marginBottom: '14px' }}>Quick Actions</p>
+        <div className="dash-quick-actions">
           {[
             { label: 'Upload Resource', icon: <IconFolder size={15} />, path: '/app/resources', color: C.indigo },
             { label: 'Analyze Papers', icon: <IconSparkles size={15} />, path: '/app/ai-analysis', color: '#059669' },
@@ -105,7 +105,7 @@ export default function Dashboard() {
             { label: 'Add Study Task', icon: <IconCalendar size={15} />, path: '/app/planner', color: '#0EA5E9' },
             { label: 'Marks Generator', icon: <IconZap size={15} />, path: '/app/marks-generator', color: '#DC2626' },
           ].map(a => (
-            <button key={a.label} onClick={() => navigate(a.path)} style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '8px 14px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: '8px', fontSize: '13.5px', fontWeight: 500, color: C.text, cursor: 'pointer', transition: 'border-color 0.15s' }}
+            <button key={a.label} onClick={() => navigate(a.path)} style={{ display: 'flex', alignItems: 'center', gap: '8px', minHeight: '36px', padding: '8px 14px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-md)', fontSize: 'var(--text-btn-size)', fontWeight: 'var(--text-btn-weight)' as any, lineHeight: 'var(--text-btn-lh)', color: C.text, cursor: 'pointer', transition: 'border-color 0.15s, color 0.15s, background-color 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = a.color; e.currentTarget.style.color = a.color; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.text; }}>
               <span style={{ color: a.color }}>{a.icon}</span>{a.label}
@@ -115,24 +115,24 @@ export default function Dashboard() {
       </Card>
 
       {/* Two-column row: current subjects (left) and study tasks (right) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+      <div className="dash-grid-2">
         {/* Subjects */}
         <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: 600, color: C.navy }}>Current Subjects</h3>
-            <button onClick={() => navigate('/app/subjects')} style={{ fontSize: '12px', color: C.indigo, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '18px' }}>
+            <h3 style={{ fontSize: 'var(--text-h3-size)', fontWeight: 'var(--text-h3-weight)' as any, lineHeight: 'var(--text-h3-lh)', letterSpacing: '-0.005em', color: C.navy }}>Current Subjects</h3>
+            <button onClick={() => navigate('/app/subjects')} style={{ fontSize: '12.5px', fontWeight: 600, color: C.indigo, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', whiteSpace: 'nowrap' }}>
               View all <IconChevronRight size={12} color={C.indigo} />
             </button>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
             {subjects.map(s => (
               <div key={s.code} onClick={() => navigate('/app/subjects')} style={{ cursor: 'pointer' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                  <div>
-                    <p style={{ fontSize: '13.5px', fontWeight: 600, color: C.navy }}>{s.name}</p>
-                    <p style={{ fontSize: '11.5px', color: C.text3 }}>{s.code} · {s.resources} resources · {s.papers} papers</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ fontSize: '14px', fontWeight: 600, lineHeight: 1.4, color: C.navy }}>{s.name}</p>
+                    <p style={{ fontSize: '12px', fontWeight: 500, lineHeight: 1.5, color: C.textMuted, marginTop: '2px' }}>{s.code} · {s.resources} resources · {s.papers} papers</p>
                   </div>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: s.color }}>{s.progress}%</span>
+                  <span style={{ fontSize: '13.5px', fontWeight: 700, lineHeight: 1.3, fontVariantNumeric: 'tabular-nums', color: s.color, flexShrink: 0 }}>{s.progress}%</span>
                 </div>
                 <ProgressBar value={s.progress} color={s.color} />
               </div>
@@ -142,21 +142,21 @@ export default function Dashboard() {
 
         {/* Study Tasks */}
         <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: 600, color: C.navy }}>Study Tasks</h3>
-            <button onClick={() => navigate('/app/planner')} style={{ fontSize: '12px', color: C.indigo, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '18px' }}>
+            <h3 style={{ fontSize: 'var(--text-h3-size)', fontWeight: 'var(--text-h3-weight)' as any, lineHeight: 'var(--text-h3-lh)', letterSpacing: '-0.005em', color: C.navy }}>Study Tasks</h3>
+            <button onClick={() => navigate('/app/planner')} style={{ fontSize: '12.5px', fontWeight: 600, color: C.indigo, background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '2px', whiteSpace: 'nowrap' }}>
               Open Planner <IconChevronRight size={12} color={C.indigo} />
             </button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {tasks.map((t, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', backgroundColor: t.done ? C.surface2 : C.surface, border: `1px solid ${C.border}`, borderRadius: '10px', opacity: t.done ? 0.6 : 1 }}>
-                <div style={{ width: '18px', height: '18px', borderRadius: '50%', border: `2px solid ${t.done ? C.success : C.border}`, backgroundColor: t.done ? C.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', minHeight: '56px', padding: '10px 12px', backgroundColor: t.done ? C.surface2 : C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--r-lg)', opacity: t.done ? 0.65 : 1 }}>
+                <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: `2px solid ${t.done ? C.success : C.border}`, backgroundColor: t.done ? C.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   {t.done && <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '13.5px', fontWeight: 500, color: C.text, textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</p>
-                  <p style={{ fontSize: '11.5px', color: C.text3 }}>Due: {t.due}</p>
+                  <p style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.45, color: C.text, textDecoration: t.done ? 'line-through' : 'none' }}>{t.title}</p>
+                  <p style={{ fontSize: '12px', fontWeight: 500, lineHeight: 1.5, color: C.textMuted, marginTop: '2px' }}>Due: {t.due}</p>
                 </div>
                 <Badge variant={priorityBadge(t.priority) as any}>{t.priority}</Badge>
               </div>
@@ -166,22 +166,22 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom row: recent resources (wide) and AI insights (340px sidebar) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px' }}>
+      <div className="dash-grid-aside">
         {/* Recent resources */}
         <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '15px', fontWeight: 600, color: C.navy }}>Recent Resources</h3>
-            <button onClick={() => navigate('/app/resources')} style={{ fontSize: '12px', color: C.indigo, background: 'none', border: 'none', cursor: 'pointer' }}>View Library</button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '18px' }}>
+            <h3 style={{ fontSize: 'var(--text-h3-size)', fontWeight: 'var(--text-h3-weight)' as any, lineHeight: 'var(--text-h3-lh)', letterSpacing: '-0.005em', color: C.navy }}>Recent Resources</h3>
+            <button onClick={() => navigate('/app/resources')} style={{ fontSize: '12.5px', fontWeight: 600, color: C.indigo, background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}>View Library</button>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {recentResources.map((r, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', backgroundColor: C.surface2, borderRadius: '10px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', minHeight: '64px', padding: '12px', backgroundColor: C.surface2, borderRadius: 'var(--r-lg)' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: 'var(--r-lg)', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, flexShrink: 0 }}>
                   <IconFileText size={18} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '13.5px', fontWeight: 500, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.title}</p>
-                  <p style={{ fontSize: '12px', color: C.text3 }}>{r.subject} · By {r.by}</p>
+                  <p style={{ fontSize: '14px', fontWeight: 500, lineHeight: 1.45, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.title}</p>
+                  <p style={{ fontSize: '12px', fontWeight: 500, lineHeight: 1.5, color: C.textMuted, marginTop: '2px' }}>{r.subject} · By {r.by}</p>
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                   <Badge variant="navy">{r.type}</Badge>
@@ -194,17 +194,20 @@ export default function Dashboard() {
 
         {/* AI Insights */}
         <Card style={{ backgroundColor: '#F8F7FF', border: `1px solid #E4E2FF` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '8px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <IconBrain size={15} color={C.indigo} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
+            <div style={{ width: '30px', height: '30px', borderRadius: 'var(--r-md)', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <IconBrain size={16} color={C.indigo} />
             </div>
-            <h3 style={{ fontSize: '15px', fontWeight: 600, color: C.navy }}>AI Study Insights</h3>
+            <div style={{ minWidth: 0 }}>
+              <h3 style={{ fontSize: 'var(--text-h3-size)', fontWeight: 'var(--text-h3-weight)' as any, lineHeight: 'var(--text-h3-lh)', letterSpacing: '-0.005em', color: C.navy }}>AI Study Insights</h3>
+              <p style={{ fontSize: '11.5px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', lineHeight: 1.4, color: C.purple, marginTop: '2px' }}>Powered by Owl AI</p>
+            </div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {aiInsights.map((ins, i) => (
-              <div key={i} style={{ padding: '12px', backgroundColor: C.surface, border: `1px solid #E4E2FF`, borderRadius: '10px' }}>
-                <p style={{ fontSize: '13px', color: C.text, lineHeight: 1.5, marginBottom: '8px' }}>{ins.text}</p>
-                <button onClick={() => navigate('/app/ai-analysis')} style={{ fontSize: '12px', fontWeight: 600, color: C.indigo, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>{ins.action} →</button>
+              <div key={i} style={{ padding: '12px 14px', backgroundColor: C.surface, border: `1px solid #E4E2FF`, borderRadius: 'var(--r-lg)' }}>
+                <p style={{ fontSize: '13.5px', lineHeight: 1.6, color: C.text, marginBottom: '8px' }}>{ins.text}</p>
+                <button onClick={() => navigate('/app/ai-analysis')} style={{ fontSize: '12.5px', fontWeight: 600, lineHeight: 1.3, color: C.indigo, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>{ins.action} →</button>
               </div>
             ))}
           </div>

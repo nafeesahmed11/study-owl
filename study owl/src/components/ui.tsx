@@ -6,7 +6,7 @@ export const C = {
   bg: '#F7F7FA', surface: '#FFFFFF', surface2: '#F1F1F6', border: '#E2E2E8',
   navy: '#0F172A', navyMid: '#1E1B4B',
   indigo: '#4F46E5', indigoHover: '#4338CA', indigoLight: '#EEF2FF',
-  text: '#1E293B', text2: '#475569', text3: '#94A3B8',
+  text: '#1E293B', text2: '#475569', text3: '#94A3B8', textMuted: '#64748B',
   success: '#059669', successLight: '#ECFDF5',
   warning: '#D97706', warningLight: '#FFFBEB',
   error: '#DC2626', errorLight: '#FEF2F2',
@@ -35,10 +35,10 @@ const btnHover: Record<BtnVariant, CSSProperties> = {
 };
 
 const btnPad: Record<BtnSize, string> = {
-  xs: '4px 10px', sm: '6px 14px', md: '9px 18px', lg: '12px 24px',
+  xs: '5px 12px', sm: '8px 16px', md: '10px 20px', lg: '12px 24px',
 };
 const btnFont: Record<BtnSize, string> = {
-  xs: '12px', sm: '13px', md: '14px', lg: '15px',
+  xs: '12px', sm: '13.5px', md: '14px', lg: '15px',
 };
 
 interface BtnProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -62,8 +62,10 @@ export function Btn({
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
       style={{
-        display: 'inline-flex', alignItems: 'center', gap: '6px',
-        padding: btnPad[size], fontSize: btnFont[size], fontWeight: 500,
+        display: 'inline-flex', alignItems: 'center', gap: '8px',
+        minHeight: size === 'xs' ? '28px' : size === 'sm' ? '36px' : size === 'md' ? '40px' : '44px',
+        padding: btnPad[size], fontSize: btnFont[size], fontWeight: 600, lineHeight: 1.3,
+        letterSpacing: '0.005em',
         borderRadius: 'var(--r-md)', cursor: rest.disabled ? 'not-allowed' : 'pointer',
         transition: 'background 0.15s, opacity 0.15s',
         opacity: (rest.disabled || loading) ? 0.55 : 1,
@@ -102,8 +104,9 @@ export function Badge({ variant = 'default', children, style }: {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: '4px',
-      padding: '2px 8px', borderRadius: 'var(--r-pill)',
-      fontSize: '11px', fontWeight: 600, whiteSpace: 'nowrap',
+      padding: '3px 10px', borderRadius: 'var(--r-pill)',
+      fontSize: 'var(--text-badge-size)', fontWeight: 'var(--text-badge-weight)' as any,
+      lineHeight: 'var(--text-badge-lh)', letterSpacing: '0.02em', whiteSpace: 'nowrap',
       backgroundColor: bg, color: fg, ...style,
     }}>
       {children}
@@ -255,7 +258,7 @@ export function ProgressBar({ value, max = 100, color, style }: {
 }) {
   const pct = Math.min(100, Math.max(0, (value / max) * 100));
   return (
-    <div style={{ height: '6px', borderRadius: '99px', backgroundColor: C.surface2, overflow: 'hidden', ...style }}>
+    <div role="progressbar" aria-valuenow={Math.round(pct)} aria-valuemin={0} aria-valuemax={100} style={{ height: '8px', borderRadius: '99px', backgroundColor: C.surface2, overflow: 'hidden', ...style }}>
       <div style={{
         height: '100%', width: `${pct}%`, borderRadius: '99px',
         backgroundColor: color || C.indigo, transition: 'width 0.4s ease',
@@ -304,10 +307,10 @@ export function StatCard({ icon, label, value, sub, color, style }: {
   return (
     <Card style={style}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
-        <div>
-          <p style={{ fontSize: '13px', color: C.text2, marginBottom: '6px' }}>{label}</p>
-          <p style={{ fontSize: '26px', fontWeight: 700, color: C.navy, lineHeight: 1 }}>{value}</p>
-          {sub && <p style={{ fontSize: '12px', color: C.text3, marginTop: '4px' }}>{sub}</p>}
+        <div style={{ minWidth: 0 }}>
+          <p style={{ fontSize: '13px', fontWeight: 500, lineHeight: 1.4, color: C.text2, marginBottom: '6px' }}>{label}</p>
+          <p style={{ fontSize: 'var(--text-stat-size)', fontWeight: 'var(--text-stat-weight)' as any, color: C.navy, lineHeight: 'var(--text-stat-lh)', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
+          {sub && <p style={{ fontSize: '12px', fontWeight: 500, lineHeight: 1.5, color: C.textMuted, marginTop: '6px' }}>{sub}</p>}
         </div>
         <div style={{
           width: '44px', height: '44px', borderRadius: 'var(--r-xl)',
@@ -343,8 +346,8 @@ export function PageHeader({ title, sub, actions, style }: {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', marginBottom: '24px', flexWrap: 'wrap', ...style }}>
       <div>
-        <h1 style={{ fontSize: '22px', fontWeight: 700, color: C.navy, fontFamily: "'Merriweather', serif" }}>{title}</h1>
-        {sub && <p style={{ fontSize: '14px', color: C.text2, marginTop: '4px' }}>{sub}</p>}
+        <h1 style={{ fontSize: 'var(--text-display-size)', fontWeight: 'var(--text-display-weight)' as any, lineHeight: 'var(--text-display-lh)', letterSpacing: 'var(--text-display-track)', color: C.navy, fontFamily: 'var(--font-sans)' }}>{title}</h1>
+        {sub && <p style={{ fontSize: '14px', lineHeight: 1.55, color: C.text2, marginTop: '4px' }}>{sub}</p>}
       </div>
       {actions && <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>{actions}</div>}
     </div>

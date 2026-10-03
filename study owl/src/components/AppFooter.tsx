@@ -7,9 +7,9 @@ import { C } from "./ui";
  *   slimmed down so it does not steal height from full-height pages such as
  *   the AI Study chat. The Privacy/Terms/Contact links are placeholders,
  *   exactly as they are on the Landing page.
- * Layout: hidden below 1024px via the `.app-footer` class so it never collides
- *   with the fixed MobileNav; AppLayout's media query switches it back on for
- *   desktop, matching the `.sidebar-desktop` / `.mobile-nav-show` pattern.
+ * Layout: rendered from 1024px up via the `.app-footer` class, matching the
+ *   `.sidebar-desktop` pattern; AppLayout's media query switches it on for
+ *   desktop only.
  */
 export function AppFooter() {
   return (

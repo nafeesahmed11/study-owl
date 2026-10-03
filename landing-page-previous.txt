@@ -217,59 +217,9 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Animated Study Owl dashboard preview */}
-        <div className="landing-hero-scene" role="img" aria-label="Animated Study Owl dashboard preview showing study progress, course materials, and an AI study assistant.">
-          <div className="landing-scene-window">
-            <div className="landing-scene-topbar">
-              <div className="landing-scene-dots" aria-hidden="true"><span /><span /><span /></div>
-              <span className="landing-scene-brand">Study Owl <span>workspace</span></span>
-              <span className="landing-scene-avatar" aria-hidden="true">A</span>
-            </div>
-            <div className="landing-scene-content">
-              <aside className="landing-scene-sidebar" aria-hidden="true">
-                <div className="landing-scene-nav active"><span className="landing-scene-nav-icon">⌂</span> Dashboard</div>
-                <div className="landing-scene-nav"><span className="landing-scene-nav-icon">▤</span> My resources</div>
-                <div className="landing-scene-nav"><span className="landing-scene-nav-icon">◷</span> Study planner</div>
-                <div className="landing-scene-nav"><span className="landing-scene-nav-icon">▥</span> My progress</div>
-                <div className="landing-scene-sidebar-label">MY SUBJECTS</div>
-                <div className="landing-scene-subject"><i className="subject-indigo" /> Computer Science</div>
-                <div className="landing-scene-subject"><i className="subject-teal" /> Mathematics</div>
-                <div className="landing-scene-subject"><i className="subject-amber" /> Physics</div>
-              </aside>
-              <div className="landing-scene-main">
-                <div className="landing-scene-greeting">
-                  <div><span className="landing-scene-date">MONDAY, OCTOBER 3</span><h3>Good morning, Alex <span>✦</span></h3></div>
-                  <div className="landing-scene-streak"><span>✦</span> 5 day streak</div>
-                </div>
-                <div className="landing-scene-stats">
-                  <div className="landing-scene-stat"><span>This week</span><strong>8.5 hrs</strong><small>↑ 2.5 hrs</small></div>
-                  <div className="landing-scene-stat"><span>Tasks done</span><strong>12 <em>/ 16</em></strong><small>Keep it up!</small></div>
-                  <div className="landing-scene-stat"><span>Quiz average</span><strong>86%</strong><small>↑ 8% this month</small></div>
-                </div>
-                <div className="landing-scene-panels">
-                  <div className="landing-scene-panel landing-scene-progress">
-                    <div className="landing-scene-panel-heading">Your study progress <span>This week⌄</span></div>
-                    <div className="landing-scene-chart" aria-hidden="true">
-                      <div className="landing-scene-chart-bars"><i /><i /><i /><i /><i /><i /><i /></div>
-                      <div className="landing-scene-chart-days"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
-                    </div>
-                  </div>
-                  <div className="landing-scene-panel landing-scene-assistant">
-                    <div className="landing-scene-assistant-icon" aria-hidden="true">✦</div>
-                    <div className="landing-scene-panel-heading">AI study assistant <span className="landing-scene-online">● Online</span></div>
-                    <p>Ready when you are. What would you like to learn today?</p>
-                    <div className="landing-scene-prompt">Explain a concept... <span>↑</span></div>
-                  </div>
-                </div>
-                <div className="landing-scene-continue">
-                  <div className="landing-scene-book" aria-hidden="true">▤</div>
-                  <div><strong>Continue learning</strong><span>Data Structures · Chapter 4</span></div>
-                  <div className="landing-scene-continue-progress"><i /></div>
-                  <span className="landing-scene-percent">68%</span>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Hero video card */}
+        <div style={{ width: '100%', height: '380px', borderRadius: '24px', backgroundColor: '#F1F1F6', border: `1px solid ${C.border}`, boxShadow: '0 4px 24px rgba(0,0,0,0.06)', overflow: 'hidden', position: 'relative' }}>
+          <video src="/assets/hero-video.mp4" autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           <div style={{ position: 'absolute', bottom: '20px', left: '20px', display: 'flex', gap: '8px' }}>
             {['Organized', 'AI-Powered', 'Community-Driven'].map(tag => (
               <span key={tag} style={{ padding: '5px 12px', backgroundColor: 'rgba(255,255,255,0.9)', borderRadius: '99px', fontSize: '12px', fontWeight: 600, color: C.navy, backdropFilter: 'blur(8px)' }}>{tag}</span>
@@ -348,7 +298,7 @@ export default function Landing() {
       {/* CTA */}
       <section style={{ backgroundColor: C.indigoLight, padding: '80px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
-          <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '48px', width: 'auto', margin: '0 auto 20px' }} />
+          <img src="/assets/ce79b.svg" alt="logo" style={{ height: '48px', marginBottom: '20px' }} />
           <h2 style={{ fontFamily: "'Merriweather', serif", fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>
             Start your academic journey today.
           </h2>

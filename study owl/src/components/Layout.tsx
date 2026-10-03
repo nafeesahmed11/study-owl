@@ -38,7 +38,7 @@ function NavGroup({ label, items, onClose, collapsed }: { label: string; items: 
   const location = useLocation();
   return (
     <div style={{ marginBottom: '16px' }}>
-      <p className="app-nav-group-label" style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.text3, padding: '0 20px 8px', userSelect: 'none' }}>
+      <p className="app-nav-group-label" style={{ fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', lineHeight: 1.4, color: C.textMuted, padding: '0 20px 8px', userSelect: 'none' }}>
         {label}
       </p>
       {items.map(item => {
@@ -47,8 +47,9 @@ function NavGroup({ label, items, onClose, collapsed }: { label: string; items: 
           <NavLink key={item.path} to={item.path} style={{ textDecoration: 'none' }}>
             <div className="app-nav-item" title={collapsed ? item.label : undefined} style={{
               display: 'flex', alignItems: 'center', gap: '12px',
-              padding: '10px 14px', margin: '2px 12px', borderRadius: 'var(--r-lg)',
-              fontSize: '14px', fontWeight: active ? 600 : 500,
+              padding: '10px 14px', minHeight: '40px', margin: '2px 12px', borderRadius: 'var(--r-lg)',
+              fontSize: 'var(--text-nav-size)', fontWeight: active ? 600 : 500, lineHeight: 1.4,
+              letterSpacing: active ? '-0.005em' : '0',
               color: active ? C.indigo : C.text2,
               backgroundColor: active ? C.indigoLight : 'transparent', boxShadow: active ? 'inset 2px 0 0 0 #4F46E5' : 'none',
               transition: 'all 0.2s ease',
@@ -86,8 +87,8 @@ function Sidebar({ onClose, collapsed = false }: { onClose?: () => void; collaps
         >
           <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '36px', width: 'auto', flexShrink: 0 }} />
           <div className="app-sidebar-brand-text">
-            <p style={{ fontSize: '15px', fontWeight: 800, color: C.navy, lineHeight: 1.2, letterSpacing: '-0.01em' }}>Study Owl AI</p>
-            <p style={{ fontSize: '11px', fontWeight: 500, color: C.text3, lineHeight: 1, marginTop: '2px' }}>Academic Platform</p>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: C.navy, lineHeight: 1.2, letterSpacing: '-0.01em' }}>Study Owl AI</p>
+            <p style={{ fontSize: '11.5px', fontWeight: 500, color: C.textMuted, lineHeight: 1.4, marginTop: '2px' }}>Academic Platform</p>
           </div>
           {onClose && (
             <button
@@ -160,7 +161,7 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
           placeholder="Search resources, papers, topics…"
           aria-label="Search resources, papers and topics"
           style={{
-            width: '100%', padding: '9px 16px 9px 40px', fontSize: '14px',
+            width: '100%', padding: '9px 16px 9px 40px', fontSize: '14px', lineHeight: 1.5,
             borderRadius: 'var(--r-pill)', border: `1px solid ${C.border}`, backgroundColor: C.bg,
             color: C.text, outline: 'none', transition: 'all 0.2s ease',
           }}
@@ -173,7 +174,7 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
         <button className="desktop-only" style={{
           display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
           backgroundColor: C.indigo, color: '#fff', border: 'none', borderRadius: 'var(--r-pill)',
-          fontSize: '14px', fontWeight: 600, cursor: 'pointer',
+          fontSize: '13.5px', fontWeight: 600, lineHeight: 1.3, letterSpacing: '0.005em', cursor: 'pointer',
           transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)',
         }}
         onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoHover; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(79, 70, 229, 0.25)'; }}
@@ -237,33 +238,6 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
   );
 }
 
-// Mobile bottom nav
-function MobileNav() {
-  const location = useLocation();
-  const mobileItems = [
-    { label: 'Home', path: '/app/dashboard', icon: <IconHome size={20} /> },
-    { label: 'Subjects', path: '/app/subjects', icon: <IconBook size={20} /> },
-    { label: 'AI', path: '/app/ai-study', icon: <IconBrain size={20} /> },
-    { label: 'Quiz', path: '/app/quiz', icon: <IconCheck size={20} /> },
-    { label: 'More', path: '/app/community', icon: <IconUsers size={20} /> },
-  ];
-  return (
-    <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: C.surface, borderTop: `1px solid ${C.border}`, display: 'flex', zIndex: 100, paddingBottom: 'env(safe-area-inset-bottom)' }}>
-      {mobileItems.map(item => {
-        const active = location.pathname.startsWith(item.path);
-        return (
-          <NavLink key={item.path} to={item.path} style={{ flex: 1, textDecoration: 'none' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 4px', color: active ? C.indigo : C.text3, gap: '2px' }}>
-              {item.icon}
-              <span style={{ fontSize: '10px', fontWeight: active ? 600 : 400 }}>{item.label}</span>
-            </div>
-          </NavLink>
-        );
-      })}
-    </div>
-  );
-}
-
 export function AppLayout() {
   // Mobile drawer visibility; the desktop sidebar ignores this entirely
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -304,11 +278,8 @@ export function AppLayout() {
           .app-footer { display: flex !important; }
         }
         @media (max-width: 1023px) {
-          .mobile-nav-show { display: flex !important; }
           .mobile-only { display: flex !important; }
           .desktop-only { display: none !important; }
-          /* Clearance for the fixed MobileNav — only where it exists. */
-          .app-main { padding-bottom: 80px !important; }
         }
 
         /* Desktop navigation rail. Collapsing hides the labels visually but
@@ -334,8 +305,8 @@ export function AppLayout() {
         }
 
         /* Mobile drawer: fixed overlay panel, slid with a 300ms transform.
-           z-index must clear the TopBar (50) and MobileNav (100), so the
-           drawer sits at 210 and the backdrop at 200. */
+           z-index must clear the TopBar (50), so the drawer sits at 210 and
+           the backdrop at 200. */
         .mobile-drawer {
           display: flex;
           position: fixed;
@@ -405,10 +376,6 @@ export function AppLayout() {
           (including under the sidebar) and pins to the bottom edge. */}
       <AppFooter />
 
-      {/* Mobile bottom nav */}
-      <div className="mobile-nav-show" style={{ display: 'none' }}>
-        <MobileNav />
-      </div>
     </div>
   );
 }

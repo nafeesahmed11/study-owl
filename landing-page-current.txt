@@ -1,0 +1,33 @@
+﻿import { LandingNav } from "../components/landing/LandingNav";
+import { Hero } from "../components/landing/Hero";
+import { ValueStrip } from "../components/landing/ValueStrip";
+import { Features } from "../components/landing/Features";
+import { ProductShowcase } from "../components/landing/ProductShowcase";
+import { HowItWorks } from "../components/landing/HowItWorks";
+import { AICapabilities } from "../components/landing/AICapabilities";
+import { FinalCTA } from "../components/landing/FinalCTA";
+import { LandingFooter } from "../components/landing/LandingFooter";
+
+/**
+ * Page: Landing (/) — the public marketing site, no auth required.
+ * This component is intentionally a thin composition layer: every section
+ * is a reusable component driven by static marketing copy. All navigation
+ * destinations are unchanged (/login, /register, #features).
+ */
+export default function Landing() {
+  return (
+    <div className="landing-page">
+      <LandingNav />
+      <main>
+        <Hero />
+        <ValueStrip />
+        <Features />
+        <ProductShowcase />
+        <HowItWorks />
+        <AICapabilities />
+        <FinalCTA />
+      </main>
+      <LandingFooter />
+    </div>
+  );
+}

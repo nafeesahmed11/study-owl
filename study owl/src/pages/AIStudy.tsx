@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { C, Card, Btn, Badge, Avatar } from "../components/ui";
-import { IconBrain, IconSend, IconCopy, IconStar, IconRefresh, IconPlus, IconFileText, IconSparkles, IconCheck, IconChevronRight, IconMessageCircle, IconDownload, IconTerminal } from "../components/Icons";
+import { IconBrain, IconSend, IconCopy, IconStar, IconRefresh, IconPlus, IconFileText, IconSparkles, IconCheck, IconChevronLeft, IconChevronRight, IconMessageCircle, IconDownload, IconTerminal } from "../components/Icons";
 import claudeLogo from "../image/clude logo.png";
 
 const ClaudeIcon = ({ size = 18 }) => (
@@ -142,12 +142,37 @@ export default function AIStudy() {
   ]);
   // Anchor for auto-scrolling; always kept at the end of the message list
   const bottomRef = useRef<HTMLDivElement>(null);
+  // Suggestion strip: ref + arrow visibility for the overflow-aware chip scroller.
+  const suggScrollRef = useRef<HTMLDivElement>(null);
+  const [showSuggLeft, setShowSuggLeft] = useState(false);
+  const [showSuggRight, setShowSuggRight] = useState(false);
 
   // Look up the active model's display data, falling back to the first entry
   const selectedModelData = AI_MODELS.find(m => m.id === selectedModel) || AI_MODELS[0];
 
   // Scroll to the newest message whenever the conversation grows
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  // Suggestion-strip arrows: visible only on real overflow; left shows past scrollLeft 0,
+  // right shows while content remains to the right. Re-evaluated on scroll, resize,
+  // container resize (ResizeObserver) and whenever messages change.
+  useEffect(() => {
+    const el = suggScrollRef.current;
+    if (!el) return;
+    const updateSuggArrows = () => {
+      const node = suggScrollRef.current;
+      if (!node) return;
+      const canScroll = node.scrollWidth > node.clientWidth + 1;
+      setShowSuggLeft(canScroll && node.scrollLeft > 1);
+      setShowSuggRight(canScroll && node.scrollLeft + node.clientWidth < node.scrollWidth - 1);
+    };
+    updateSuggArrows();
+    el.addEventListener('scroll', updateSuggArrows, { passive: true });
+    window.addEventListener('resize', updateSuggArrows);
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') { ro = new ResizeObserver(updateSuggArrows); ro.observe(el); }
+    return () => { el.removeEventListener('scroll', updateSuggArrows); window.removeEventListener('resize', updateSuggArrows); if (ro) ro.disconnect(); };
+  }, [messages]);
 
   // Keep the Lab Canvas in step with the 1440px inline/drawer switch, so
   // resizing the window never leaves it stuck closed or half off-screen.
@@ -466,7 +491,13 @@ export default function AIStudy() {
 
           {/* Suggestions */}
           <div style={{ padding: '12px 20px 0', borderTop: `1px solid ${C.border}`, backgroundColor: C.surface, flexShrink: 0 }}>
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', minWidth: 0, width: '100%', maxWidth: '1040px', margin: '0 auto' }}>
+            <div style={{ position: 'relative', width: '100%', maxWidth: '1040px', margin: '0 auto', minWidth: 0 }}>
+              {showSuggLeft && (
+                <button type='button' onClick={() => { const n = suggScrollRef.current; if (n) n.scrollBy({ left: -Math.max(n.clientWidth * 0.75, 200), behavior: 'smooth' }); }} aria-label='Scroll suggestions left' title='Scroll left' style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 2, width: '30px', height: '30px', borderRadius: '50%', backgroundColor: C.surface, border: '1px solid ' + C.border, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.text2, cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.color = C.indigo; e.currentTarget.style.borderColor = C.indigo; }} onMouseLeave={e => { e.currentTarget.style.color = C.text2; e.currentTarget.style.borderColor = C.border; }}>
+                  <IconChevronLeft size={16} />
+                </button>
+              )}
+              <div ref={suggScrollRef} className='ai-study-sugg-scroll' style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', paddingLeft: showSuggLeft ? '36px' : 0, paddingRight: showSuggRight ? '36px' : 0, minWidth: 0, width: '100%', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {suggestions.map(s => (
                 <button key={s} onClick={() => send(s)} style={{ display: 'inline-flex', alignItems: 'center', minHeight: '34px', padding: '0 14px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-md)', fontSize: '12px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'background 0.12s, color 0.12s, border-color 0.12s' }}
                   onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; e.currentTarget.style.color = C.indigo; e.currentTarget.style.borderColor = C.indigo; }}
@@ -474,7 +505,14 @@ export default function AIStudy() {
                   {s}
                 </button>
               ))}
+              </div>
+              {showSuggRight && (
+                <button type='button' onClick={() => { const n = suggScrollRef.current; if (n) n.scrollBy({ left: Math.max(n.clientWidth * 0.75, 200), behavior: 'smooth' }); }} aria-label='Scroll suggestions right' title='Scroll right' style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', zIndex: 2, width: '30px', height: '30px', borderRadius: '50%', backgroundColor: C.surface, border: '1px solid ' + C.border, boxShadow: '0 2px 8px rgba(15, 23, 42, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.text2, cursor: 'pointer' }} onMouseEnter={e => { e.currentTarget.style.color = C.indigo; e.currentTarget.style.borderColor = C.indigo; }} onMouseLeave={e => { e.currentTarget.style.color = C.text2; e.currentTarget.style.borderColor = C.border; }}>
+                  <IconChevronRight size={16} />
+                </button>
+              )}
             </div>
+            <style>{'.ai-study-sugg-scroll::-webkit-scrollbar{display:none}'}</style>
           </div>
 
           {/* Input — a fixed-height footer row, so it can never be pushed out
@@ -590,3 +628,6 @@ export default function AIStudy() {
     </div>
   );
 }
+
+
+
