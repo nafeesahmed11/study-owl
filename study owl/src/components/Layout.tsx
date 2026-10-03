@@ -34,38 +34,55 @@ const communityItems = [
   { label: "Community", path: "/app/community", icon: <IconUsers size={17} /> },
 ];
 
-function NavGroup({ label, items, onClose, collapsed }: { label: string; items: typeof navItems; onClose?: () => void; collapsed?: boolean }) {
+function NavGroup({ label, items, onClose, collapsed, collapsible = false }: { label: string; items: typeof navItems; onClose?: () => void; collapsed?: boolean; collapsible?: boolean }) {
   const location = useLocation();
+
+  const itemList = items.map(item => {
+    const active = location.pathname.startsWith(item.path);
+    return (
+      <NavLink key={item.path} to={item.path} style={{ textDecoration: 'none' }}>
+        <div className="app-nav-item" title={collapsed ? item.label : undefined} style={{
+          display: 'flex', alignItems: 'center', gap: '10px',
+          padding: '7px 12px', minHeight: '34px', margin: '1px 10px', borderRadius: 'var(--r-lg)',
+          fontSize: 'var(--text-nav-size)', fontWeight: active ? 600 : 500, lineHeight: 1.4,
+          letterSpacing: active ? '-0.005em' : '0',
+          color: active ? C.indigo : C.text2,
+          backgroundColor: active ? C.indigoLight : 'transparent', boxShadow: active ? 'inset 2px 0 0 0 #4F46E5' : 'none',
+          transition: 'background-color 0.15s ease, color 0.15s ease',
+          cursor: 'pointer',
+        }}
+        onClick={() => onClose?.()}
+        onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text; } }}
+        onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text2; } }}
+        >
+          <span style={{ display: 'flex', color: active ? C.indigo : C.text3, flexShrink: 0, transition: 'color 0.15s ease' }}>{item.icon}</span>
+          <span className="app-nav-label" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
+        </div>
+      </NavLink>
+    );
+  });
+
+  if (!collapsible) {
+    return (
+      <div style={{ marginBottom: '12px' }}>
+        <p className="app-nav-group-label" style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', lineHeight: 1.4, color: C.text3, padding: '0 20px 6px', userSelect: 'none' }}>
+          {label}
+        </p>
+        {itemList}
+      </div>
+    );
+  }
+
+  // Collapsible group (presentation only: native <details>, always rendered open
+  // on first paint so nothing is hidden by default).
   return (
-    <div style={{ marginBottom: '16px' }}>
-      <p className="app-nav-group-label" style={{ fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', lineHeight: 1.4, color: C.textMuted, padding: '0 20px 8px', userSelect: 'none' }}>
+    <details open className="app-nav-collapsible" style={{ marginBottom: '12px' }}>
+      <summary className="app-nav-group-summary" aria-label={`${label} group`} style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', lineHeight: 1.4, color: C.text3, padding: '0 20px 6px', userSelect: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', listStyle: 'none' }}>
+        <span className="app-nav-caret" style={{ display: 'inline-flex', transition: 'transform 0.15s ease' }}><IconChevronDown size={12} /></span>
         {label}
-      </p>
-      {items.map(item => {
-        const active = location.pathname.startsWith(item.path);
-        return (
-          <NavLink key={item.path} to={item.path} style={{ textDecoration: 'none' }}>
-            <div className="app-nav-item" title={collapsed ? item.label : undefined} style={{
-              display: 'flex', alignItems: 'center', gap: '12px',
-              padding: '10px 14px', minHeight: '40px', margin: '2px 12px', borderRadius: 'var(--r-lg)',
-              fontSize: 'var(--text-nav-size)', fontWeight: active ? 600 : 500, lineHeight: 1.4,
-              letterSpacing: active ? '-0.005em' : '0',
-              color: active ? C.indigo : C.text2,
-              backgroundColor: active ? C.indigoLight : 'transparent', boxShadow: active ? 'inset 2px 0 0 0 #4F46E5' : 'none',
-              transition: 'all 0.2s ease',
-              cursor: 'pointer',
-            }}
-            onClick={() => onClose?.()}
-            onMouseEnter={e => { if (!active) { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text; } }}
-            onMouseLeave={e => { if (!active) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text2; } }}
-            >
-              <span style={{ display: 'flex', color: active ? C.indigo : C.text3, flexShrink: 0, transition: 'color 0.2s ease' }}>{item.icon}</span>
-              <span className="app-nav-label" style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
-            </div>
-          </NavLink>
-        );
-      })}
-    </div>
+      </summary>
+      {itemList}
+    </details>
   );
 }
 
@@ -77,10 +94,10 @@ function Sidebar({ onClose, collapsed = false }: { onClose?: () => void; collaps
       borderRight: `1px solid ${C.border}`, backgroundColor: C.surface,
       display: 'flex', flexDirection: 'column', height: '100%',
       overflowY: 'auto', overflowX: 'hidden',
-      transition: 'width 250ms cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'width 200ms cubic-bezier(0.4, 0, 0.2, 1)',
     }}>
       {/* Logo */}
-      <div className="app-sidebar-head" style={{ padding: '24px 20px', borderBottom: `1px solid ${C.border}` }}>
+      <div className="app-sidebar-head" style={{ padding: '18px 20px', borderBottom: `1px solid ${C.border}` }}>
         <div onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', gap: '12px', cursor: 'pointer', transition: 'opacity 0.2s' }}
           onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}
@@ -94,7 +111,7 @@ function Sidebar({ onClose, collapsed = false }: { onClose?: () => void; collaps
             <button
               onClick={e => { e.stopPropagation(); onClose(); }}
               aria-label="Close menu"
-              style={{ marginLeft: 'auto', background: 'none', border: 'none', color: C.text3, display: 'flex', alignItems: 'center', padding: '6px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s ease' }}
+              style={{ marginLeft: 'auto', background: 'none', border: 'none', color: C.text3, display: 'flex', alignItems: 'center', padding: '6px', borderRadius: '8px', cursor: 'pointer', transition: 'background-color 0.15s ease, color 0.15s ease' }}
               onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text; }}
               onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text3; }}
             >
@@ -104,12 +121,13 @@ function Sidebar({ onClose, collapsed = false }: { onClose?: () => void; collaps
         </div>
       </div>
 
-      {/* Nav */}
-      <nav style={{ flex: 1, padding: '20px 0', overflowY: 'auto' }}>
+      {/* Nav: single scroll region (the sidebar root scrolls); tighter spacing keeps
+          nav links visible at 768px height. */}
+      <nav style={{ flex: 1, padding: '12px 0', overflowY: 'visible' }}>
         <NavGroup label="Main" items={navItems} onClose={onClose} collapsed={collapsed} />
-        <NavGroup label="AI Tools" items={aiItems} onClose={onClose} collapsed={collapsed} />
-        <NavGroup label="Practice" items={practiceItems} onClose={onClose} collapsed={collapsed} />
-        <NavGroup label="Community" items={communityItems} onClose={onClose} collapsed={collapsed} />
+        <NavGroup label="AI Tools" items={aiItems} onClose={onClose} collapsed={collapsed} collapsible />
+        <NavGroup label="Practice" items={practiceItems} onClose={onClose} collapsed={collapsed} collapsible />
+        <NavGroup label="Community" items={communityItems} onClose={onClose} collapsed={collapsed} collapsible />
       </nav>
     </div>
   );
@@ -122,9 +140,9 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
 
   return (
     <div style={{
-      height: '64px', borderBottom: `1px solid ${C.border}`,
+      height: '56px', borderBottom: `1px solid ${C.border}`,
       backgroundColor: C.surface, display: 'flex', alignItems: 'center',
-      padding: '0 24px', gap: '16px', position: 'sticky', top: 0, zIndex: 50,
+      padding: '0 20px', gap: '12px', position: 'sticky', top: 0, zIndex: 50,
       boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
     }}>
       <button
@@ -132,7 +150,7 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
         onClick={onMenuClick}
         aria-label="Open menu"
         aria-expanded={!!isSidebarOpen}
-        style={{ display: 'none', background: 'none', border: 'none', color: C.text2, padding: '8px', marginLeft: '-8px', borderRadius: 'var(--r-md)', cursor: 'pointer', transition: 'all 0.2s' }}
+        style={{ display: 'none', background: 'none', border: 'none', color: C.text2, padding: '8px', marginLeft: '-8px', borderRadius: 'var(--r-md)', cursor: 'pointer', transition: 'background-color 0.15s ease, color 0.15s ease' }}
         onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text; }}
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text2; }}
       >
@@ -145,7 +163,7 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
         aria-label={isNavCollapsed ? 'Expand navigation' : 'Collapse navigation'}
         aria-expanded={!isNavCollapsed}
         title={isNavCollapsed ? 'Expand navigation' : 'Collapse navigation'}
-        style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', color: C.text2, padding: '8px', marginLeft: '-8px', borderRadius: 'var(--r-md)', cursor: 'pointer', transition: 'all 0.2s' }}
+        style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', color: C.text2, padding: '8px', marginLeft: '-8px', borderRadius: 'var(--r-md)', cursor: 'pointer', transition: 'background-color 0.15s ease, color 0.15s ease' }}
         onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text; }}
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text2; }}
       >
@@ -161,9 +179,9 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
           placeholder="Search resources, papers, topics…"
           aria-label="Search resources, papers and topics"
           style={{
-            width: '100%', padding: '9px 16px 9px 40px', fontSize: '14px', lineHeight: 1.5,
+            width: '100%', padding: '7px 16px 7px 40px', fontSize: '14px', lineHeight: 1.5,
             borderRadius: 'var(--r-pill)', border: `1px solid ${C.border}`, backgroundColor: C.bg,
-            color: C.text, outline: 'none', transition: 'all 0.2s ease',
+            color: C.text, outline: 'none', transition: 'border-color 0.15s ease, background-color 0.15s ease',
           }}
           onFocus={e => { e.target.style.borderColor = C.indigo; e.target.style.backgroundColor = C.surface; e.target.style.boxShadow = '0 0 0 3px rgba(79, 70, 229, 0.1)'; }}
           onBlur={e => { e.target.style.borderColor = C.border; e.target.style.backgroundColor = C.bg; e.target.style.boxShadow = 'none'; }}
@@ -172,18 +190,18 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
 
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button className="desktop-only" style={{
-          display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
-          backgroundColor: C.indigo, color: '#fff', border: 'none', borderRadius: 'var(--r-pill)',
-          fontSize: '13.5px', fontWeight: 600, lineHeight: 1.3, letterSpacing: '0.005em', cursor: 'pointer',
-          transition: 'all 0.2s ease', boxShadow: '0 2px 4px rgba(79, 70, 229, 0.2)',
+          display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px',
+          backgroundColor: C.surface2, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-pill)',
+          fontSize: '13px', fontWeight: 600, lineHeight: 1.3, letterSpacing: '0.005em', cursor: 'pointer',
+          transition: 'background-color 0.15s ease, color 0.15s ease',
         }}
-        onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoHover; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 6px rgba(79, 70, 229, 0.25)'; }}
-        onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.indigo; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(79, 70, 229, 0.2)'; }}
+        onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; e.currentTarget.style.color = C.indigo; }}
+        onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; }}
       >
-          <IconPlus size={16} color="#fff" /> New
+          <IconPlus size={15} color="currentColor" /> New
         </button>
 
-        <button aria-label="Notifications" style={{ position: 'relative', background: 'none', border: 'none', color: C.text2, padding: '10px', display: 'flex', borderRadius: '50%', cursor: 'pointer', transition: 'all 0.2s' }}
+        <button aria-label="Notifications" style={{ position: 'relative', background: 'none', border: 'none', color: C.text2, padding: '8px', display: 'flex', borderRadius: '50%', cursor: 'pointer', transition: 'background-color 0.15s ease, color 0.15s ease' }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text; }}
           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text2; }}>
           <IconBell size={20} />
@@ -195,7 +213,7 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
             onClick={() => setProfileOpen(o => !o)}
             aria-label="Account menu"
             aria-expanded={profileOpen}
-            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 12px 6px 6px', background: 'none', border: `1px solid ${profileOpen ? C.indigo : C.border}`, borderRadius: 'var(--r-pill)', cursor: 'pointer', transition: 'all 0.2s ease', backgroundColor: profileOpen ? C.indigoLight : 'transparent' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '5px 10px 5px 5px', background: 'none', border: `1px solid ${profileOpen ? C.indigo : C.border}`, borderRadius: 'var(--r-pill)', cursor: 'pointer', transition: 'background-color 0.15s ease, border-color 0.15s ease', backgroundColor: profileOpen ? C.indigoLight : 'transparent' }}
             onMouseEnter={e => { if (!profileOpen) { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.borderColor = '#CBD5E1'; } }}
             onMouseLeave={e => { if (!profileOpen) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = C.border; } }}
           >
@@ -273,7 +291,15 @@ export function AppLayout() {
       <style>{`
         .sidebar-desktop { display: none; }
         .app-footer { display: none; }
+        /* Collapsible sidebar groups (native <details>): hide the default marker
+           and rotate the caret only while open. Inside the icon-only rail the
+           summaries hide so the groups mimic the Main group. */
+        .app-nav-group-summary::-webkit-details-marker { display: none; }
+        .app-nav-group-summary::marker { content: none; }
+        .app-nav-collapsible .app-nav-caret { transform: rotate(-90deg); }
+        .app-nav-collapsible[open] .app-nav-caret { transform: rotate(0deg); }
         @media (min-width: 1024px) {
+          .app-sidebar.is-collapsed .app-nav-group-summary { display: none; }
           .sidebar-desktop { display: block !important; }
           .app-footer { display: flex !important; }
         }

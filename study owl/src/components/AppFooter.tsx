@@ -18,20 +18,20 @@ export function AppFooter() {
       style={{
         borderTop: `1px solid ${C.border}`,
         backgroundColor: C.surface,
-        padding: '12px 24px',
+        padding: '8px 20px',
         display: 'none',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: '12px',
+        gap: '8px',
         flexShrink: 0,
       }}
     >
-      <p style={{ fontSize: '12.5px', color: C.text3 }}>© 2026 Study Owl AI. All rights reserved.</p>
+      <p style={{ fontSize: '11.5px', color: C.text3 }}>© 2026 Study Owl AI. All rights reserved.</p>
 
-      <div style={{ display: 'flex', gap: '20px' }}>
+      <div style={{ display: 'flex', gap: '16px' }}>
         {['Privacy', 'Terms', 'Contact'].map(link => (
-          <a key={link} href="#" style={{ fontSize: '12.5px', color: C.text2 }}>
+          <a key={link} href="#" style={{ fontSize: '11.5px', color: C.text2 }}>
             {link}
           </a>
         ))}

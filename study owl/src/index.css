@@ -78,19 +78,61 @@ input::placeholder, textarea::placeholder {
 /* ── Dashboard responsive grids (classNames attached in Dashboard.tsx).
    Desktop layouts are unchanged; these only stack below overflow points. ── */
 .dash-page { padding: 28px 32px; max-width: 1400px; }
-.dash-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
-.dash-grid-aside { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
-@media (max-width: 1100px) {
-  .dash-grid-aside { grid-template-columns: 1fr; }
+.dash-section { margin-bottom: 24px; }
+.dash-stats { display: grid; gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.dash-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+.dash-grid-aside { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 24px; }
+.dash-quick-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.dash-quick-actions > button, .dash-quick-actions > details { flex: 0 0 auto; }
+/* Compact, low-emphasis quick-action chips (de-emphasised vs. the header CTAs) */
+.dash-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 6px 12px;
+  background-color: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: var(--r-pill);
+  font-size: 13px; font-weight: 500; line-height: 1.3; color: var(--c-text2);
+  white-space: nowrap; cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, background-color 150ms ease;
 }
-@media (max-width: 860px) {
-  .dash-grid-2 { grid-template-columns: 1fr; }
+.dash-chip:hover { border-color: var(--c-indigo); color: var(--c-indigo); background-color: var(--c-indigo-light); }
+/* "More" overflow menu: native <details>, no JS state */
+.dash-more-menu { position: relative; }
+.dash-more-menu > summary { display: inline-flex; list-style: none; }
+.dash-more-menu > summary::-webkit-details-marker { display: none; }
+.dash-more-menu > summary::marker { content: none; }
+.dash-more {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 60;
+  min-width: 210px; padding: 6px;
+  background-color: var(--c-surface); border: 1px solid var(--c-border);
+  border-radius: var(--r-lg); box-shadow: var(--sh-2);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.dash-more > button {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 8px 10px; background: none; border: none; border-radius: var(--r-md);
+  font-size: 13.5px; font-weight: 500; line-height: 1.3; color: var(--c-text);
+  text-align: left; cursor: pointer; white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.dash-more > button:hover { background-color: var(--c-surface2); color: var(--c-indigo); }
+@media (max-width: 1100px) {
+  .dash-grid-aside { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 1023px) {
+  .dash-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-grid-2 { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 768px) {
   .dash-page { padding: 20px 16px; }
 }
-.dash-quick-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-.dash-quick-actions > button { flex: 1 1 auto; justify-content: center; }
+@media (max-width: 639px) {
+  .dash-stats { grid-template-columns: minmax(0, 1fr); }
+  /* Scrollable chip strip on phones; the "More" menu drops in-flow so it is
+     never clipped by the scroll container. */
+  .dash-quick-actions { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+  .dash-quick-actions > button, .dash-quick-actions > details { flex-shrink: 0; }
+  .dash-more { position: static; box-shadow: none; border: none; padding: 2px 0 0; min-width: 0; }
+}
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
