@@ -52,12 +52,13 @@ interface BtnProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export function Btn({
   variant = 'primary', size = 'md', icon, iconRight, loading, fullWidth,
-  children, style, ...rest
+  children, style, className, ...rest
 }: BtnProps) {
   const [hov, setHov] = useState(false);
   return (
     <button
       {...rest}
+      className={className ? `btn ${className}` : 'btn'}
       disabled={loading || rest.disabled}
       onMouseEnter={() => setHov(true)}
       onMouseLeave={() => setHov(false)}
@@ -115,7 +116,7 @@ export function Badge({ variant = 'default', children, style }: {
 }
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
-export function Card({ children, style, padding = 24, hover = false }: {
+export function Card({ children, style, padding = 20, hover = false }: {
   children: ReactNode; style?: CSSProperties; padding?: number; hover?: boolean;
 }) {
   const [hov, setHov] = useState(false);
@@ -124,8 +125,8 @@ export function Card({ children, style, padding = 24, hover = false }: {
       onMouseEnter={() => hover && setHov(true)}
       onMouseLeave={() => hover && setHov(false)}
       style={{
-        backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--r-3xl)',
-        padding, transition: 'box-shadow 0.2s, transform 0.2s',
+        backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--r-xl)',
+        padding, transition: 'box-shadow 0.2s, transform 0.2s', minWidth: 0,
         boxShadow: hov ? 'var(--sh-2)' : 'none',
         transform: hov ? 'translateY(-2px)' : 'none',
         ...style,
@@ -283,10 +284,10 @@ export function Tabs({ tabs, active, onChange, style }: {
   active: string; onChange: (id: string) => void; style?: CSSProperties;
 }) {
   return (
-    <div style={{ display: 'flex', gap: '4px', borderBottom: `1px solid ${C.border}`, ...style }}>
+    <div className="tab-scroll" style={{ display: 'flex', gap: '4px', borderBottom: `1px solid ${C.border}`, minWidth: 0, ...style }}>
       {tabs.map(t => (
         <button key={t.id} onClick={() => onChange(t.id)} style={{
-          display: 'flex', alignItems: 'center', gap: '6px',
+          display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, whiteSpace: 'nowrap',
           padding: '8px 16px', fontSize: '14px', fontWeight: 500,
           background: 'none', border: 'none', cursor: 'pointer',
           color: active === t.id ? C.indigo : C.text2,
@@ -308,7 +309,7 @@ export function StatCard({ icon, label, value, sub, color, style }: {
     <Card style={style}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px' }}>
         <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: '13px', fontWeight: 500, lineHeight: 1.4, color: C.text2, marginBottom: '6px' }}>{label}</p>
+          <p style={{ fontSize: '12.5px', fontWeight: 500, lineHeight: 1.4, letterSpacing: '0.01em', color: C.textMuted, marginBottom: '6px' }}>{label}</p>
           <p style={{ fontSize: 'var(--text-stat-size)', fontWeight: 'var(--text-stat-weight)' as any, color: C.navy, lineHeight: 'var(--text-stat-lh)', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{value}</p>
           {sub && <p style={{ fontSize: '12px', fontWeight: 500, lineHeight: 1.5, color: C.textMuted, marginTop: '6px' }}>{sub}</p>}
         </div>
@@ -360,15 +361,15 @@ export function Modal({ open, onClose, title, children, width = 480 }: {
 }) {
   if (!open) return null;
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-      <div style={{ backgroundColor: C.surface, borderRadius: 'var(--r-3xl)', width: '100%', maxWidth: width, boxShadow: 'var(--sh-3)', overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${C.border}` }}>
+    <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+      <div className="modal-panel" role="dialog" aria-modal="true" style={{ backgroundColor: C.surface, borderRadius: 'var(--r-3xl)', width: '100%', maxWidth: width, boxShadow: 'var(--sh-3)', overflow: 'hidden' }}>
+        <div className="modal-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
           <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>{title}</h3>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: C.text3, cursor: 'pointer', display: 'flex', padding: '4px' }}>
+          <button aria-label="Close dialog" onClick={onClose} style={{ background: 'none', border: 'none', color: C.text3, cursor: 'pointer', display: 'flex', padding: '4px', minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}>
             <IconX size={18} />
           </button>
         </div>
-        <div style={{ padding: '24px' }}>{children}</div>
+        <div className="modal-body" style={{ padding: '24px' }}>{children}</div>
       </div>
     </div>
   );
@@ -414,7 +415,7 @@ export function Toast({ type, message, onClose }: {
   };
   const [bg, border, icon] = map[type];
   return (
-    <div style={{
+    <div className="app-toast" style={{
       position: 'fixed', bottom: '24px', right: '24px', zIndex: 9999,
       backgroundColor: bg, border: `1px solid ${border}`,
       borderRadius: 'var(--r-lg)', padding: '12px 16px',

@@ -83,6 +83,7 @@ export default function Login() {
   return (
     // Outer centered page shell
     <div
+      className="login-page"
       style={{
         minHeight: "100vh",
         backgroundColor: C.bg,
@@ -101,9 +102,10 @@ export default function Login() {
           <div
             onClick={() => navigate("/")}
             style={{
-              display: "inline-flex",
+              display: "flex",
+              flexDirection: "column",
               alignItems: "center",
-              gap: "10px",
+              gap: "6px",
               cursor: "pointer",
               marginBottom: "14px",
             }}
@@ -151,6 +153,7 @@ export default function Login() {
             boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
             boxSizing: "border-box",
           }}
+          className="auth-card"
         >
           {/* Error banner, rendered only when `error` is set */}
           {error && (
@@ -423,4 +426,3 @@ export default function Login() {
     </div>
   );
 }
-

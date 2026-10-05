@@ -58,7 +58,7 @@ function ResourceCard({ r, grid }: { r: LibraryResource; grid: boolean }) {
 
   // List layout: a single horizontal row (icon, title/meta, type, actions)
   if (!grid) return (
-    <Card padding={14} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+    <Card padding={14} style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
       <div style={{ width: '42px', height: '42px', borderRadius: '10px', backgroundColor: C.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, flexShrink: 0 }}>
         <IconFileText size={20} />
       </div>
@@ -88,24 +88,24 @@ function ResourceCard({ r, grid }: { r: LibraryResource; grid: boolean }) {
   // Grid layout: icon + badges on top, then title, meta, and an action row
   return (
     <Card hover style={{ cursor: 'default' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: C.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', marginBottom: '12px', flexWrap: 'wrap' }}>
+        <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: C.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, flexShrink: 0 }}>
           <IconFileText size={20} />
         </div>
-        <div style={{ display: 'flex', gap: '4px' }}>
+        <div style={{ display: 'flex', gap: '4px', flexShrink: 0, flexWrap: 'wrap' }}>
           <Badge variant={typeColors[r.type] as any}>{r.type}</Badge>
           {r.verified && <Badge variant="success">✓</Badge>}
         </div>
       </div>
-      <h3 style={{ fontSize: '13.5px', fontWeight: 600, color: C.navy, marginBottom: '6px', lineHeight: 1.4 }}>{r.title}</h3>
+      <h3 style={{ fontSize: '13.5px', fontWeight: 600, color: C.navy, marginBottom: '6px', lineHeight: 1.4, overflowWrap: 'anywhere' }}>{r.title}</h3>
       <p style={{ fontSize: '12px', color: C.text3, marginBottom: '4px' }}>{r.subject}</p>
-      <p style={{ fontSize: '11.5px', color: C.text3, marginBottom: '14px' }}>By {r.by} · {r.date}</p>
+      <p style={{ fontSize: '11.5px', color: C.text3, marginBottom: '14px', overflowWrap: 'anywhere' }}>By {r.by} · {r.date}</p>
       {r.drive && (
         <div style={{ padding: '6px 10px', backgroundColor: C.surface2, borderRadius: '6px', fontSize: '11.5px', color: C.text2, marginBottom: '12px' }}>
           📁 {r.source === 'classroom' ? 'Synced from Google Classroom' : 'Stored in Google Drive'}
         </div>
       )}
-      <div style={{ display: 'flex', gap: '6px' }}>
+      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
         {/* Imported rows open in Google's own viewer; nothing is downloaded. */}
         {r.webViewLink ? (
           <a href={r.webViewLink} target="_blank" rel="noopener noreferrer" style={{ flex: 1, textDecoration: 'none' }}>
@@ -180,12 +180,12 @@ export default function Resources() {
   const types = ['all', ...Object.keys(typeColors)].map(t => ({ value: t, label: t === 'all' ? 'All Types' : t }));
 
   return (
-    // Page container: wide 1400px to fit the library grid
-    <div style={{ padding: '28px 32px', maxWidth: '1400px' }}>
+    // Page container: wide 1400px to fit the library grid (responsive via .page)
+    <div className="page" style={{ maxWidth: '1400px' }}>
       {/* Page title + Google import / sync / upload actions */}
       <PageHeader title="Resource Library" sub="Academic resources organized by subject, type, and semester"
         actions={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             {connection && <SyncStatus compact />}
             <Btn variant="secondary" icon={<IconLink size={14} />} onClick={() => setImportOpen(true)}>
               Import from Google
@@ -198,8 +198,8 @@ export default function Resources() {
       {/* Filters */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
         <SearchInput value={search} onChange={setSearch} placeholder="Search resources…" style={{ flex: 1, minWidth: '240px', maxWidth: '380px' }} />
-        <Select options={subjects} value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} style={{ width: '160px' }} />
-        <Select options={types} value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ width: '140px' }} />
+        <Select options={subjects} value={subjectFilter} onChange={e => setSubjectFilter(e.target.value)} style={{ width: '160px', maxWidth: '100%' }} />
+        <Select options={types} value={typeFilter} onChange={e => setTypeFilter(e.target.value)} style={{ width: '140px', maxWidth: '100%' }} />
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '4px' }}>
           <button onClick={() => setView('grid')} style={{ padding: '8px', borderRadius: '8px', border: `1.5px solid ${view === 'grid' ? C.indigo : C.border}`, background: view === 'grid' ? C.indigoLight : C.surface, color: view === 'grid' ? C.indigo : C.text3, cursor: 'pointer', display: 'flex' }}>
             <IconGrid size={16} />
@@ -223,7 +223,7 @@ export default function Resources() {
       {filtered.length === 0 ? (
         <EmptyState icon={<IconFolder size={28} />} title="No resources found" desc="Try adjusting your filters or upload a new resource." action={<Btn onClick={() => setUploadOpen(true)} icon={<IconUpload size={14} />}>Upload Resource</Btn>} />
       ) : view === 'grid' ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+        <div className="grid-auto">
           {filtered.map(r => <ResourceCard key={r.id} r={r} grid />)}
         </div>
       ) : (
@@ -236,7 +236,7 @@ export default function Resources() {
       <Modal open={uploadOpen} onClose={() => setUploadOpen(false)} title="Upload Resource" width={500}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Input label="Title" placeholder="e.g., DBMS Lecture Notes – Unit 3" value={uploadForm.title} onChange={e => setUploadForm(f => ({ ...f, title: e.target.value }))} fullWidth />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-2">
             <Select label="Type" options={[{ value: 'PDF', label: 'PDF' }, { value: 'Note', label: 'Lecture Note' }, { value: 'Assignment', label: 'Assignment' }, { value: 'Reference', label: 'Reference' }]} value={uploadForm.type} onChange={e => setUploadForm(f => ({ ...f, type: e.target.value }))} />
             <Select label="Subject" options={[{ value: 'DBMS', label: 'DBMS' }, { value: 'Algorithms', label: 'Algorithms' }, { value: 'CN', label: 'Computer Networks' }, { value: 'SE', label: 'Software Engineering' }]} value={uploadForm.subject} onChange={e => setUploadForm(f => ({ ...f, subject: e.target.value }))} />
           </div>
@@ -248,7 +248,7 @@ export default function Resources() {
             <p style={{ fontSize: '14px', color: C.text2, marginTop: '8px' }}>Click to select file or drag & drop</p>
             <p style={{ fontSize: '12px', color: C.text3, marginTop: '4px' }}>PDF, DOCX, PPTX up to 50MB</p>
           </div>
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+          <div className="actions-row" style={{ justifyContent: 'flex-end' }}>
             <Btn variant="secondary" onClick={() => setUploadOpen(false)}>Cancel</Btn>
             <Btn onClick={() => setUploadOpen(false)} icon={<IconUpload size={14} />}>Upload</Btn>
           </div>

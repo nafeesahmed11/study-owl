@@ -78,7 +78,7 @@ export default function Quiz() {
 
   // Setup screen: subject, question count, difficulty, and quiz facts
   if (screen === 'setup') return (
-    <div style={{ padding: '28px 32px', maxWidth: '700px', margin: '0 auto' }}>
+    <div className="page" style={{ maxWidth: '700px', margin: '0 auto' }}>
       <PageHeader title="Start a Quiz" sub="Test your knowledge with subject-specific questions" />
       <Card>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -86,23 +86,23 @@ export default function Quiz() {
           <Select label="Number of Questions" options={counts} value="5" onChange={() => {}} />
           <div>
             <p style={{ fontSize: '13px', fontWeight: 500, color: C.text, marginBottom: '8px' }}>Difficulty</p>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div className="actions-row">
               {['Easy', 'Medium', 'Hard', 'Mixed'].map(d => (
                 <button key={d} onClick={() => {}} style={{ padding: '7px 16px', border: `1.5px solid ${d === 'Mixed' ? C.indigo : C.border}`, borderRadius: '8px', backgroundColor: d === 'Mixed' ? C.indigoLight : C.surface, color: d === 'Mixed' ? C.indigo : C.text2, fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>{d}</button>
               ))}
             </div>
           </div>
           {/* Quiz facts row: question count, time limit, question type */}
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <div style={{ flex: 1, padding: '14px', backgroundColor: C.surface2, borderRadius: '10px', textAlign: 'center' }}>
+          <div className="actions-row" style={{ gap: '8px' }}>
+            <div style={{ flex: '1 1 120px', padding: '14px', backgroundColor: C.surface2, borderRadius: '10px', textAlign: 'center' }}>
               <p style={{ fontSize: '20px', fontWeight: 700, color: C.navy }}>5</p>
               <p style={{ fontSize: '12px', color: C.text3 }}>Questions</p>
             </div>
-            <div style={{ flex: 1, padding: '14px', backgroundColor: C.surface2, borderRadius: '10px', textAlign: 'center' }}>
+            <div style={{ flex: '1 1 120px', padding: '14px', backgroundColor: C.surface2, borderRadius: '10px', textAlign: 'center' }}>
               <p style={{ fontSize: '20px', fontWeight: 700, color: C.navy }}>15 min</p>
               <p style={{ fontSize: '12px', color: C.text3 }}>Time Limit</p>
             </div>
-            <div style={{ flex: 1, padding: '14px', backgroundColor: C.surface2, borderRadius: '10px', textAlign: 'center' }}>
+            <div style={{ flex: '1 1 120px', padding: '14px', backgroundColor: C.surface2, borderRadius: '10px', textAlign: 'center' }}>
               <p style={{ fontSize: '20px', fontWeight: 700, color: C.navy }}>MCQ</p>
               <p style={{ fontSize: '12px', color: C.text3 }}>Question Type</p>
             </div>
@@ -119,7 +119,7 @@ export default function Quiz() {
     const grade = pct >= 80 ? 'Excellent' : pct >= 60 ? 'Good' : pct >= 40 ? 'Fair' : 'Needs Work';
     const gradeColor = pct >= 80 ? C.success : pct >= 60 ? C.indigo : pct >= 40 ? C.warning : C.error;
     return (
-      <div style={{ padding: '28px 32px', maxWidth: '700px', margin: '0 auto' }}>
+      <div className="page" style={{ maxWidth: '700px', margin: '0 auto' }}>
         {/* Score summary card: award icon, grade, percentage, progress bar */}
         <Card style={{ textAlign: 'center', marginBottom: '20px' }}>
           <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: gradeColor + '15', border: `3px solid ${gradeColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
@@ -129,7 +129,7 @@ export default function Quiz() {
           <p style={{ fontSize: '48px', fontWeight: 900, color: gradeColor, lineHeight: 1 }}>{pct}%</p>
           <p style={{ fontSize: '14px', color: C.text2, marginTop: '6px' }}>{score} out of {quizData.questions.length} correct</p>
           <ProgressBar value={pct} color={gradeColor} style={{ margin: '20px 0 16px' }} />
-          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+          <div className="actions-row" style={{ justifyContent: 'center' }}>
             <Btn variant="secondary" icon={<IconRefresh size={14} />} onClick={restart}>Retake Quiz</Btn>
             <Btn>View Study Suggestions</Btn>
           </div>
@@ -144,11 +144,11 @@ export default function Quiz() {
             const correct = userAns === question.answer;
             return (
               <Card key={i} padding={18}>
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px', flexWrap: 'wrap' }}>
                   <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: correct ? C.successLight : C.errorLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {correct ? <IconCheck size={14} color={C.success} /> : <IconX size={14} color={C.error} />}
                   </div>
-                  <p style={{ fontSize: '14px', fontWeight: 500, color: C.text, lineHeight: 1.5 }}>{question.q}</p>
+                  <p style={{ fontSize: '14px', fontWeight: 500, color: C.text, lineHeight: 1.5, flex: '1 1 200px', minWidth: 0, overflowWrap: 'anywhere' }}>{question.q}</p>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingLeft: '34px' }}>
                   {question.options.map((opt, j) => {
@@ -178,7 +178,7 @@ export default function Quiz() {
   // Count of questions the user has answered, shown as a badge
   const answered = selected.filter(s => s !== null).length;
   return (
-    <div style={{ padding: '28px 32px', maxWidth: '700px', margin: '0 auto' }}>
+    <div className="page" style={{ maxWidth: '700px', margin: '0 auto' }}>
       {/* Progress bar */}
       <div style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -211,7 +211,7 @@ export default function Quiz() {
       </Card>
 
       {/* Navigation */}
-      <div style={{ display: 'flex', gap: '10px' }}>
+      <div className="actions-row">
         <Btn variant="secondary" icon={<IconChevronLeft size={14} />} onClick={prev} disabled={current === 0}>Previous</Btn>
         <div style={{ flex: 1 }} />
         {current < quizData.questions.length - 1 ? (

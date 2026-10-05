@@ -72,16 +72,17 @@ export default function MarksGenerator() {
   const copy = () => { navigator.clipboard.writeText(answer); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
   return (
-    // Page container: 1100px max width
-    <div style={{ padding: '28px 32px', maxWidth: '1100px' }}>
+    // Page container: 1100px max width (responsive padding via .page)
+    <div className="page" style={{ maxWidth: '1100px' }}>
       {/* Page title + subtitle */}
       <PageHeader title="Marks-Based Answer Generator" sub="Get structured, exam-ready answers tailored to the marks allocated" />
 
-      {/* Two-column layout: 360px input panel, flexible output panel */}
-      <div style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '20px', alignItems: 'start' }}>
+      {/* Two-column layout: 360px input panel, flexible output panel.
+          Stacks to one column on tablet and phone. */}
+      <div className="cols-input-first">
         {/* Input panel */}
         <Card>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>Generate Answer</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '20px' }}>Generate Answer</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Textarea label="Question" placeholder="e.g., Explain ACID properties in database transactions." value={question} onChange={e => setQuestion(e.target.value)} style={{ minHeight: '100px' }} />
             <Select label="Subject / Topic" options={subjects} value={subject} onChange={e => setSubject(e.target.value)} />
@@ -89,7 +90,7 @@ export default function MarksGenerator() {
             {/* Answer-length picker: one clickable tile per mark value */}
             <div>
               <p style={{ fontSize: '13px', fontWeight: 500, color: C.text, marginBottom: '8px' }}>Answer Length (Marks)</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+              <div className="tile-4">
                 {marksLevels.map(m => (
                   <button key={m.value} onClick={() => setMarks(m.value)} style={{ padding: '10px 4px', border: `1.5px solid ${marks === m.value ? C.indigo : C.border}`, borderRadius: '10px', backgroundColor: marks === m.value ? C.indigoLight : C.surface, cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s' }}>
                     <p style={{ fontSize: '14px', fontWeight: 700, color: marks === m.value ? C.indigo : C.text }}>{m.label}</p>
@@ -143,13 +144,13 @@ export default function MarksGenerator() {
           {/* Result: badge row + actions, rendered answer body, and follow-up actions */}
           {answer && !generating && (
             <Card>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', gap: '10px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <Badge variant="navy">{marks} Marks</Badge>
                   <Badge variant="default">{subject}</Badge>
                   <Badge variant="purple">AI Generated</Badge>
                 </div>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   <Btn size="xs" variant="ghost" icon={<IconCopy size={13} />} onClick={copy}>{copied ? 'Copied!' : 'Copy'}</Btn>
                   <Btn size="xs" variant={saved ? 'primary' : 'ghost'} icon={<IconStar size={13} />} onClick={() => setSaved(s => !s)}>{saved ? 'Saved' : 'Save'}</Btn>
                   <Btn size="xs" variant="secondary" icon={<IconRefresh size={13} />} onClick={generate}>Regenerate</Btn>
@@ -172,7 +173,7 @@ export default function MarksGenerator() {
               </div>
 
               {/* Follow-up actions; none of these are wired up yet */}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+              <div className="actions-row" style={{ marginTop: '16px' }}>
                 <Btn variant="secondary" size="sm">Simplify</Btn>
                 <Btn variant="secondary" size="sm">Expand</Btn>
                 <Btn variant="secondary" size="sm" icon={<IconBook size={13} />} style={{ marginLeft: 'auto' }}>Add Examples</Btn>

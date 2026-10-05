@@ -53,27 +53,27 @@ function SubjectDetail({ subject, onBack }: { subject: typeof allSubjects[0]; on
       </button>
 
       {/* Subject header card: icon, code/semester badges, teacher, coverage, counts */}
-      <div style={{ padding: '24px', backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '20px' }}>
-          <div style={{ width: '52px', height: '52px', borderRadius: '14px', backgroundColor: subject.color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ padding: '20px', backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--r-xl)', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <div style={{ width: '52px', height: '52px', borderRadius: '14px', backgroundColor: subject.color + '15', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <IconBook size={24} color={subject.color} />
           </div>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+          <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
               <Badge variant="navy">{subject.code}</Badge>
               <Badge variant="default">Semester {subject.semester}</Badge>
             </div>
-            <h2 style={{ fontSize: '20px', fontWeight: 700, color: C.navy, marginBottom: '2px' }}>{subject.name}</h2>
+            <h2 style={{ fontSize: '20px', fontWeight: 700, color: C.navy, marginBottom: '2px', overflowWrap: 'anywhere' }}>{subject.name}</h2>
             <p style={{ fontSize: '13px', color: C.text2 }}>{subject.teacher}</p>
           </div>
-          <div style={{ textAlign: 'right' }}>
-            <p style={{ fontSize: '28px', fontWeight: 700, color: subject.color }}>{subject.progress}%</p>
+          <div style={{ textAlign: 'right', marginLeft: 'auto' }}>
+            <p style={{ fontSize: '28px', fontWeight: 700, color: C.navy }}>{subject.progress}%</p>
             <p style={{ fontSize: '12px', color: C.text3 }}>coverage</p>
           </div>
         </div>
-        <ProgressBar value={subject.progress} color={subject.color} />
+        <ProgressBar value={subject.progress} />
 
-        <div style={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
+        <div style={{ display: 'flex', gap: '20px', marginTop: '16px', flexWrap: 'wrap' }}>
           {[{ label: 'Resources', value: subject.resources }, { label: 'Question Papers', value: subject.papers }, { label: 'Topics Covered', value: `${Math.round(subject.topics.length * subject.progress / 100)}/${subject.topics.length}` }].map(s => (
             <div key={s.label}>
               <p style={{ fontSize: '18px', fontWeight: 700, color: C.navy }}>{s.value}</p>
@@ -91,7 +91,7 @@ function SubjectDetail({ subject, onBack }: { subject: typeof allSubjects[0]; on
 
       {/* Overview tab: syllabus checklist + AI recommendation callout */}
       {tab === 'overview' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="cols-2">
           <Card>
             <h4 style={{ fontSize: '14px', fontWeight: 600, color: C.navy, marginBottom: '12px' }}>Syllabus Topics</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -116,12 +116,12 @@ function SubjectDetail({ subject, onBack }: { subject: typeof allSubjects[0]; on
       {tab === 'resources' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {resources.map((r, i) => (
-            <Card key={i} padding={14} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo }}>
+            <Card key={i} padding={14} style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, flexShrink: 0 }}>
                 <IconFileText size={17} />
               </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '14px', fontWeight: 500, color: C.text }}>{r.title}</p>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '14px', fontWeight: 500, color: C.text, overflowWrap: 'anywhere' }}>{r.title}</p>
                 <p style={{ fontSize: '12px', color: C.text3 }}>{r.date}</p>
               </div>
               <Badge variant="navy">{r.type}</Badge>
@@ -135,12 +135,12 @@ function SubjectDetail({ subject, onBack }: { subject: typeof allSubjects[0]; on
       {tab === 'papers' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {papers.map((p, i) => (
-            <Card key={i} padding={14} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#FFF7ED', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706' }}>
+            <Card key={i} padding={14} style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#FFF7ED', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706', flexShrink: 0 }}>
                 <IconFileText size={17} />
               </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '14px', fontWeight: 500, color: C.text }}>{p.exam} {p.year}</p>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: '14px', fontWeight: 500, color: C.text, overflowWrap: 'anywhere' }}>{p.exam} {p.year}</p>
                 <p style={{ fontSize: '12px', color: C.text3 }}>{p.marks} marks · {p.questions} questions</p>
               </div>
               {p.analyzed ? <Badge variant="success">AI Analyzed</Badge> : <Btn size="xs" variant="outline">Analyze</Btn>}
@@ -163,9 +163,9 @@ function SubjectDetail({ subject, onBack }: { subject: typeof allSubjects[0]; on
             <div key={i} style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <span style={{ fontSize: '13.5px', color: C.text }}>{t.topic}</span>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: subject.color }}>{t.frequency}%</span>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: C.navy }}>{t.frequency}%</span>
               </div>
-              <ProgressBar value={t.frequency} color={subject.color} />
+              <ProgressBar value={t.frequency} />
             </div>
           ))}
         </Card>
@@ -184,7 +184,7 @@ export default function Subjects() {
 
   // Detail view takes over the entire page when a subject is selected
   if (selected) return (
-    <div style={{ padding: '28px 32px', maxWidth: '1200px' }}>
+    <div className="page" style={{ maxWidth: '1200px' }}>
       <SubjectDetail subject={selected} onBack={() => setSelected(null)} />
     </div>
   );
@@ -193,15 +193,15 @@ export default function Subjects() {
   const filtered = allSubjects.filter(s => s.name.toLowerCase().includes(search.toLowerCase()) || s.code.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    // Page container: 1200px max width
-    <div style={{ padding: '28px 32px', maxWidth: '1200px' }}>
+    // Page container: 1200px max width (responsive padding via .page)
+    <div className="page" style={{ maxWidth: '1200px' }}>
       {/* Page title + the search box supplied as the header action */}
       <PageHeader title="My Subjects" sub="6th Semester · CSE · Batch 2022"
-        actions={<SearchInput value={search} onChange={setSearch} placeholder="Search subjects…" style={{ width: '240px' }} />}
+        actions={<SearchInput value={search} onChange={setSearch} placeholder="Search subjects…" style={{ width: '240px', maxWidth: '100%' }} />}
       />
 
-      {/* Responsive grid: min 320px per subject card */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+      {/* Responsive grid: min 320px per subject card (full-width on phone) */}
+      <div className="grid-auto grid-320">
         {filtered.map(s => (
           // Clicking anywhere in the card body expands that subject
           <Card key={s.code} hover style={{ cursor: 'pointer' }} padding={20} >
@@ -215,9 +215,9 @@ export default function Subjects() {
                   <h3 style={{ fontSize: '14.5px', fontWeight: 700, color: C.navy, lineHeight: 1.3 }}>{s.name}</h3>
                   <p style={{ fontSize: '12px', color: C.text3, marginTop: '2px' }}>{s.teacher}</p>
                 </div>
-                <span style={{ fontSize: '16px', fontWeight: 700, color: s.color, flexShrink: 0 }}>{s.progress}%</span>
+                <span style={{ fontSize: '16px', fontWeight: 700, color: C.navy, flexShrink: 0 }}>{s.progress}%</span>
               </div>
-              <ProgressBar value={s.progress} color={s.color} style={{ marginBottom: '12px' }} />
+              <ProgressBar value={s.progress} style={{ marginBottom: '12px' }} />
               <div style={{ display: 'flex', gap: '16px' }}>
                 <span style={{ fontSize: '12px', color: C.text3 }}><strong style={{ color: C.text }}>{s.resources}</strong> resources</span>
                 <span style={{ fontSize: '12px', color: C.text3 }}><strong style={{ color: C.text }}>{s.papers}</strong> papers</span>

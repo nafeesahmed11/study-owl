@@ -128,6 +128,14 @@ export default function Landing() {
             .landing-nav-hamburger { display: flex !important; }
             .landing-nav-getstarted { padding: 7px 14px !important; }
           }
+          /* Phones: the closed bar keeps only the logo mark + hamburger. The
+             full wordmark lives at the top of the sheet instead, next to the
+             Sign in / Get started row, so nothing needs scrolling to find. */
+          @media (max-width: 639px) {
+            .landing-nav-brand-text { display: none !important; }
+            .landing-nav-getstarted { display: none !important; }
+            .landing-nav-hamburger { min-width: 44px !important; min-height: 44px !important; }
+          }
           /* The sheet is a mobile-only affordance */
           @media (min-width: 1024px) {
             .landing-mobile-menu { display: none !important; }
@@ -137,7 +145,7 @@ export default function Landing() {
         <div className="landing-nav-row" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', height: '60px', display: 'flex', alignItems: 'center', gap: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => navigate('/')}>
             <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '34px', width: 'auto' }} />
-            <span style={{ fontSize: '14px', fontWeight: 700, color: C.navy }}>Study Owl <span style={{ color: C.indigo }}>AI</span></span>
+            <span className="landing-nav-brand-text" style={{ fontSize: '14px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap' }}>Study Owl <span style={{ color: C.indigo }}>AI</span></span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
@@ -170,22 +178,42 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Mobile sheet — logo + Get Started stay in the bar; everything else
-            (Features, the four dropdown groups, Sign in) lives here. */}
+        {/* Mobile sheet — brand header (with a close button) and the two auth
+            actions sit at the very top so they never need scrolling; the nav
+            links follow underneath. */}
         {mobileOpen && (
-          <div className="landing-mobile-menu" role="dialog" aria-label="Site menu" style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: C.surface, borderBottom: `1px solid ${C.border}`, boxShadow: 'var(--sh-3)', padding: '8px 16px 16px', maxHeight: 'calc(100vh - 60px)', overflowY: 'auto' }}>
-            <a href="#features" onClick={() => setMobileOpen(false)} style={{ display: 'block', padding: '12px 10px', fontSize: '15px', fontWeight: 600, color: C.navy, borderRadius: '8px' }}>Features</a>
-            {Object.entries(dropdownMenus).map(([label, items]) => (
-              <div key={label} style={{ padding: '4px 0' }}>
-                <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.text3, padding: '8px 10px 4px' }}>{label}</p>
-                {items.map(item => (
-                  <a key={item} href="#features" onClick={() => setMobileOpen(false)} style={{ display: 'block', padding: '9px 10px', fontSize: '14px', color: C.text2, borderRadius: '8px' }}>{item}</a>
-                ))}
-              </div>
-            ))}
-            <div style={{ borderTop: `1px solid ${C.border}`, marginTop: '10px', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <button onClick={() => { setMobileOpen(false); navigate('/login'); }} style={{ width: '100%', padding: '11px 16px', fontSize: '14px', fontWeight: 500, color: C.text, background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', cursor: 'pointer' }}>Sign in</button>
-              <button onClick={() => { setMobileOpen(false); navigate('/register'); }} style={{ width: '100%', padding: '11px 16px', fontSize: '14px', fontWeight: 500, color: '#fff', backgroundColor: C.indigo, border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Get Started</button>
+          <div className="landing-mobile-menu" role="dialog" aria-label="Site menu" style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: C.surface, borderBottom: `1px solid ${C.border}`, boxShadow: 'var(--sh-3)', padding: '10px 16px 16px', maxHeight: 'calc(100dvh - 60px)', overflowY: 'auto' }}>
+            {/* Brand row: logo + wordmark, with a close button on the same line */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minHeight: '44px', marginBottom: '10px' }}>
+              <img src="/assets/ce79b.svg" alt="" style={{ height: '30px', width: 'auto' }} />
+              <span style={{ fontSize: '15px', fontWeight: 700, color: C.navy, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+                Study Owl <span style={{ color: C.indigo }}>AI</span>
+              </span>
+              <button
+                aria-label="Close menu"
+                onClick={() => setMobileOpen(false)}
+                style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '44px', minHeight: '44px', background: 'none', border: `1.5px solid ${C.border}`, borderRadius: '8px', color: C.text2, cursor: 'pointer' }}
+              >
+                <IconX size={20} />
+              </button>
+            </div>
+
+            {/* Auth actions — one compact row, immediately under the brand */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+              <button onClick={() => { setMobileOpen(false); navigate('/login'); }} style={{ flex: 1, minHeight: '44px', padding: '0 16px', fontSize: '14px', fontWeight: 600, color: C.text, background: 'none', border: `1.5px solid ${C.indigo}`, borderRadius: '8px', cursor: 'pointer', transition: 'background-color 0.15s ease, color 0.15s ease' }}>Sign in</button>
+              <button onClick={() => { setMobileOpen(false); navigate('/register'); }} style={{ flex: 1, minHeight: '44px', padding: '0 16px', fontSize: '14px', fontWeight: 600, color: '#fff', backgroundColor: C.indigo, border: 'none', borderRadius: '8px', cursor: 'pointer', transition: 'background-color 0.15s ease' }}>Get Started</button>
+            </div>
+
+            <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '8px' }}>
+              <a href="#features" onClick={() => setMobileOpen(false)} style={{ display: 'block', padding: '12px 10px', fontSize: '15px', fontWeight: 600, color: C.navy, borderRadius: '8px' }}>Features</a>
+              {Object.entries(dropdownMenus).map(([label, items]) => (
+                <div key={label} style={{ padding: '4px 0' }}>
+                  <p style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.text3, padding: '8px 10px 4px' }}>{label}</p>
+                  {items.map(item => (
+                    <a key={item} href="#features" onClick={() => setMobileOpen(false)} style={{ display: 'block', padding: '9px 10px', fontSize: '14px', color: C.text2, borderRadius: '8px' }}>{item}</a>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
         )}

@@ -115,6 +115,21 @@ input::placeholder, textarea::placeholder {
   transition: background-color 150ms ease, color 150ms ease;
 }
 .dash-more > button:hover { background-color: var(--c-surface2); color: var(--c-indigo); }
+/* Below 1024px the chip row wraps, so a right-anchored floating menu could be
+   pushed off the left edge. Render the same <details> menu inline instead —
+   identical buttons, identical handlers, always fully reachable. */
+@media (max-width: 1023px) {
+  .dash-quick-actions > details { flex: 1 1 100%; }
+  .dash-more {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    margin-top: 8px;
+    box-shadow: none;
+    border-radius: var(--r-md);
+    background-color: var(--c-surface2);
+  }
+}
 @media (max-width: 1100px) {
   .dash-grid-aside { grid-template-columns: minmax(0, 1fr); }
 }
@@ -122,10 +137,13 @@ input::placeholder, textarea::placeholder {
   .dash-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .dash-grid-2 { grid-template-columns: minmax(0, 1fr); }
 }
-@media (max-width: 768px) {
-  .dash-page { padding: 20px 16px; }
+@media (max-width: 1023px) {
+  .dash-page { padding: 24px; }
 }
 @media (max-width: 639px) {
+  .dash-page {
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
   .dash-stats { grid-template-columns: minmax(0, 1fr); }
   /* Scrollable chip strip on phones; the "More" menu drops in-flow so it is
      never clipped by the scroll container. */
@@ -425,4 +443,234 @@ input, textarea, select { font-family: inherit; }
 .landing-preview-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
 @media (max-width: 640px) {
   .landing-preview-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SHARED RESPONSIVE LAYOUT SYSTEM  (presentation only — no logic touched)
+   Breakpoints: Desktop ≥1024px (unchanged) · Tablet 640–1023px · Phone <640px
+   Nothing here removes functionality: tables scroll sideways, tabs scroll,
+   panels stack, action rows wrap, and every control keeps its own handler.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+/* ── Fluid type on small screens: page title ~22px, stat a touch smaller ── */
+@media (max-width: 639px) {
+  :root {
+    --text-display-size: 22px;
+    --text-stat-size: 24px;
+    --text-body-size: 14px;
+  }
+}
+
+/* ── Page wrapper: 28/32px desktop · 24px tablet · 16px phone (+ safe area) ─ */
+.page {
+  padding: 28px 32px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+@media (max-width: 1023px) {
+  .page { padding: 24px; }
+}
+@media (max-width: 639px) {
+  .page {
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ── Consistent 24px section rhythm + generic stacking helpers ── */
+.section { margin-bottom: 24px; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── The app's scrolling pane never scrolls the page sideways (tables and
+     chip rows carry their own overflow-x so they stay scrollable). ── */
+.app-main { overflow-x: hidden; }
+
+/* ── Stat/KPI grid: 4 across on desktop, 2 on tablet and phone ── */
+.stats-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+@media (max-width: 1023px) {
+  .stats-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+}
+
+/* ── Two equal panels: stack on tablet and phone ── */
+.cols-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+@media (max-width: 1023px) {
+  .cols-2 { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+}
+
+/* ── Main column + fixed side panel: stack on tablet and phone ── */
+.cols-aside {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+}
+.cols-aside.aside-320 { grid-template-columns: minmax(0, 1fr) 320px; }
+/* Same, but the narrow selector panel comes FIRST (AI Analysis) */
+.cols-side-first {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 1023px) {
+  .cols-aside, .cols-aside.aside-320 { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .cols-side-first { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── Small 4-up chart / KPI strip: halves on phones ── */
+.chart-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 639px) {
+  .chart-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Narrow tile picker (4 marks options): 2-up on phones ── */
+.tile-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+@media (max-width: 639px) {
+  .tile-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ── Wide input panel FIRST, results second (Marks Generator) ── */
+.cols-input-first {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 1023px) {
+  .cols-input-first { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── Fluid card grids (subjects, resources): full width on phone ── */
+.grid-auto {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.grid-auto.grid-320 { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); }
+@media (max-width: 639px) {
+  .grid-auto, .grid-auto.grid-320 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── Data tables: scroll horizontally on narrow screens instead of squishing ── */
+.table-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+.table-x > div { min-width: 660px; }
+@media (min-width: 1024px) {
+  .table-x > div { min-width: 0; }
+}
+.table-x::-webkit-scrollbar { height: 8px; }
+.table-x::-webkit-scrollbar-track { background: transparent; }
+.table-x::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 99px; }
+
+/* ── Tabs & chip rows: horizontally scrollable, never clipped ── */
+.tab-scroll, .scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.tab-scroll::-webkit-scrollbar, .scroll-x::-webkit-scrollbar { display: none; }
+
+/* ── Button / action rows: wrap rather than overflow ── */
+.actions-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Filter / pill rows: wrap on narrow screens (still scrollable if set) ── */
+.pill-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+/* ── Two-up form fields (inside modals): stack on phones ── */
+.form-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+/* ── Three-up form fields: stack on phones ── */
+.form-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+@media (max-width: 639px) {
+  .form-2, .form-3 { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ── Forms: 16px text on phones prevents the iOS focus zoom ── */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* ── Touch targets: at least 44×44px with breathing room on phones ── */
+@media (max-width: 639px) {
+  .btn { min-height: 44px !important; }
+  .tab-scroll > button,
+  .scroll-x > button,
+  .ai-study-sugg-scroll > button { min-height: 44px; }
+}
+
+/* ── Images, avatars and charts stay inside their container ── */
+img { max-width: 100%; }
+
+/* ── Modals become a bottom sheet with a scrollable body on phones ── */
+@media (max-width: 639px) {
+  .modal-overlay { padding: 0 !important; align-items: flex-end !important; }
+  .modal-panel {
+    max-height: 92dvh !important;
+    border-radius: 16px 16px 0 0 !important;
+    display: flex;
+    flex-direction: column;
+  }
+  .modal-head { padding: 16px !important; }
+  .modal-body {
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── Toast: keep inside the phone viewport and clear the home indicator ── */
+@media (max-width: 639px) {
+  .app-toast {
+    left: 16px !important;
+    right: 16px !important;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    max-width: none !important;
+  }
+}
+
+/* ── Admin shell: compact wrapped nav on phones ── */
+@media (max-width: 639px) {
+  .admin-nav { padding: 6px 16px !important; gap: 8px !important; }
+  .admin-tabs { margin-left: 0 !important; }
+}
+
+/* ── Auth cards (Login / Register): tighter on phones ── */
+@media (max-width: 639px) {
+  .auth-card { padding: 20px !important; border-radius: 12px !important; }
+}
+
+/* ── Prefer the dynamic viewport so mobile toolbars can't clip layouts ── */
+@supports (height: 100dvh) {
+  .login-page, .admin-page { min-height: 100dvh; }
 }

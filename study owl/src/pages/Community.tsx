@@ -36,24 +36,24 @@ function PostCard({ post, onHelp }: { post: Post; onHelp: () => void }) {
     // Card wrapper; `hover` enables the elevation-on-hover style
     <Card hover>
       {/* Author block: avatar, name, role badge, department and time */}
-      <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '12px', flexWrap: 'wrap' }}>
         <Avatar name={post.author} size={38} />
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: '1 1 200px', minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-            <span style={{ fontSize: '14px', fontWeight: 600, color: C.navy }}>{post.author}</span>
+            <span style={{ fontSize: '14px', fontWeight: 600, color: C.navy, overflowWrap: 'anywhere' }}>{post.author}</span>
             <Badge variant={roleColors[post.role] as any}>{post.role}</Badge>
             <span style={{ fontSize: '12px', color: C.text3 }}>{post.dept} · {post.time}</span>
           </div>
-          <div style={{ display: 'flex', gap: '6px', marginTop: '4px' }}>
+          <div style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' }}>
             <Badge variant={catColors[post.category] as any}>{post.category}</Badge>
             <Badge variant="default">{post.subject}</Badge>
           </div>
         </div>
       </div>
-      <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '8px', lineHeight: 1.4 }}>{post.title}</h3>
-      <p style={{ fontSize: '13.5px', color: C.text2, lineHeight: 1.65, marginBottom: '14px' }}>{post.content}</p>
+      <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '8px', lineHeight: 1.4, overflowWrap: 'anywhere' }}>{post.title}</h3>
+      <p style={{ fontSize: '13.5px', color: C.text2, lineHeight: 1.65, marginBottom: '14px', overflowWrap: 'anywhere' }}>{post.content}</p>
       {/* Action row: helpful toggle, replies, and share (last two are visual only) */}
-      <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: `1px solid ${C.border}` }}>
+      <div className="actions-row" style={{ paddingTop: '12px', borderTop: `1px solid ${C.border}` }}>
         <button onClick={onHelp} style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 12px', border: `1.5px solid ${post.userHelped ? C.success : C.border}`, borderRadius: '8px', backgroundColor: post.userHelped ? C.successLight : 'transparent', fontSize: '13px', fontWeight: 500, color: post.userHelped ? C.success : C.text3, cursor: 'pointer', transition: 'all 0.15s' }}>
           <IconCheck size={13} /> Helpful ({post.helpful + (post.userHelped ? 1 : 0)})
         </button>
@@ -100,8 +100,8 @@ export default function Community() {
   };
 
   return (
-    // Page container: 900px max width
-    <div style={{ padding: '28px 32px', maxWidth: '900px' }}>
+    // Page container: 900px max width (responsive padding via .page)
+    <div className="page" style={{ maxWidth: '900px' }}>
       {/* Page title, subtitle, and the "New Post" button that opens the modal */}
       <PageHeader title="Academic Community" sub="Share resources, ask questions, and connect with seniors and peers"
         actions={<Btn icon={<IconPlus size={14} />} onClick={() => setPostOpen(true)}>New Post</Btn>}
@@ -125,12 +125,12 @@ export default function Community() {
       <Modal open={postOpen} onClose={() => setPostOpen(false)} title="Create a Post" width={560}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <Input label="Post Title" placeholder="e.g., DBMS Normalization Notes — 2024" value={newPost.title} onChange={e => setNewPost(f => ({ ...f, title: e.target.value }))} fullWidth />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-2">
             <Select label="Subject" options={['DBMS','Algorithms','CN','SE','Numerical Methods'].map(s => ({ value: s, label: s }))} value={newPost.subject} onChange={e => setNewPost(f => ({ ...f, subject: e.target.value }))} />
             <Select label="Category" options={['Discussion','Resource','Tip','QP'].map(c => ({ value: c, label: c }))} value={newPost.category} onChange={e => setNewPost(f => ({ ...f, category: e.target.value }))} />
           </div>
           <Textarea label="Content" placeholder="Share your knowledge, tip, or question…" value={newPost.content} onChange={e => setNewPost(f => ({ ...f, content: e.target.value }))} style={{ minHeight: '120px' }} />
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+          <div className="actions-row" style={{ justifyContent: 'flex-end' }}>
             <Btn variant="secondary" onClick={() => setPostOpen(false)}>Cancel</Btn>
             <Btn onClick={addPost} disabled={!newPost.title || !newPost.content}>Post</Btn>
           </div>

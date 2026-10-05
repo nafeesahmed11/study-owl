@@ -161,8 +161,8 @@ export function ImportDialog({ open, onClose }: { open: boolean; onClose: () => 
   return (
     <Modal open={open} onClose={onClose} title="Import from Google" width={620}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        {/* Source switch */}
-        <div style={{ display: 'flex', gap: '8px' }}>
+        {/* Source switch — wraps on narrow screens */}
+        <div className="actions-row">
           {tabButton('drive', 'Google Drive', <IconDrive size={14} />)}
           {tabButton('classroom', 'Google Classroom', <IconClassroom size={14} />)}
         </div>
@@ -230,7 +230,7 @@ export function ImportDialog({ open, onClose }: { open: boolean; onClose: () => 
         )}
 
         {/* Footer actions */}
-        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingTop: '8px', borderTop: `1px solid ${C.border}` }}>
+        <div className="actions-row" style={{ justifyContent: 'flex-end', paddingTop: '8px', borderTop: `1px solid ${C.border}` }}>
           <Btn variant="secondary" onClick={onClose}>Cancel</Btn>
           <Btn disabled={selected.length === 0} onClick={commit}>
             Import {selected.length > 0 ? `${selected.length} item${selected.length === 1 ? '' : 's'}` : ''}

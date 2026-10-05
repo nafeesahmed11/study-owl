@@ -67,13 +67,14 @@ export default function AIAnalysis() {
   };
 
   return (
-    // Page container: 1200px max width
-    <div style={{ padding: '28px 32px', maxWidth: '1200px' }}>
+    // Page container: 1200px max width (responsive padding via .page)
+    <div className="page" style={{ maxWidth: '1200px' }}>
       {/* Page title + subtitle */}
       <PageHeader title="AI Question Paper Analysis" sub="Detect repeated questions, topic frequencies, and marks distribution across past papers" />
 
-      {/* Two-column layout: 300px selector sidebar, flexible results area */}
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '20px', alignItems: 'start' }}>
+      {/* Two-column layout: 300px selector sidebar, flexible results area.
+          Stacks to one column on tablet and phone. */}
+      <div className="cols-side-first">
         {/* Paper selector */}
         <Card>
           <h3 style={{ fontSize: '14px', fontWeight: 600, color: C.navy, marginBottom: '14px' }}>Select Papers to Analyze</h3>
@@ -114,7 +115,7 @@ export default function AIAnalysis() {
           {showResult && !analyzing && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {/* Summary */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+              <div className="stats-4">
                 {[{ label: 'Papers Analyzed', value: analysisResult.papers }, { label: 'Total Questions', value: analysisResult.totalQuestions }, { label: 'Topics Identified', value: analysisResult.topTopics.length }, { label: 'Repeated Questions', value: analysisResult.repeatedQuestions.length }].map(s => (
                   <Card key={s.label} padding={16}>
                     <p style={{ fontSize: '22px', fontWeight: 700, color: C.navy }}>{s.value}</p>
@@ -127,33 +128,33 @@ export default function AIAnalysis() {
               <Card>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
                   <IconTrendingUp size={18} color={C.indigo} />
-                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>Topic Frequency Analysis</h3>
+                  <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>Topic Frequency Analysis</h3>
                   <Badge variant="purple" style={{ marginLeft: 'auto' }}>AI Generated</Badge>
                 </div>
                 {analysisResult.topTopics.map((t, i) => (
                   // One topic row: name, evidence line, frequency %, coloured bar
                   <div key={i} style={{ marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                      <div>
-                        <span style={{ fontSize: '13.5px', fontWeight: 500, color: C.text }}>{t.topic}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                      <div style={{ minWidth: 0 }}>
+                        <span style={{ fontSize: '13.5px', fontWeight: 500, color: C.text, overflowWrap: 'anywhere' }}>{t.topic}</span>
                         <span style={{ fontSize: '11.5px', color: C.text3, marginLeft: '8px' }}>Appeared in {t.appeared}/{analysisResult.papers} papers · {t.marks.map(m => `${m}M`).join(', ')}</span>
                       </div>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: C.indigo, flexShrink: 0, marginLeft: '12px' }}>{t.freq}%</span>
                     </div>
-                    <ProgressBar value={t.freq} color={t.freq >= 70 ? C.error : t.freq >= 50 ? C.warning : C.indigo} />
+                    <ProgressBar value={t.freq} />
                   </div>
                 ))}
               </Card>
 
               {/* Repeated questions */}
               <Card>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Frequently Repeated Questions</h3>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '16px' }}>Frequently Repeated Questions</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {analysisResult.repeatedQuestions.map((q, i) => (
                     // Questions seen 3+ times are highlighted in red
                     <div key={i} style={{ padding: '14px', backgroundColor: q.count >= 3 ? '#FEF2F2' : C.surface2, border: `1px solid ${q.count >= 3 ? '#FECACA' : C.border}`, borderRadius: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
-                        <p style={{ fontSize: '13.5px', color: C.text, lineHeight: 1.5 }}>{q.question}</p>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                        <p style={{ fontSize: '13.5px', color: C.text, lineHeight: 1.5, flex: '1 1 200px', minWidth: 0, overflowWrap: 'anywhere' }}>{q.question}</p>
                         <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                           <Badge variant={q.count >= 3 ? 'error' : 'warning'}>×{q.count}</Badge>
                           <Badge variant="navy">{q.marks}M</Badge>
@@ -166,8 +167,8 @@ export default function AIAnalysis() {
 
               {/* Marks distribution */}
               <Card>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Marks Distribution</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '16px' }}>Marks Distribution</h3>
+                <div className="chart-4">
                   {analysisResult.marksDistribution.map((m, i) => (
                     // One bar per mark band; bar height is percentage * 2px
                     <div key={i} style={{ textAlign: 'center' }}>

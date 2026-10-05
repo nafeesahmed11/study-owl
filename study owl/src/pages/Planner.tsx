@@ -42,21 +42,21 @@ function TaskCard({ task, onToggle, onDelete }: { task: Task; onToggle: () => vo
   const overdue = task.status === 'Todo' && task.due < today;
   return (
     // Task row; border turns red and the title is struck through when done/overdue
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '14px 16px', backgroundColor: task.status === 'Done' ? C.surface2 : C.surface, border: `1px solid ${overdue ? C.error + '40' : C.border}`, borderRadius: '12px', transition: 'box-shadow 0.15s' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', padding: '14px 16px', backgroundColor: task.status === 'Done' ? C.surface2 : C.surface, border: `1px solid ${overdue ? C.error + '40' : C.border}`, borderRadius: '12px', transition: 'box-shadow 0.15s' }}>
       {/* Round checkbox — clicking it flips Todo/Done */}
-      <button onClick={onToggle} style={{ width: '22px', height: '22px', borderRadius: '50%', border: `2px solid ${task.status === 'Done' ? C.success : C.border}`, backgroundColor: task.status === 'Done' ? C.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, background: task.status === 'Done' ? C.success : 'none' }}>
+      <button aria-label="Toggle task status" onClick={onToggle} style={{ width: '22px', height: '22px', borderRadius: '50%', border: `2px solid ${task.status === 'Done' ? C.success : C.border}`, backgroundColor: task.status === 'Done' ? C.success : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, background: task.status === 'Done' ? C.success : 'none' }}>
         {task.status === 'Done' && <IconCheck size={12} color="#fff" />}
       </button>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ fontSize: '14px', fontWeight: 500, color: task.status === 'Done' ? C.text3 : C.text, textDecoration: task.status === 'Done' ? 'line-through' : 'none', marginBottom: '3px' }}>{task.title}</p>
-        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <div style={{ flex: '1 1 160px', minWidth: 0 }}>
+        <p style={{ fontSize: '14px', fontWeight: 500, color: task.status === 'Done' ? C.text3 : C.text, textDecoration: task.status === 'Done' ? 'line-through' : 'none', marginBottom: '3px', overflowWrap: 'anywhere' }}>{task.title}</p>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{ fontSize: '12px', color: C.text3 }}>{task.subject}</span>
           <span style={{ fontSize: '12px', color: overdue ? C.error : C.text3 }}>· Due {task.due}</span>
           {overdue && <Badge variant="error">Overdue</Badge>}
         </div>
       </div>
       <Badge variant={priorityBadge(task.priority) as any}>{task.priority}</Badge>
-      <button onClick={onDelete} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, display: 'flex', padding: '4px' }}
+      <button aria-label="Delete task" onClick={onDelete} style={{ background: 'none', border: 'none', cursor: 'pointer', color: C.text3, display: 'flex', padding: '4px', minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}
         onMouseEnter={e => e.currentTarget.style.color = C.error}
         onMouseLeave={e => e.currentTarget.style.color = C.text3}>
         <IconTrash size={15} />
@@ -112,15 +112,15 @@ export default function Planner() {
   };
 
   return (
-    // Page container: 900px max width
-    <div style={{ padding: '28px 32px', maxWidth: '900px' }}>
+    // Page container: 900px max width (responsive padding via .page)
+    <div className="page" style={{ maxWidth: '900px' }}>
       {/* Page title + "Add Task" button that opens the modal */}
       <PageHeader title="Study Planner" sub="Manage your academic tasks, deadlines, and daily study goals"
         actions={<Btn icon={<IconPlus size={14} />} onClick={() => setAddOpen(true)}>Add Task</Btn>}
       />
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+      <div className="stats-4" style={{ marginBottom: '24px' }}>
         {[{ label: 'Today', value: counts.today, color: C.indigo }, { label: 'Upcoming', value: counts.upcoming, color: C.info }, { label: 'Overdue', value: counts.overdue, color: C.error }, { label: 'Completed', value: counts.done, color: C.success }].map(s => (
           <Card key={s.label} padding={16} style={{ textAlign: 'center' }}>
             <p style={{ fontSize: '28px', fontWeight: 700, color: s.color }}>{s.value}</p>
@@ -157,13 +157,13 @@ export default function Planner() {
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Add Study Task">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           <Input label="Task Title" placeholder="e.g., Revise Normalization – DBMS" value={newTask.title} onChange={e => setNewTask(f => ({ ...f, title: e.target.value }))} fullWidth />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div className="form-2">
             <Select label="Subject" options={subjects} value={newTask.subject} onChange={e => setNewTask(f => ({ ...f, subject: e.target.value }))} />
             <Select label="Priority" options={priorities} value={newTask.priority} onChange={e => setNewTask(f => ({ ...f, priority: e.target.value as Task['priority'] }))} />
           </div>
           <Input label="Due Date" type="date" value={newTask.due} onChange={e => setNewTask(f => ({ ...f, due: e.target.value }))} fullWidth />
           <Textarea label="Notes (optional)" placeholder="What do you need to cover?" value={newTask.desc} onChange={e => setNewTask(f => ({ ...f, desc: e.target.value }))} />
-          <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+          <div className="actions-row" style={{ justifyContent: 'flex-end' }}>
             <Btn variant="secondary" onClick={() => setAddOpen(false)}>Cancel</Btn>
             <Btn onClick={addTask} disabled={!newTask.title || !newTask.due}>Add Task</Btn>
           </div>

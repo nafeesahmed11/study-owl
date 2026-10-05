@@ -52,24 +52,24 @@ export default function Progress() {
   const avgScore = Math.round(quizHistory.reduce((a, q) => a + (q.score / q.total * 100), 0) / quizHistory.length);
 
   return (
-    // Page container: 1200px max width
-    <div style={{ padding: '28px 32px', maxWidth: '1200px' }}>
+    // Page container: 1200px max width (responsive padding via .page)
+    <div className="page" style={{ maxWidth: '1200px' }}>
       {/* Page title + subtitle */}
       <PageHeader title="Academic Progress" sub="Track your study activity, quiz performance, and learning consistency" />
 
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '28px' }}>
+      {/* Stats: 4-up on desktop, 2-up on tablet and phone */}
+      <div className="stats-4" style={{ marginBottom: '24px' }}>
         <StatCard icon={<IconCalendar size={20} />} label="Study Streak" value="12 days" sub="Personal best: 18" />
         <StatCard icon={<IconBarChart size={20} />} label="This Week" value={`${Math.round(totalMin / 60)}h ${totalMin % 60}m`} sub="+22% vs last week" />
         <StatCard icon={<IconCheck size={20} />} label="Tasks Completed" value="18" sub="5 remaining" />
         <StatCard icon={<IconAward size={20} />} label="Quiz Average" value={`${avgScore}%`} sub="Last 5 quizzes" />
       </div>
 
-      {/* Chart column + AI insights sidebar */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '20px', marginBottom: '24px' }}>
+      {/* Chart column + AI insights sidebar — stacks on tablet and phone */}
+      <div className="cols-aside" style={{ marginBottom: '24px' }}>
         {/* Weekly study chart */}
         <Card>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>Weekly Study Activity</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '20px' }}>Weekly Study Activity</h3>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '12px', height: '120px' }}>
             {/* One column per day: minutes label, proportional bar, weekday label */}
             {weekData.map((min, i) => (
@@ -83,10 +83,10 @@ export default function Progress() {
             ))}
           </div>
           {/* Chart footer summary: total, daily average, best day */}
-          <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: '24px' }}>
+          <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
             {[{ label: 'Total this week', value: `${Math.round(totalMin / 60)}h ${totalMin % 60}m` }, { label: 'Daily average', value: `${Math.round(totalMin / 7)}m` }, { label: 'Best day', value: 'Thursday' }].map(s => (
               <div key={s.label}>
-                <p style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>{s.value}</p>
+                <p style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>{s.value}</p>
                 <p style={{ fontSize: '12px', color: C.text3 }}>{s.label}</p>
               </div>
             ))}
@@ -97,7 +97,7 @@ export default function Progress() {
         <Card style={{ backgroundColor: '#F8F7FF', border: '1px solid #E4E2FF' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <IconBrain size={17} color={C.indigo} />
-            <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>AI Study Insights</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>AI Study Insights</h3>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {insights.map((ins, i) => (
@@ -111,9 +111,9 @@ export default function Progress() {
 
       {/* Subject Progress */}
       <Card style={{ marginBottom: '24px' }}>
-        <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>Subject Progress</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          {/* One progress bar per subject, in a 2-column grid */}
+        <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '20px' }}>Subject Progress</h3>
+        <div className="cols-2" style={{ gap: '20px' }}>
+          {/* One progress bar per subject, in a 2-column grid that stacks on phones */}
           {subjectProgress.map((s, i) => (
             <div key={i}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
@@ -121,9 +121,9 @@ export default function Progress() {
                   <p style={{ fontSize: '13.5px', fontWeight: 600, color: C.text }}>{s.name}</p>
                   <p style={{ fontSize: '11.5px', color: C.text3 }}>Quiz avg: {s.quizAvg}%</p>
                 </div>
-                <span style={{ fontSize: '14px', fontWeight: 700, color: s.color }}>{s.progress}%</span>
+                <span style={{ fontSize: '14px', fontWeight: 700, color: C.navy }}>{s.progress}%</span>
               </div>
-              <ProgressBar value={s.progress} color={s.color} />
+              <ProgressBar value={s.progress} />
             </div>
           ))}
         </div>
@@ -131,16 +131,16 @@ export default function Progress() {
 
       {/* Quiz History */}
       <Card>
-        <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Recent Quiz Results</h3>
+        <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '16px' }}>Recent Quiz Results</h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {/* Score ring colour and verbal band both derive from the percentage */}
           {quizHistory.map((q, i) => {
             const pct = Math.round(q.score / q.total * 100);
             const color = pct >= 80 ? C.success : pct >= 60 ? C.indigo : pct >= 40 ? C.warning : C.error;
             return (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 14px', backgroundColor: C.surface2, borderRadius: '10px' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', padding: '12px 14px', backgroundColor: C.surface2, borderRadius: '10px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: `2.5px solid ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color, flexShrink: 0 }}>{pct}%</div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: '1 1 140px', minWidth: 0 }}>
                   <p style={{ fontSize: '13.5px', fontWeight: 600, color: C.text }}>{q.subject}</p>
                   <p style={{ fontSize: '12px', color: C.text3 }}>{q.date} · {q.score}/{q.total} correct</p>
                 </div>

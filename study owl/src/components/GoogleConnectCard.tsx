@@ -63,16 +63,17 @@ export function GoogleConnectCard() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
       <Card>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
           <div style={{
             width: '44px', height: '44px', borderRadius: '12px',
             backgroundColor: connected ? C.successLight : C.surface2,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
           }}>
             <IconGoogle size={22} color={connected ? C.success : C.text3} />
           </div>
           <div>
-            <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>Google Drive &amp; Classroom</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>Google Drive &amp; Classroom</h3>
             <Badge variant={connected ? 'success' : 'default'}>{connected ? 'Connected' : 'Not Connected'}</Badge>
           </div>
         </div>
@@ -150,7 +151,7 @@ export function GoogleConnectCard() {
       {/* Granted scopes, so the student can audit exactly what was shared */}
       {connected && connection!.scopes.length > 0 && (
         <Card>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '4px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '4px' }}>
             Permissions granted
           </h3>
           <p style={{ fontSize: '13px', color: C.text2, marginBottom: '16px' }}>
@@ -158,9 +159,9 @@ export function GoogleConnectCard() {
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {connection!.scopes.map(scope => (
-              <div key={scope} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div key={scope} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', minWidth: 0 }}>
                 <Badge variant="info">{describeScope(scope)}</Badge>
-                <span style={{ fontSize: '11.5px', color: C.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '11.5px', color: C.text3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: '1 1 160px', minWidth: 0 }}>
                   {scope}
                 </span>
               </div>
@@ -172,7 +173,7 @@ export function GoogleConnectCard() {
       {/* Classroom tenant hint — the most common confusing outcome */}
       {connected && connection!.classroomAvailable === false && (
         <Card>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '8px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '8px' }}>
             No Classroom courses found
           </h3>
           <p style={{ fontSize: '13.5px', color: C.text2, lineHeight: 1.6 }}>

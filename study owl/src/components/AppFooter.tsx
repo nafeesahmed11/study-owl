@@ -19,7 +19,7 @@ export function AppFooter() {
         borderTop: `1px solid ${C.border}`,
         backgroundColor: C.surface,
         padding: '8px 20px',
-        display: 'none',
+        display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',

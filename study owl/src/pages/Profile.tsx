@@ -34,8 +34,8 @@ const typeColors: Record<string, string> = { resource: C.indigo, quiz: C.success
 // Fully static render — no state, effects, or handlers in this component
 export default function Profile() {
   return (
-    // Page container: 900px max width
-    <div style={{ padding: '28px 32px', maxWidth: '900px' }}>
+    // Page container: 900px max width (responsive padding via .page)
+    <div className="page" style={{ maxWidth: '900px' }}>
       {/* Page title + "Edit Profile" action (action is visual only, not wired up) */}
       <PageHeader title="My Profile" actions={<Btn variant="secondary" size="sm" icon={<IconEdit size={14} />}>Edit Profile</Btn>} />
 
@@ -43,14 +43,14 @@ export default function Profile() {
       <Card style={{ marginBottom: '24px' }}>
         <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
           <Avatar name={student.name} size={72} />
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: '1 1 240px', minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 700, color: C.navy }}>{student.name}</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: 700, color: C.navy, overflowWrap: 'anywhere' }}>{student.name}</h2>
               <Badge variant="default">{student.id}</Badge>
               <Badge variant="navy">Student</Badge>
             </div>
-            <p style={{ fontSize: '14px', color: C.text2, marginBottom: '4px' }}>{student.email}</p>
-            <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+            <p style={{ fontSize: '14px', color: C.text2, marginBottom: '4px', overflowWrap: 'anywhere' }}>{student.email}</p>
+            <div style={{ display: 'flex', gap: '16px', marginTop: '8px', flexWrap: 'wrap' }}>
               {[['Department', student.dept], ['Semester', `${student.semester}th`], ['Batch', student.batch]].map(([l, v]) => (
                 <div key={l}>
                   <p style={{ fontSize: '11.5px', color: C.text3 }}>{l}</p>
@@ -63,8 +63,8 @@ export default function Profile() {
         </div>
       </Card>
 
-      {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
+      {/* Stats: 4-up on desktop, 2-up on tablet and phone */}
+      <div className="stats-4" style={{ marginBottom: '24px' }}>
         {stats.map(s => (
           <Card key={s.label} padding={16} style={{ textAlign: 'center' }}>
             <p style={{ fontSize: '24px', fontWeight: 700, color: C.indigo }}>{s.value}</p>
@@ -73,11 +73,12 @@ export default function Profile() {
         ))}
       </div>
 
-      {/* Two-column grid: subject coverage (wide) + recent activity (fixed 320px) */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '20px' }}>
+      {/* Two-column grid: subject coverage (wide) + recent activity (fixed 320px).
+          Stacks to one column on tablet and phone. */}
+      <div className="cols-aside aside-320">
         {/* Subject progress */}
         <Card>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Subject Coverage</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '16px' }}>Subject Coverage</h3>
           {[
             { name: "Software Engineering", progress: 83, color: "#DC2626" },
             { name: "Database Management Systems", progress: 72, color: "#4F46E5" },
@@ -87,16 +88,16 @@ export default function Profile() {
             <div key={s.name} style={{ marginBottom: '14px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                 <span style={{ fontSize: '13px', color: C.text }}>{s.name}</span>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: s.color }}>{s.progress}%</span>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: C.navy }}>{s.progress}%</span>
               </div>
-              <ProgressBar value={s.progress} color={s.color} />
+              <ProgressBar value={s.progress} />
             </div>
           ))}
         </Card>
 
         {/* Recent activity */}
         <Card>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Recent Activity</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '16px' }}>Recent Activity</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
             {recentActivity.map((a, i) => (
               // Timeline item: coloured dot + connector line down to the next entry

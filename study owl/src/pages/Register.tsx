@@ -43,8 +43,8 @@ export default function Register() {
   };
 
   return (
-    // Outer centered page shell
-    <div style={{ minHeight: '100vh', backgroundColor: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+    // Outer centered page shell (dvh-aware via .login-page)
+    <div className="login-page" style={{ minHeight: '100vh', backgroundColor: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       {/* Constrained 480px column holding the whole form */}
       <div style={{ width: '100%', maxWidth: '480px' }}>
         <button
@@ -80,7 +80,7 @@ export default function Register() {
         </div>
 
         {/* The white form card wrapping both steps */}
-        <div style={{ backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '32px' }}>
+        <div className="auth-card" style={{ backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '32px' }}>
           {/* Step 1 — Personal Information fields */}
           {step === 1 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -94,7 +94,7 @@ export default function Register() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <p style={{ fontSize: '13px', fontWeight: 600, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Academic Details</p>
               <Select label="Department" options={depts} value={form.dept} onChange={e => up('dept', e.target.value)} />
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div className="form-2">
                 <Select label="Semester" options={sems} value={form.semester} onChange={e => up('semester', e.target.value)} />
                 <Select label="Batch" options={batches} value={form.batch} onChange={e => up('batch', e.target.value)} />
               </div>
@@ -107,7 +107,7 @@ export default function Register() {
           )}
 
           {/* Navigation actions: Back (step 2 only) and the primary submit button */}
-          <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+          <div className="actions-row" style={{ marginTop: '24px' }}>
             {step === 2 && <Btn variant="secondary" onClick={() => setStep(1)} fullWidth>Back</Btn>}
             <Btn onClick={handleNext} loading={loading} fullWidth>
               {step === 1 ? 'Continue' : 'Create Account'}

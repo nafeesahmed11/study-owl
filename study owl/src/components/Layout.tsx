@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router";
 import { C } from "./ui";
 import { AppFooter } from "./AppFooter";
@@ -37,6 +37,14 @@ const communityItems = [
 function NavGroup({ label, items, onClose, collapsed, collapsible = false }: { label: string; items: typeof navItems; onClose?: () => void; collapsed?: boolean; collapsible?: boolean }) {
   const location = useLocation();
 
+  // When the rail is collapsed, a group the user had closed in the expanded
+  // state must not hide its links. Force every group open while collapsed;
+  // a no-op otherwise, so the expanded toggle behaves exactly as before.
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  useEffect(() => {
+    if (collapsed && detailsRef.current) detailsRef.current.open = true;
+  }, [collapsed]);
+
   const itemList = items.map(item => {
     const active = location.pathname.startsWith(item.path);
     return (
@@ -64,7 +72,7 @@ function NavGroup({ label, items, onClose, collapsed, collapsible = false }: { l
 
   if (!collapsible) {
     return (
-      <div style={{ marginBottom: '12px' }}>
+      <div className="app-nav-group" style={{ marginBottom: '12px' }}>
         <p className="app-nav-group-label" style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', lineHeight: 1.4, color: C.text3, padding: '0 20px 6px', userSelect: 'none' }}>
           {label}
         </p>
@@ -76,8 +84,8 @@ function NavGroup({ label, items, onClose, collapsed, collapsible = false }: { l
   // Collapsible group (presentation only: native <details>, always rendered open
   // on first paint so nothing is hidden by default).
   return (
-    <details open className="app-nav-collapsible" style={{ marginBottom: '12px' }}>
-      <summary className="app-nav-group-summary" aria-label={`${label} group`} style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', lineHeight: 1.4, color: C.text3, padding: '0 20px 6px', userSelect: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', listStyle: 'none' }}>
+    <details open className="app-nav-collapsible app-nav-group" ref={detailsRef} style={{ marginBottom: '12px' }}>
+      <summary className="app-nav-group-summary" aria-label={`${label} group`} style={{ fontSize: '10.5px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', lineHeight: 1.4, color: C.text3, padding: '0 20px 6px', userSelect: 'none', cursor: 'pointer', display: collapsed ? 'none' : 'flex', alignItems: 'center', gap: '6px', listStyle: 'none' }}>
         <span className="app-nav-caret" style={{ display: 'inline-flex', transition: 'transform 0.15s ease' }}><IconChevronDown size={12} /></span>
         {label}
       </summary>
@@ -90,7 +98,7 @@ function Sidebar({ onClose, collapsed = false }: { onClose?: () => void; collaps
   const navigate = useNavigate();
   return (
     <div className={`app-sidebar${collapsed ? ' is-collapsed' : ''}`} style={{
-      width: collapsed ? '76px' : 'var(--sidebar-w, 260px)', flexShrink: 0,
+      width: collapsed ? '68px' : 'var(--sidebar-w, 260px)', flexShrink: 0,
       borderRight: `1px solid ${C.border}`, backgroundColor: C.surface,
       display: 'flex', flexDirection: 'column', height: '100%',
       overflowY: 'auto', overflowX: 'hidden',
@@ -102,7 +110,7 @@ function Sidebar({ onClose, collapsed = false }: { onClose?: () => void; collaps
           onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
           onMouseLeave={e => e.currentTarget.style.opacity = '1'}
         >
-          <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '36px', width: 'auto', flexShrink: 0 }} />
+          <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: collapsed ? '28px' : '36px', width: 'auto', flexShrink: 0, transition: 'height 0.2s' }} />
           <div className="app-sidebar-brand-text">
             <p style={{ fontSize: '15px', fontWeight: 700, color: C.navy, lineHeight: 1.2, letterSpacing: '-0.01em' }}>Study Owl AI</p>
             <p style={{ fontSize: '11.5px', fontWeight: 500, color: C.textMuted, lineHeight: 1.4, marginTop: '2px' }}>Academic Platform</p>
@@ -136,15 +144,23 @@ function Sidebar({ onClose, collapsed = false }: { onClose?: () => void; collaps
 function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { onMenuClick?: () => void; isSidebarOpen?: boolean; onToggleNav?: () => void; isNavCollapsed?: boolean }) {
   const [search, setSearch] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
+
+  // Phone-only disclosure for the search field: on narrow screens the input
+  // collapses behind a search icon and expands to a full-width row on tap.
+  // Presentation state only — `search` itself and its handler are unchanged.
+  const [searchOpen, setSearchOpen] = useState(false);
   const navigate = useNavigate();
 
   return (
-    <div style={{
-      height: '56px', borderBottom: `1px solid ${C.border}`,
-      backgroundColor: C.surface, display: 'flex', alignItems: 'center',
-      padding: '0 20px', gap: '12px', position: 'sticky', top: 0, zIndex: 50,
-      boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
-    }}>
+    <div
+      className="topbar-main"
+      style={{
+        minHeight: '52px', borderBottom: `1px solid ${C.border}`,
+        backgroundColor: C.surface, display: 'flex', alignItems: 'center',
+        padding: '0 20px', gap: '10px', position: 'sticky', top: 0, zIndex: 50,
+        boxShadow: '0 1px 2px rgba(0,0,0,0.02)',
+      }}
+    >
       <button
         className="mobile-only"
         onClick={onMenuClick}
@@ -170,7 +186,20 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
         {isNavCollapsed ? <IconChevronRight size={20} /> : <IconChevronLeft size={20} />}
       </button>
 
-      <div className="desktop-only" style={{ position: 'relative', flex: 1, maxWidth: '440px' }}>
+      <button
+        className="phone-only"
+        onClick={() => setSearchOpen(o => !o)}
+        aria-label="Search"
+        aria-expanded={searchOpen}
+        title="Search"
+        style={{ display: 'none', alignItems: 'center', justifyContent: 'center', minWidth: '44px', minHeight: '44px', background: 'none', border: `1px solid ${C.border}`, borderRadius: 'var(--r-md)', color: C.text2, cursor: 'pointer', flexShrink: 0, transition: 'background-color 0.15s ease, color 0.15s ease' }}
+        onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text; }}
+        onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = C.text2; }}
+      >
+        <IconSearch size={18} />
+      </button>
+
+      <div className={`topbar-search${searchOpen ? ' is-open' : ''}`} style={{ position: 'relative' }}>
         <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: C.text3, display: 'flex' }}>
           <IconSearch size={16} />
         </span>
@@ -188,8 +217,8 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
         />
       </div>
 
-      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <button className="desktop-only" style={{
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button aria-label="New" style={{
           display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px',
           backgroundColor: C.surface2, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-pill)',
           fontSize: '13px', fontWeight: 600, lineHeight: 1.3, letterSpacing: '0.005em', cursor: 'pointer',
@@ -198,7 +227,7 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
         onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; e.currentTarget.style.color = C.indigo; }}
         onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; }}
       >
-          <IconPlus size={15} color="currentColor" /> New
+          <IconPlus size={15} color="currentColor" /> <span className="topbar-new-label">New</span>
         </button>
 
         <button aria-label="Notifications" style={{ position: 'relative', background: 'none', border: 'none', color: C.text2, padding: '8px', display: 'flex', borderRadius: '50%', cursor: 'pointer', transition: 'background-color 0.15s ease, color 0.15s ease' }}
@@ -219,7 +248,7 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
           >
             <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#fff' }}>A</div>
             <span className="desktop-only" style={{ fontSize: '14px', fontWeight: 600, color: C.navy }}>Alex J.</span>
-            <IconChevronDown size={14} color={C.text3} />
+            <span className="topbar-profile-caret" style={{ display: 'inline-flex' }}><IconChevronDown size={14} color={C.text3} /></span>
           </button>
 
           {profileOpen && (
@@ -290,7 +319,11 @@ export function AppLayout() {
     >
       <style>{`
         .sidebar-desktop { display: none; }
-        .app-footer { display: none; }
+        .app-footer { display: flex !important; }
+        @media (max-width: 639px) {
+          .app-footer { padding: 6px 12px calc(6px + env(safe-area-inset-bottom, 0px)) 12px !important; gap: 4px !important; }
+          .app-footer p, .app-footer a { font-size: 10.5px !important; }
+        }
         /* Collapsible sidebar groups (native <details>): hide the default marker
            and rotate the caret only while open. Inside the icon-only rail the
            summaries hide so the groups mimic the Main group. */
@@ -298,14 +331,47 @@ export function AppLayout() {
         .app-nav-group-summary::marker { content: none; }
         .app-nav-collapsible .app-nav-caret { transform: rotate(-90deg); }
         .app-nav-collapsible[open] .app-nav-caret { transform: rotate(0deg); }
+        .app-sidebar.is-collapsed .app-nav-group-summary { display: none; }
         @media (min-width: 1024px) {
-          .app-sidebar.is-collapsed .app-nav-group-summary { display: none; }
           .sidebar-desktop { display: block !important; }
           .app-footer { display: flex !important; }
         }
+        /* Phone-only affordances (the search toggle). */
+        .phone-only { display: none !important; }
+
+        /* Search field: flexible on desktop, re-tuned per breakpoint below.
+           Sizing lives here (not inline) so the media queries can win. */
+        .topbar-search { position: relative; flex: 1; max-width: 440px; }
+
         @media (max-width: 1023px) {
           .mobile-only { display: flex !important; }
           .desktop-only { display: none !important; }
+          /* Tablet: shorter search field; the avatar keeps only its initials. */
+          .topbar-search { max-width: 200px; }
+          .topbar-profile-caret { display: none !important; }
+        }
+
+        /* Phone: the bar carries hamburger · search icon · "+" · bell · avatar.
+           Tapping search expands the same input as a full-width second row. */
+        @media (max-width: 639px) {
+          .phone-only { display: flex !important; }
+          .topbar-main {
+            flex-wrap: wrap;
+            row-gap: 8px;
+            gap: 8px;
+            padding: 8px 12px calc(8px + env(safe-area-inset-top, 0px)) 12px !important;
+          }
+          .topbar-search {
+            order: 99;
+            flex: 0 0 100%;
+            max-width: 100%;
+            width: 100%;
+            display: none;
+          }
+          .topbar-search.is-open { display: block; }
+          .topbar-new-label { display: none; }
+          /* Comfortable touch targets across the whole bar. */
+          .topbar-main button { min-height: 44px; min-width: 44px; }
         }
 
         /* Desktop navigation rail. Collapsing hides the labels visually but
@@ -318,10 +384,49 @@ export function AppLayout() {
           }
           .app-sidebar.is-collapsed .app-nav-group-label,
           .app-sidebar.is-collapsed .app-sidebar-brand-text { display: none; }
-          .app-sidebar.is-collapsed .app-nav-item {
-            justify-content: center; padding-left: 0; padding-right: 0;
+          /* Section labels and group summaries are replaced by a short, centred
+             dashed rule so the groups stay visually separated without any text
+             or chevrons in the rail (the summary is hidden by the rule above). */
+          .app-sidebar.is-collapsed .app-nav-group + .app-nav-group {
+            position: relative;
+            margin-top: 10px;
+            padding-top: 10px;
           }
-          .app-sidebar.is-collapsed .app-sidebar-head { padding-left: 8px; padding-right: 8px; }
+          .app-sidebar.is-collapsed .app-nav-group + .app-nav-group::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 28px;
+            border-top: 1px dashed var(--c-border);
+          }
+          /* One clean rail: uniform 20px icons on 44x44 targets, evenly spaced. */
+          .app-sidebar.is-collapsed .app-nav-item svg {
+            width: 20px; height: 20px;
+          }
+          .app-sidebar.is-collapsed .app-nav-item {
+            justify-content: center;
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+            margin: 4px 12px !important;
+            min-height: 44px !important;
+            border-radius: var(--r-md);
+            /* The expanded active state uses a left inset bar; the rail uses
+               the soft rounded tint + brand-coloured icon instead. */
+            box-shadow: none !important;
+          }
+          .app-sidebar.is-collapsed .app-sidebar-head { padding: 14px 8px; }
+        }
+
+        /* Thin, subtle rail scrollbar: invisible until the rail must scroll
+           (short viewports), so no nested bar shows on normal screens. */
+        .app-sidebar { scrollbar-width: thin; scrollbar-color: var(--c-border) transparent; }
+        .app-sidebar::-webkit-scrollbar { width: 8px; }
+        .app-sidebar::-webkit-scrollbar-track { background: transparent; }
+        .app-sidebar::-webkit-scrollbar-thumb {
+          background: var(--c-border); border-radius: 99px;
+          border: 2px solid var(--c-surface);
         }
 
         /* Prefer the dynamic viewport unit where supported so mobile browser

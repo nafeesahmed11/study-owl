@@ -54,8 +54,8 @@ const teacherTips = [
 export default function ExamSuggestions() {
   const navigate = useNavigate();
   return (
-    // Page container: 1100px max width
-    <div style={{ padding: '28px 32px', maxWidth: '1100px' }}>
+    // Page container: 1100px max width (responsive padding via .page)
+    <div className="page" style={{ maxWidth: '1100px' }}>
       {/* Page title + subtitle */}
       <PageHeader title="Exam Preparation Suggestions" sub="AI-generated recommendations based on question paper analysis — not guaranteed predictions" />
 
@@ -79,9 +79,9 @@ export default function ExamSuggestions() {
               {/* Single topic: name, evidence, marks badge, frequency badge, bar */}
               {group.topics.map((t, i) => (
                 <div key={i} style={{ padding: '14px', backgroundColor: group.bg, border: `1px solid ${group.color}20`, borderRadius: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '8px' }}>
-                    <div>
-                      <p style={{ fontSize: '14px', fontWeight: 600, color: C.navy }}>{t.topic}</p>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
+                    <div style={{ flex: '1 1 200px', minWidth: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: C.navy, overflowWrap: 'anywhere' }}>{t.topic}</p>
                       <p style={{ fontSize: '12px', color: C.text3, marginTop: '2px' }}>{t.reason}</p>
                     </div>
                     <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
@@ -89,7 +89,7 @@ export default function ExamSuggestions() {
                       <Badge variant="navy">{t.freq}%</Badge>
                     </div>
                   </div>
-                  <ProgressBar value={t.freq} color={group.color} />
+                  <ProgressBar value={t.freq} />
                 </div>
               ))}
             </div>
@@ -98,9 +98,9 @@ export default function ExamSuggestions() {
 
         {/* Teacher suggestions */}
         <Card>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', flexWrap: 'wrap' }}>
             <IconBook size={18} color={C.indigo} />
-            <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>Teacher Suggestions & Course Tips</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>Teacher Suggestions & Course Tips</h3>
             <Badge variant="purple">Community Verified</Badge>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -115,7 +115,7 @@ export default function ExamSuggestions() {
 
         {/* CTA */}
         {/* Cross-links to the full analysis and the marks-based answer tool */}
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div className="actions-row">
           <Btn variant="secondary" icon={<IconSparkles size={14} />} onClick={() => navigate('/app/ai-analysis')}>
             View Full Analysis
           </Btn>

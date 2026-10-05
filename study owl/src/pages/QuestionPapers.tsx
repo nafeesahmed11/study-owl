@@ -55,8 +55,8 @@ export default function QuestionPapers() {
   });
 
   return (
-    // Page container: wide 1400px to fit the results table
-    <div style={{ padding: '28px 32px', maxWidth: '1400px' }}>
+    // Page container: wide 1400px to fit the results table (responsive via .page)
+    <div className="page" style={{ maxWidth: '1400px' }}>
       {/* Page title + subtitle */}
       <PageHeader title="Question Paper Archive" sub="Previous year papers filtered by subject, year, and exam type" />
 
@@ -84,7 +84,7 @@ export default function QuestionPapers() {
       {filtered.length === 0 ? (
         <EmptyState icon={<IconFileText size={28} />} title="No question papers found" desc="Try adjusting your filters." />
       ) : (
-        <div style={{ backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', overflow: 'hidden' }}>
+        <div className="table-x" style={{ backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--r-xl)' }}>
           {/* Table header */}
           <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 100px 100px 80px 1fr', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${C.border}`, backgroundColor: C.surface2 }}>
             {['Subject', 'Code', 'Year', 'Exam Type', 'Marks', 'Actions'].map(h => (
@@ -109,7 +109,7 @@ export default function QuestionPapers() {
               <Badge variant={examColors[p.exam] as any}>{p.exam}</Badge>
               <span style={{ fontSize: '13px', color: C.text2 }}>{p.marks} marks</span>
               {/* Row actions: open, download, star (toggles saved), and AI analysis */}
-              <div style={{ display: 'flex', gap: '6px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 <Btn size="xs" variant="ghost" icon={<IconEye size={12} />}>Open</Btn>
                 <Btn size="xs" variant="ghost" icon={<IconDownload size={12} />} />
                 <Btn size="xs" variant={savedStates[p.id] ? 'primary' : 'ghost'} icon={<IconStar size={12} />} onClick={() => setSavedStates(s => ({ ...s, [p.id]: !s[p.id] }))} />

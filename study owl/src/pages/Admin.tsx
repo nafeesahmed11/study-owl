@@ -54,14 +54,14 @@ export default function Admin() {
 
   return (
     // Full-height admin shell (not the student AppLayout)
-    <div style={{ minHeight: '100vh', backgroundColor: C.bg }}>
-      {/* Admin nav */}
-      <div style={{ backgroundColor: C.navyMid, padding: '0 32px', display: 'flex', alignItems: 'center', gap: '24px', height: '56px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }} onClick={() => navigate('/')}>
+    <div className="admin-page" style={{ minHeight: '100vh', backgroundColor: C.bg }}>
+      {/* Admin nav — wraps onto a second row on phones */}
+      <div className="admin-nav" style={{ backgroundColor: C.navyMid, padding: '0 32px', display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap', minHeight: '56px', rowGap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '8px 0' }} onClick={() => navigate('/')}>
           <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '28px', filter: 'brightness(10)' }} />
           <span style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>Admin Panel</span>
         </div>
-        <div style={{ display: 'flex', gap: '2px', marginLeft: '24px' }}>
+        <div style={{ display: 'flex', gap: '2px', marginLeft: '24px', flexWrap: 'wrap' }} className="admin-tabs">
           {[{ id: 'overview', label: 'Overview' }, { id: 'users', label: 'Users' }, { id: 'verify', label: 'Verification' }, { id: 'reports', label: 'Reports' }].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{ padding: '6px 14px', borderRadius: '8px', border: 'none', backgroundColor: tab === t.id ? 'rgba(255,255,255,0.15)' : 'transparent', color: tab === t.id ? '#fff' : 'rgba(255,255,255,0.6)', fontSize: '13.5px', fontWeight: 500, cursor: 'pointer' }}>
               {t.label}
@@ -74,32 +74,32 @@ export default function Admin() {
         </div>
       </div>
 
-      {/* Content area — one branch rendered per tab */}
-      <div style={{ padding: '28px 32px', maxWidth: '1400px' }}>
+      {/* Content area — one branch rendered per tab (responsive padding via .page) */}
+      <div className="page" style={{ maxWidth: '1400px' }}>
         {/* Overview tab: KPI row, verification queue, and platform activity */}
         {tab === 'overview' && (
           <>
             <PageHeader title="Admin Overview" sub="Study Owl AI platform statistics and management" />
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '28px' }}>
+            <div className="stats-4" style={{ marginBottom: '24px' }}>
               {stats.map((s, i) => <StatCard key={i} icon={s.icon} label={s.label} value={s.value} sub={s.sub} color={s.color} />)}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="cols-2">
               {/* Pending verification */}
               <Card>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>Pending Verification</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', gap: '8px', flexWrap: 'wrap' }}>
+                  <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>Pending Verification</h3>
                   <Badge variant="warning">{pendingResources.length} items</Badge>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {pendingResources.map((r, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', backgroundColor: C.warningLight, border: `1px solid ${C.warning}30`, borderRadius: '10px' }}>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: '13.5px', fontWeight: 500, color: C.text }}>{r.title}</p>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '10px 12px', backgroundColor: C.warningLight, border: `1px solid ${C.warning}30`, borderRadius: '10px' }}>
+                      <div style={{ flex: '1 1 150px', minWidth: 0 }}>
+                        <p style={{ fontSize: '13.5px', fontWeight: 500, color: C.text, overflowWrap: 'anywhere' }}>{r.title}</p>
                         <p style={{ fontSize: '11.5px', color: C.text3 }}>By {r.uploader} · {r.date}</p>
                       </div>
                       <Badge variant="navy">{r.type}</Badge>
-                      <div style={{ display: 'flex', gap: '5px' }}>
+                      <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                         <Btn size="xs" variant="secondary">Review</Btn>
                         <Btn size="xs">✓ Verify</Btn>
                       </div>
@@ -110,7 +110,7 @@ export default function Admin() {
 
               {/* Platform stats */}
               <Card>
-                <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Platform Activity</h3>
+                <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '16px' }}>Platform Activity</h3>
                 {[
                   { label: 'New users (this week)', value: 47, max: 100 },
                   { label: 'Resources uploaded (this week)', value: 163, max: 300 },
@@ -137,7 +137,7 @@ export default function Admin() {
           <>
             <PageHeader title="User Management" sub="View, manage, and moderate student accounts" />
             <SearchInput value={search} onChange={setSearch} placeholder="Search users by name, ID, or department…" style={{ marginBottom: '16px', maxWidth: '400px' }} />
-            <div style={{ backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', overflow: 'hidden' }}>
+            <div className="table-x" style={{ backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: 'var(--r-xl)' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 80px 80px 80px 100px 1fr', gap: '12px', padding: '12px 20px', borderBottom: `1px solid ${C.border}`, backgroundColor: C.surface2 }}>
                 {['Name', 'Student ID', 'Dept', 'Sem', 'Role', 'Status', 'Actions'].map(h => (
                   <span key={h} style={{ fontSize: '11.5px', fontWeight: 700, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</span>
@@ -160,7 +160,7 @@ export default function Admin() {
                   <span style={{ fontSize: '13px', color: C.text2 }}>{u.sem}</span>
                   <Badge variant={roleColors[u.role] as any}>{u.role}</Badge>
                   <Badge variant={statusColors[u.status] as any}>{u.status}</Badge>
-                  <div style={{ display: 'flex', gap: '5px' }}>
+                  <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                     <Btn size="xs" variant="ghost">View</Btn>
                     <Btn size="xs" variant="secondary">Edit Role</Btn>
                   </div>
@@ -177,16 +177,16 @@ export default function Admin() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {pendingResources.map((r, i) => (
                 <Card key={i} padding={18}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ width: '46px', height: '46px', borderRadius: '12px', backgroundColor: C.warningLight, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ width: '46px', height: '46px', borderRadius: '12px', backgroundColor: C.warningLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <IconFileText size={22} color={C.warning} />
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ fontSize: '15px', fontWeight: 600, color: C.navy }}>{r.title}</p>
-                      <p style={{ fontSize: '13px', color: C.text2 }}>Uploaded by <strong>{r.uploader}</strong> · {r.subject} · {r.date}</p>
+                    <div style={{ flex: '1 1 220px', minWidth: 0 }}>
+                      <p style={{ fontSize: '15px', fontWeight: 600, color: C.navy, overflowWrap: 'anywhere' }}>{r.title}</p>
+                      <p style={{ fontSize: '13px', color: C.text2, overflowWrap: 'anywhere' }}>Uploaded by <strong>{r.uploader}</strong> · {r.subject} · {r.date}</p>
                     </div>
                     <Badge variant="warning">Pending</Badge>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                    <div className="actions-row">
                       <Btn size="sm" variant="ghost">Preview</Btn>
                       <Btn size="sm" variant="danger">Reject</Btn>
                       <Btn size="sm">✓ Verify</Btn>

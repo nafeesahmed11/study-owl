@@ -89,7 +89,7 @@ export default function Settings() {
 
   return (
     // Page container: narrow 740px — this is a form page, not a dashboard
-    <div style={{ padding: '28px 32px', maxWidth: '740px' }}>
+    <div className="page" style={{ maxWidth: '740px' }}>
       {/* Page title + subtitle */}
       <PageHeader title="Settings" sub="Manage your account, security, and preferences" />
 
@@ -99,14 +99,14 @@ export default function Settings() {
       {/* Account tab — the only tab that persists changes */}
       {tab === 'account' && (
         <Card>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>Account Information</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '20px' }}>Account Information</h3>
           {saveError && (
             <div className="p-3 mb-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
               {saveError}
             </div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div className="form-2">
               <Input
                 label="Full Name"
                 value={fullName}
@@ -127,7 +127,7 @@ export default function Settings() {
               disabled
               fullWidth
             />
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+            <div className="form-3">
               <Select
                 label="Department"
                 options={['CSE','ECE','EEE','ME'].map(d => ({ value: d, label: d }))}
@@ -148,7 +148,7 @@ export default function Settings() {
               />
             </div>
             {/* Footer row: success banner (when saved) + the Save button */}
-            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', paddingTop: '8px', borderTop: `1px solid ${C.border}` }}>
+            <div className="actions-row" style={{ alignItems: 'center', justifyContent: 'flex-end', paddingTop: '8px', borderTop: `1px solid ${C.border}` }}>
               {saved && (
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-lg animate-fade-in">
                   <IconCheck size={14} color="#059669" />
@@ -165,7 +165,7 @@ export default function Settings() {
       {tab === 'security' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Card>
-            <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>Change Password</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '16px' }}>Change Password</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <Input label="Current Password" type="password" placeholder="Enter current password" fullWidth />
               <Input label="New Password" type="password" placeholder="Create a strong password" fullWidth />
@@ -174,9 +174,9 @@ export default function Settings() {
             </div>
           </Card>
           <Card>
-            <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '8px' }}>Danger Zone</h3>
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '8px' }}>Danger Zone</h3>
             <p style={{ fontSize: '13.5px', color: C.text2, marginBottom: '16px' }}>These actions are irreversible. Please proceed with caution.</p>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div className="actions-row">
               <Btn variant="danger" size="sm">Delete Account</Btn>
               <Btn variant="secondary" size="sm" icon={<IconLogout size={13} />}>Sign Out All Devices</Btn>
             </div>
@@ -187,7 +187,7 @@ export default function Settings() {
       {/* Notifications tab: one toggle switch per channel */}
       {tab === 'notifications' && (
         <Card>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>Notification Preferences</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '20px' }}>Notification Preferences</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
             {[
               { key: 'email', label: 'Email Notifications', desc: 'Receive updates and alerts via email' },
@@ -216,7 +216,7 @@ export default function Settings() {
       {/* AI Preferences tab: answer language/depth plus optional behaviours (visual only) */}
       {tab === 'ai' && (
         <Card>
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: C.navy, marginBottom: '20px' }}>AI Study Assistant Preferences</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '20px' }}>AI Study Assistant Preferences</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <Select label="Default Answer Language" options={[{ value: 'english', label: 'English' }, { value: 'bengali', label: 'Bengali' }]} value="english" onChange={() => {}} />
             <Select label="Default Answer Depth" options={[{ value: 'concise', label: 'Concise (exam-ready)' }, { value: 'detailed', label: 'Detailed (full explanation)' }]} value="concise" onChange={() => {}} />
