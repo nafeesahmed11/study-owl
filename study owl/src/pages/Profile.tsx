@@ -1,15 +1,30 @@
 import { C, Card, Badge, Btn, Avatar, ProgressBar, StatCard, PageHeader } from "../components/ui";
 import { IconBook, IconFolder, IconCheck, IconAward, IconEdit, IconCalendar, IconBarChart } from "../components/Icons";
+import { useAuth } from "../context/AuthContext";
 
 /**
  * Page: Profile (/app/profile) — student-only, rendered inside AppLayout.
  * Purpose: Read-only profile overview for the signed-in student.
- * Data source: hard-coded mock constants defined below. Note this page does
- *   NOT read from useAuth() or localStorage, so it always shows the same
- *   person regardless of who is logged in.
+ * Data source: identity fields (name, student ID, email, department,
+ *   semester, batch) come from `useAuth()`; stats and recent activity
+ *   remain the hard-coded mock constants defined below.
  */
 
-const student = { name: "Alex Johnson", id: "CSE-2022-007", email: "alex.johnson@university.edu", dept: "CSE", semester: 6, batch: "2022", bio: "6th semester CSE student passionate about databases and algorithms. Active community contributor." };
+// Maps the context user onto the shapes the static markup below expects
+function useStudent() {
+  const { user } = useAuth();
+  if (!user) return null;
+  const semester = parseInt(user.semester, 10);
+  return {
+    name: user.name,
+    id: user.studentId,
+    email: user.email,
+    dept: user.department,
+    semester: isNaN(semester) ? 1 : semester,
+    batch: user.batch,
+    bio: `${user.semester || "1"}th semester ${user.department} student passionate about databases and algorithms. Active community contributor.`,
+  };
+}
 
 // Headline counters shown in the 4-up stats grid
 const stats = [
@@ -31,8 +46,12 @@ const recentActivity = [
 // Maps each activity type to the dot colour used in the timeline
 const typeColors: Record<string, string> = { resource: C.indigo, quiz: C.success, task: C.warning, community: C.purple, ai: C.info };
 
-// Fully static render — no state, effects, or handlers in this component
+// Renders the signed-in student's profile (null while signed out — the
+// surrounding ProtectedRoute normally guarantees a user anyway)
 export default function Profile() {
+  const student = useStudent();
+  if (!student) return null;
+
   return (
     // Page container: 900px max width (responsive padding via .page)
     <div className="page" style={{ maxWidth: '900px' }}>

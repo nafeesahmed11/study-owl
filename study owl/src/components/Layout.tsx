@@ -145,6 +145,17 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
   const [search, setSearch] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
 
+  // Clears the Supabase session when the user signs out of the dropdown
+  const { user, logout } = useAuth();
+
+  // Identity shown in the pill + dropdown; falls back to the original mock
+  const displayName = user?.name?.trim() || 'Alex Johnson';
+  const nameParts = displayName.split(/\s+/);
+  const shortName = nameParts.length > 1 ? `${nameParts[0]} ${nameParts[nameParts.length - 1].charAt(0)}.` : displayName;
+  const identityLine = user
+    ? `${user.department || '—'} · ${user.semester || '—'}th Sem · ${user.batch || '—'}`
+    : 'CSE · 6th Sem · 2022';
+
   // Phone-only disclosure for the search field: on narrow screens the input
   // collapses behind a search icon and expands to a full-width row on tap.
   // Presentation state only — `search` itself and its handler are unchanged.
@@ -246,16 +257,16 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
             onMouseEnter={e => { if (!profileOpen) { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.borderColor = '#CBD5E1'; } }}
             onMouseLeave={e => { if (!profileOpen) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.borderColor = C.border; } }}
           >
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#fff' }}>A</div>
-            <span className="desktop-only" style={{ fontSize: '14px', fontWeight: 600, color: C.navy }}>Alex J.</span>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: '#fff' }}>{displayName.charAt(0).toUpperCase()}</div>
+            <span className="desktop-only" style={{ fontSize: '14px', fontWeight: 600, color: C.navy }}>{shortName}</span>
             <span className="topbar-profile-caret" style={{ display: 'inline-flex' }}><IconChevronDown size={14} color={C.text3} /></span>
           </button>
 
           {profileOpen && (
             <div style={{ position: 'absolute', right: 0, top: '115%', backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', boxShadow: 'var(--sh-3)', minWidth: '240px', zIndex: 100, overflow: 'hidden' }}>
               <div style={{ padding: '16px 20px', borderBottom: `1px solid ${C.border}`, backgroundColor: '#F8FAFC' }}>
-                <p style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>Alex Johnson</p>
-                <p style={{ fontSize: '13px', color: C.text2, marginTop: '2px' }}>CSE · 6th Sem · 2022</p>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: C.navy }}>{displayName}</p>
+                <p style={{ fontSize: '13px', color: C.text2, marginTop: '2px' }}>{identityLine}</p>
               </div>
               <div style={{ padding: '8px 0' }}>
                 {[
@@ -271,7 +282,7 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
               </div>
               <div style={{ borderTop: `1px solid ${C.border}` }} />
               <div style={{ padding: '8px 0' }}>
-                <button onClick={() => { navigate('/'); setProfileOpen(false); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 600, color: C.error, textAlign: 'left', transition: 'background 0.2s' }}
+                <button onClick={() => { logout(); navigate('/'); setProfileOpen(false); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 20px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 600, color: C.error, textAlign: 'left', transition: 'background 0.2s' }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = C.errorLight}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
                   <IconLogout size={16} /> Sign out

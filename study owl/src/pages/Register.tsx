@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
 import { C, Btn, Input, Select } from "../components/ui";
+import { IconAlertCircle } from "../components/Icons";
 
 // Department options shown in the "Academic Details" step
 const depts = ['CSE', 'ECE', 'EEE', 'ME', 'CE', 'IT', 'MBA', 'MCA', 'Physics', 'Chemistry', 'Mathematics', 'English'].map(d => ({ value: d, label: d }));
@@ -14,12 +17,18 @@ const batches = ['2021', '2022', '2023', '2024', '2025'].map(b => ({ value: b, l
  * Purpose: Two-step account creation form.
  *   Step 1 = Personal Information (name, student ID, email)
  *   Step 2 = Academic Details (department, semester, batch, password)
- * Data source: purely local component state; no persistence and no API call.
- *   On completion the component only navigates to the dashboard — a real
- *   backend would persist the user here (see AuthContext for the login side).
+ * Data source: step fields are local state; submission calls
+ *   supabase.auth.signUp with the form data as user metadata (a DB trigger
+ *   copies identity fields into `profiles`). When email confirmation is off
+ *   a session is returned immediately — we then sign in through
+ *   AuthContext so the profile is loaded before routing to the dashboard.
+ *   With confirmation on, a notice asks the user to verify their email.
  */
 export default function Register() {
   const navigate = useNavigate();
+
+  // Supplies `login` for the post-signup sign-in (see doc comment above)
+  const { login } = useAuth();
 
   // Current wizard step (1 or 2) — drives which form half is rendered
   const [step, setStep] = useState(1);
@@ -27,18 +36,98 @@ export default function Register() {
   // Submission flag passed to the button to show its spinner
   const [loading, setLoading] = useState(false);
 
+  // Validation / backend error banner text; empty when there is no error
+  const [error, setError] = useState("");
+
+  // Confirmation-required notice (rendered in the same banner slot)
+  const [notice, setNotice] = useState("");
+
   // All form fields held in one object; updated field-by-field via `up` below
   const [form, setForm] = useState({ name: '', studentId: '', email: '', dept: 'CSE', semester: '6', batch: '2022', password: '', confirm: '' });
 
   // Generic field updater: merges one key into the form state
   const up = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
-  // "Continue" on step 1 advances; "Create Account" on step 2 fakes a delay then routes on
-  const handleNext = () => {
-    if (step === 1) setStep(2);
-    else {
-      setLoading(true);
-      setTimeout(() => navigate('/app/dashboard'), 800);
+  // "Continue" on step 1 validates and advances; "Create Account" on step 2
+  // creates the Supabase user, then signs in and routes (or asks to confirm)
+  const handleNext = async () => {
+    setError("");
+    setNotice("");
+
+    if (step === 1) {
+      if (!form.name.trim() || !form.studentId.trim() || !form.email.trim()) {
+        setError("Please fill in all fields.");
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+        setError("Please enter a valid email address.");
+        return;
+      }
+      setStep(2);
+      return;
+    }
+
+    if (!form.password || !form.confirm) {
+      setError("Please fill in all fields.");
+      return;
+    }
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    if (form.password !== form.confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: form.email.trim(),
+        password: form.password,
+        options: {
+          data: {
+            // Copied into `profiles` by the handle_new_user trigger
+            full_name: form.name.trim(),
+            student_id: form.studentId.trim(),
+            department: form.dept,
+            batch: form.batch,
+            // No profiles column — stays in auth user_metadata
+            semester: form.semester,
+          },
+        },
+      });
+
+      if (signUpError) {
+        const msg = signUpError.message.toLowerCase();
+        setError(
+          msg.includes("already") || msg.includes("registered")
+            ? "An account with this email already exists. Please sign in."
+            : msg.includes("student") || msg.includes("duplicate") || msg.includes("unique") || msg.includes("database error")
+              ? "Could not create the account — the Student ID may already be in use."
+              : signUpError.message
+        );
+        return;
+      }
+
+      if (data.session) {
+        // Email confirmation is off: reuse login() so AuthContext loads the
+        // profile before we navigate (the destination route needs `user`).
+        const res = await login(form.email.trim(), form.password);
+        if (!res.success) {
+          setError(res.error || "Account created, but sign-in failed. Please sign in.");
+          return;
+        }
+        navigate("/dashboard");
+      } else {
+        // Email confirmation is on: no session yet, surface a friendly notice.
+        setNotice("Account created! Check your email to confirm your account, then sign in.");
+        setLoading(false);
+      }
+    } catch {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,7 +170,28 @@ export default function Register() {
 
         {/* The white form card wrapping both steps */}
         <div className="auth-card" style={{ backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', padding: '32px' }}>
-          {/* Step 1 — Personal Information fields */}
+        {/* Error / confirmation banner, rendered only when set */}
+        {(error || notice) && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              backgroundColor: error ? C.errorLight : "#ECFDF5",
+              border: `1px solid ${error ? C.error + "33" : "#A7F3D0"}`,
+              borderRadius: "8px",
+              padding: "10px 14px",
+              marginBottom: "20px",
+              color: error ? C.error : "#059669",
+              fontSize: "13px",
+            }}
+          >
+            <IconAlertCircle size={16} color={error ? C.error : "#059669"} />
+            <span style={{ flex: 1 }}>{error || notice}</span>
+          </div>
+        )}
+
+        {/* Step 1 — Personal Information fields */}
           {step === 1 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <p style={{ fontSize: '13px', fontWeight: 600, color: C.text3, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Personal Information</p>

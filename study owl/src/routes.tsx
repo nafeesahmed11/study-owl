@@ -43,7 +43,7 @@ export const router = createBrowserRouter([
   {
     path: "/app",
     element: (
-      <ProtectedRoute allowedRoles={["student"]}>
+      <ProtectedRoute allowedRoles={["student", "senior"]}>
         <AppLayout />
       </ProtectedRoute>
     ),

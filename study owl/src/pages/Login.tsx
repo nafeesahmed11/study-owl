@@ -9,13 +9,13 @@ import { IconAlertCircle } from "../components/Icons";
  * Page: Login (/login) — public, no auth required.
  * Purpose: Email-or-student-ID sign-in, plus one-click demo credential
  *   buttons for the student and admin accounts.
- * Data source: `useAuth().login`, which validates against the localStorage
- *   users DB (see AuthContext) with SHA-256 hashing and a 5-attempts-per-minute
- *   rate limit. On success the session token and current user are persisted
- *   to localStorage by AuthContext; this file only handles routing.
- * Post-login routing: admins go to /admin, everyone else to /app/dashboard.
- * The role is re-read straight from localStorage rather than from the login
- *   return value, so the redirect is correct on the first render.
+ * Data source: `useAuth().login`, which talks to Supabase Auth (email or
+ *   student-ID sign-in via the email_by_student_id RPC). On success the
+ *   session is stored by supabase-js and the context user is loaded from
+ *   the profiles table; this file only handles routing.
+ * Post-login routing: navigate to /dashboard, where RoleBasedDashboard
+ *   sends admins to /admin and everyone else to /app/dashboard based on
+ *   the context user — so the redirect is correct on the first render.
  */
 export default function Login() {
   // Used for the logo, the post-login redirect, and the home link
@@ -56,16 +56,9 @@ export default function Login() {
         return;
       }
 
-      // Check current user role after login
-      // Retrieve from storage directly for immediate routing
-      const userStr = localStorage.getItem("studyowl_current_user_v3");
-      const userObj = userStr ? JSON.parse(userStr) : null;
-
-      if (userObj?.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/app/dashboard");
-      }
+      // The context user is already loaded when `login` resolves. Route through
+      // /dashboard: RoleBasedDashboard picks /admin or /app/dashboard by role.
+      navigate("/dashboard");
     } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {

@@ -7,8 +7,8 @@ interface ProtectedRouteProps {
   allowedRoles?: UserRole[];
 }
 
-// Flag to temporarily disable forced login while preserving authentication system intact
-export const TEMPORARY_DISABLE_FORCE_LOGIN = true;
+// Set to true only to preview pages without signing in; false = real auth enforced.
+export const TEMPORARY_DISABLE_FORCE_LOGIN = false;
 
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
