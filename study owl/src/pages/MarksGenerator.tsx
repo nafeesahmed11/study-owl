@@ -1,9 +1,9 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { C, Card, Btn, Textarea, Select, Badge, PageHeader } from "../components/ui";
 import { IconZap, IconCopy, IconStar, IconRefresh, IconBook } from "../components/Icons";
 
 /**
- * Page: Marks Generator (/app/marks-generator) — student-only, inside AppLayout.
+ * Page: Marks Generator (/app/marks-generator) â€” student-only, inside AppLayout.
  * Purpose: Produce a structured, exam-ready answer sized to a chosen mark
  *   value (2/3/5/10). Left panel = inputs, right panel = the generated answer.
  * Data source: NOT a real AI call. `generate` fakes a 1.4s delay, then returns
@@ -20,12 +20,12 @@ const marksLevels = [
   { value: '10', label: '10 Marks', desc: 'Full essay-type answer with examples' },
 ];
 
-// Canned answers: sampleAnswers[question][marks] -> answer text
+// Canned answers: keyed by question (string) -> marks (string) -> answer text (markdown)
 const sampleAnswers: Record<string, Record<string, string>> = {
   'Explain ACID properties in database transactions.': {
-    '2': `**ACID Properties:**\nACID stands for Atomicity, Consistency, Isolation, and Durability — four properties that guarantee reliable database transactions.`,
-    '5': `**ACID Properties of Database Transactions**\n\n**Definition:** ACID is a set of properties that ensure reliable processing of database transactions.\n\n**1. Atomicity:** A transaction is treated as a single unit — either all operations complete or none do. (e.g., in a bank transfer, both debit and credit must succeed.)\n\n**2. Consistency:** A transaction must bring the database from one valid state to another valid state, maintaining all integrity constraints.\n\n**3. Isolation:** Concurrent transactions execute as if they were serial — intermediate results are invisible to other transactions.\n\n**4. Durability:** Once a transaction is committed, its effects persist permanently even in the event of system failure (ensured via write-ahead logging).\n\n**Conclusion:** ACID properties are fundamental to ensuring data correctness and reliability in database systems.`,
-    '10': `**ACID Properties — A Comprehensive Study**\n\n**Introduction:**\nACID is an acronym representing four critical properties of database transactions: Atomicity, Consistency, Isolation, and Durability. These properties are essential for maintaining data integrity and reliability in database management systems.\n\n**1. Atomicity:**\nAtomicity means a transaction is an indivisible unit of work. Either all operations within the transaction are executed completely, or none are executed at all.\n- Example: Transferring ₹500 from Account A to Account B involves two operations: debiting A and crediting B. If the system crashes after debiting A, the transaction must be rolled back.\n- Implemented via undo logs and rollback mechanisms.\n\n**2. Consistency:**\nA transaction must transform the database from one consistent state to another consistent state, ensuring all integrity constraints, rules, and triggers remain satisfied.\n- Example: If a foreign key constraint requires that every order must have a valid customer, a transaction cannot insert an order with an invalid customer ID.\n\n**3. Isolation:**\nConcurrently executing transactions must produce the same result as if they were executed serially. Isolation prevents one transaction from reading uncommitted or intermediate results of another.\n- Isolation levels: Read Uncommitted, Read Committed, Repeatable Read, Serializable.\n- Implemented via locking protocols and MVCC.\n\n**4. Durability:**\nOnce a transaction is committed, its changes are permanent and survive system failures, crashes, or power loss.\n- Implemented via write-ahead logging (WAL) and checkpointing.\n\n**Importance of ACID:**\nWithout ACID properties, databases would be vulnerable to data corruption, inconsistency, and loss. They are the foundation of reliable DBMS design.\n\n**Conclusion:**\nACID properties collectively ensure that database transactions are processed reliably, making them fundamental to the design of any production-grade database system.`,
+    '2': `**ACID Properties:**\nACID stands for Atomicity, Consistency, Isolation, and Durability â€” four properties that guarantee reliable database transactions.`,
+    '5': `**ACID Properties of Database Transactions**\n\n**Definition:** ACID is a set of properties that ensure reliable processing of database transactions.\n\n**1. Atomicity:** A transaction is treated as a single unit â€” either all operations complete or none do. (e.g., in a bank transfer, both debit and credit must succeed.)\n\n**2. Consistency:** A transaction must bring the database from one valid state to another valid state, maintaining all integrity constraints.\n\n**3. Isolation:** Concurrent transactions execute as if they were serial â€” intermediate results are invisible to other transactions.\n\n**4. Durability:** Once a transaction is committed, its effects persist permanently even in the event of system failure (ensured via write-ahead logging).\n\n**Conclusion:** ACID properties are fundamental to ensuring data correctness and reliability in database systems.`,
+    '10': `**ACID Properties â€” A Comprehensive Study**\n\n**Introduction:**\nACID is an acronym representing four critical properties of database transactions: Atomicity, Consistency, Isolation, and Durability. These properties are essential for maintaining data integrity and reliability in database management systems.\n\n**1. Atomicity:**\nAtomicity means a transaction is an indivisible unit of work. Either all operations within the transaction are executed completely, or none are executed at all.\n- Example: Transferring â‚¹500 from Account A to Account B involves two operations: debiting A and crediting B. If the system crashes after debiting A, the transaction must be rolled back.\n- Implemented via undo logs and rollback mechanisms.\n\n**2. Consistency:**\nA transaction must transform the database from one consistent state to another consistent state, ensuring all integrity constraints, rules, and triggers remain satisfied.\n- Example: If a foreign key constraint requires that every order must have a valid customer, a transaction cannot insert an order with an invalid customer ID.\n\n**3. Isolation:**\nConcurrently executing transactions must produce the same result as if they were executed serially. Isolation prevents one transaction from reading uncommitted or intermediate results of another.\n- Isolation levels: Read Uncommitted, Read Committed, Repeatable Read, Serializable.\n- Implemented via locking protocols and MVCC.\n\n**4. Durability:**\nOnce a transaction is committed, its changes are permanent and survive system failures, crashes, or power loss.\n- Implemented via write-ahead logging (WAL) and checkpointing.\n\n**Importance of ACID:**\nWithout ACID properties, databases would be vulnerable to data corruption, inconsistency, and loss. They are the foundation of reliable DBMS design.\n\n**Conclusion:**\nACID properties collectively ensure that database transactions are processed reliably, making them fundamental to the design of any production-grade database system.`,
   },
 };
 
@@ -45,7 +45,7 @@ export default function MarksGenerator() {
   // The generated answer text, or '' before the first generation
   const [answer, setAnswer] = useState('');
 
-  // In-flight flag driving the loading spinner and the "Generating…" copy
+  // In-flight flag driving the loading spinner and the "Generatingâ€¦" copy
   const [generating, setGenerating] = useState(false);
 
   // Transient "Copied!" confirmation flag
@@ -54,7 +54,13 @@ export default function MarksGenerator() {
   // Star/save toggle on the result header
   const [saved, setSaved] = useState(false);
 
-  // Fakes the generation round-trip: clears any old answer, waits 1.4s, then
+  /**
+   * Simulates an async generation round-trip (1.4s delay).
+   * 1. Returns early if the question is empty.
+   * 2. Clears the previous answer so the loading state is visible.
+   * 3. Looks up a canned answer for the first sample question, keyed by the
+   *    chosen mark value; falls back to generatePlaceholder if not found.
+   */
   // looks up a canned answer and falls back to the generic template
   const generate = () => {
     if (!question.trim()) return;
@@ -90,6 +96,8 @@ export default function MarksGenerator() {
             {/* Answer-length picker: one clickable tile per mark value */}
             <div>
               <p style={{ fontSize: '13px', fontWeight: 500, color: C.text, marginBottom: '8px' }}>Answer Length (Marks)</p>
+                            {/* Answer-length tiles: 4 columns on desktop, 2x2 on tablet, 1 column on mobile.
+                  Responsive classes live in src/index.css (.tile-4). */}
               <div className="tile-4">
                 {marksLevels.map(m => (
                   <button key={m.value} onClick={() => setMarks(m.value)} style={{ padding: '10px 4px', border: `1.5px solid ${marks === m.value ? C.indigo : C.border}`, borderRadius: '10px', backgroundColor: marks === m.value ? C.indigoLight : C.surface, cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s' }}>
@@ -101,7 +109,7 @@ export default function MarksGenerator() {
             </div>
 
             <Btn fullWidth icon={<IconZap size={14} />} onClick={generate} loading={generating} disabled={!question.trim()}>
-              {generating ? 'Generating…' : 'Generate Answer'}
+              {generating ? 'Generatingâ€¦' : 'Generate Answer'}
             </Btn>
           </div>
 
@@ -120,7 +128,7 @@ export default function MarksGenerator() {
 
         {/* Output column: switches between empty, loading, and result states */}
         <div>
-          {/* Empty state — shown before anything has been generated */}
+          {/* Empty state â€” shown before anything has been generated */}
           {!answer && !generating && (
             <Card style={{ textAlign: 'center', padding: '60px 32px' }}>
               <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: C.indigo }}>
@@ -131,12 +139,12 @@ export default function MarksGenerator() {
             </Card>
           )}
 
-          {/* Loading state — spinner + inline keyframes for the rotation */}
+          {/* Loading state â€” spinner + inline keyframes for the rotation */}
           {generating && (
             <Card style={{ padding: '48px', textAlign: 'center' }}>
               <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: `3px solid ${C.indigoLight}`, borderTopColor: C.indigo, animation: 'spin 0.8s linear infinite', margin: '0 auto 20px' }} />
               <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-              <p style={{ fontSize: '15px', fontWeight: 600, color: C.navy }}>Generating {marks}-mark answer…</p>
+              <p style={{ fontSize: '15px', fontWeight: 600, color: C.navy }}>Generating {marks}-mark answerâ€¦</p>
               <p style={{ fontSize: '13px', color: C.text2, marginTop: '6px' }}>Structuring a complete, exam-ready response.</p>
             </Card>
           )}
@@ -194,3 +202,5 @@ export default function MarksGenerator() {
 function generatePlaceholder(q: string, marks: string) {
   return `**Answer (${marks} Marks)**\n\n**Introduction:**\n${q.replace('?', '.')} This is a fundamental concept in the subject.\n\n**Key Points:**\n1. First important aspect of the topic with clear explanation.\n2. Second key point supported by relevant example or diagram reference.\n3. Third aspect covering the practical application.\n\n**Conclusion:**\nIn summary, this topic is important because it forms the basis for understanding related concepts in the curriculum.`;
 }
+
+

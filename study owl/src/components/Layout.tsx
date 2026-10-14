@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import {
   IconHome, IconBook, IconFolder, IconFileText, IconBrain, IconSparkles,
   IconCheck, IconCalendar, IconBarChart, IconUsers, IconUser, IconSettings,
-  IconSearch, IconBell, IconChevronDown, IconChevronLeft, IconChevronRight, IconPlus, IconLightbulb, IconZap,
+  IconSearch, IconBell, IconChevronDown, IconChevronLeft, IconChevronRight, IconLightbulb, IconZap,
   IconMessageCircle, IconShield, IconLogout, IconMenu, IconX,
 } from "./Icons";
 
@@ -229,17 +229,6 @@ function TopBar({ onMenuClick, isSidebarOpen, onToggleNav, isNavCollapsed }: { o
       </div>
 
       <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <button aria-label="New" style={{
-          display: 'flex', alignItems: 'center', gap: '6px', padding: '7px 14px',
-          backgroundColor: C.surface2, color: C.text2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-pill)',
-          fontSize: '13px', fontWeight: 600, lineHeight: 1.3, letterSpacing: '0.005em', cursor: 'pointer',
-          transition: 'background-color 0.15s ease, color 0.15s ease',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; e.currentTarget.style.color = C.indigo; }}
-        onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; }}
-      >
-          <IconPlus size={15} color="currentColor" /> <span className="topbar-new-label">New</span>
-        </button>
 
         <button aria-label="Notifications" style={{ position: 'relative', background: 'none', border: 'none', color: C.text2, padding: '8px', display: 'flex', borderRadius: '50%', cursor: 'pointer', transition: 'background-color 0.15s ease, color 0.15s ease' }}
           onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text; }}
@@ -380,7 +369,6 @@ export function AppLayout() {
             display: none;
           }
           .topbar-search.is-open { display: block; }
-          .topbar-new-label { display: none; }
           /* Comfortable touch targets across the whole bar. */
           .topbar-main button { min-height: 44px; min-width: 44px; }
         }
