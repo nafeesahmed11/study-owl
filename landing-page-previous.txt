@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { C } from "../components/ui";
-import { IconChevronDown, IconBook, IconFolder, IconFileText, IconBrain, IconCheck, IconCalendar, IconBarChart, IconUsers, IconZap, IconLightbulb, IconSparkles, IconMenu, IconX } from "../components/Icons";
+import { IconChevronDown, IconFolder, IconFileText, IconBrain, IconCheck, IconCalendar, IconBarChart, IconUsers, IconZap, IconLightbulb, IconSparkles, IconMenu, IconX } from "../components/Icons";
 
 /**
  * Page: Landing (/) — the public marketing site, no auth required.
@@ -96,20 +96,17 @@ export default function Landing() {
   // Wraps the whole navbar so an outside mousedown can dismiss the sheet
   const navRef = useRef<HTMLElement>(null);
 
-  // Close the mobile menu on any mousedown outside the navbar
+  // Close the mobile menu on any mousedown outside the navbar, or on Escape
   useEffect(() => {
     if (!mobileOpen) return;
     const onDown = (e: MouseEvent) => { if (navRef.current && !navRef.current.contains(e.target as Node)) setMobileOpen(false); };
-    document.addEventListener('mousedown', onDown);
-    return () => document.removeEventListener('mousedown', onDown);
-  }, [mobileOpen]);
-
-  // Escape closes the mobile menu
-  useEffect(() => {
-    if (!mobileOpen) return;
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMobileOpen(false); };
+    document.addEventListener('mousedown', onDown);
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      window.removeEventListener('keydown', onKey);
+    };
   }, [mobileOpen]);
 
   return (
