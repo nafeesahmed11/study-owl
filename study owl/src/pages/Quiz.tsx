@@ -1,5 +1,5 @@
 ﻿
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { C, Card, Btn, Badge, ProgressBar, Select, PageHeader } from "../components/ui";
 import { IconCheck, IconX, IconChevronRight, IconChevronLeft, IconAward, IconTrendingUp, IconRefresh } from "../components/Icons";
 
@@ -43,6 +43,12 @@ export default function Quiz() {
 
   // Index of the question currently on screen
   const [current, setCurrent] = useState(0);
+  // Ref to track current question index — prevents stale-closure jumps
+  // when the Next button is clicked rapidly.
+  const currentRef = useRef(0);
+  useEffect(() => {
+    currentRef.current = current;
+  }, [current]);
 
   // Chosen option index per question; null means unanswered
   const [selected, setSelected] = useState<(number | null)[]>(Array(quizData.questions.length).fill(null));
@@ -63,19 +69,46 @@ export default function Quiz() {
   const q = quizData.questions[current];
 
   // Records an answer for the current question; ignored after submitting
-  const selectOption = (i: number) => { if (submitted) return; setSelected(s => { const n = [...s]; n[current] = i; return n; }); };
+  const selectOption = (i: number) => { if (submitted) return; setSelected(s => { const n = [...s]; n[currentRef.current] = i; return n; }); };
 
   // Advances, or submits when on the final question
-  const next = () => { if (current < quizData.questions.length - 1) setCurrent(c => c + 1); else setSubmitted(true); };
+  // Blocks navigation if the current question has no answer, and uses
+  // the ref to avoid stale-closure jumps on rapid clicks.
+  const next = () => {
+    if (submitted) return;
+    if (selected[currentRef.current] !== null) {
+      if (currentRef.current < quizData.questions.length - 1) {
+        setCurrent(c => c + 1);
+      } else {
+        // On final question — mark quiz as submitted + move to results
+        setSubmitted(true);
+        setScreen('results');
+      }
+    }
+  };
 
   // Steps back one question
-  const prev = () => { if (current > 0) setCurrent(c => c - 1); };
+  const prev = () => {
+    if (currentRef.current > 0) setCurrent(c => c - 1);
+  };
 
   // Submits early and jumps straight to the results screen
-  const finish = () => { setSubmitted(true); setScreen('results'); };
+  const finish = () => {
+    if (submitted) return; // Prevent duplicate submission
+    // Validate all required questions answered before submitting
+    if (selected.every(s => s !== null)) {
+      setSubmitted(true);
+      setScreen('results');
+    }
+  };
 
   // Resets every piece of quiz state and returns to the setup screen
-  const restart = () => { setScreen('setup'); setCurrent(0); setSelected(Array(quizData.questions.length).fill(null)); setSubmitted(false); };
+  const restart = () => {
+    setScreen('setup');
+    setCurrent(0);
+    setSelected(Array(quizData.questions.length).fill(null));
+    setSubmitted(false);
+  };
 
   // Dropdown options for the setup screen
   const subjects = ['DBMS', 'Algorithms', 'Computer Networks', 'Software Engineering'].map(s => ({ value: s, label: s }));
@@ -231,16 +264,30 @@ export default function Quiz() {
         <Btn variant="secondary" icon={<IconChevronLeft size={14} />} onClick={prev} disabled={current === 0}>Previous</Btn>
         <div style={{ flex: 1 }} />
         {current < quizData.questions.length - 1 ? (
-          <Btn iconRight={<IconChevronRight size={14} />} onClick={next}>Next</Btn>
+          <Btn iconRight={<IconChevronRight size={14} />} onClick={next} disabled={selected[current] === null}>
+          {selected[current] === null ? 'Answer first' : 'Next'}
+        </Btn>
         ) : (
-          <Btn onClick={finish}>Submit Quiz</Btn>
+          <Btn onClick={finish} disabled={!selected.every(s => s !== null)}>
+            {selected.every(s => s !== null) ? 'Submit Quiz' : 'Answer all first'}
+          </Btn>
         )}
       </div>
 
-      {/* Question map */}
+      {/* Question map — disabled for direct jumps; only shows current position */}
       <div style={{ marginTop: '20px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
         {quizData.questions.map((_, i) => (
-          <button key={i} onClick={() => setCurrent(i)} style={{ width: '36px', height: '36px', borderRadius: '8px', border: `1.5px solid ${i === current ? C.indigo : selected[i] !== null ? C.success : C.border}`, backgroundColor: i === current ? C.indigoLight : selected[i] !== null ? C.successLight : C.surface, color: i === current ? C.indigo : selected[i] !== null ? C.success : C.text3, fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+          <button
+            key={i}
+            disabled
+            style={{
+              width: '36px', height: '36px', borderRadius: '8px', cursor: 'not-allowed',
+              border: `1.5px solid ${i === current ? C.indigo : C.border}`,
+              backgroundColor: i === current ? C.indigoLight : C.surface,
+              color: i === current ? C.indigo : C.text3,
+              opacity: 0.5
+            }}
+          >
             {i + 1}
           </button>
         ))}
