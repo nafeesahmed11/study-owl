@@ -1,3 +1,4 @@
+﻿
 import { useState } from "react";
 import { C, Card, Btn, Badge, ProgressBar, Select, PageHeader } from "../components/ui";
 import { IconCheck, IconX, IconChevronRight, IconChevronLeft, IconAward, IconTrendingUp, IconRefresh } from "../components/Icons";
@@ -8,8 +9,8 @@ import { IconCheck, IconX, IconChevronRight, IconChevronLeft, IconAward, IconTre
  *   -> 'results' (score + full question review). The state machine is the
  *   `screen` variable; each branch returns early with its own layout.
  * Data source: the single hard-coded `quizData` (5 DBMS questions). The
- *   question-count and difficulty selectors are non-functional, and `time`
- *   is a fixed 15-minute value that is never counted down.
+ *   question-count selector is non-functional, and `time` is a fixed
+ *   15-minute value that is never counted down.
  * Note: answers can still be changed by navigating back before submitting,
  *   because the review only locks once `submitted` is true.
  */
@@ -28,6 +29,7 @@ const quizData = {
 
 // The three mutually exclusive views this page can be in
 type Screen = 'setup' | 'quiz' | 'results';
+type Difficulty = 'Easy' | 'Medium' | 'Hard' | 'Mixed';
 
 export default function Quiz() {
   // Which of the three screens is showing
@@ -35,6 +37,9 @@ export default function Quiz() {
 
   // Chosen subject; only surfaced as a badge, the question set is fixed
   const [subject, setSubject] = useState('DBMS');
+
+  // Selected difficulty for the setup controls
+  const [difficulty, setDifficulty] = useState<Difficulty>('Mixed');
 
   // Index of the question currently on screen
   const [current, setCurrent] = useState(0);
@@ -87,9 +92,20 @@ export default function Quiz() {
           <div>
             <p style={{ fontSize: '13px', fontWeight: 500, color: C.text, marginBottom: '8px' }}>Difficulty</p>
             <div className="actions-row">
-              {['Easy', 'Medium', 'Hard', 'Mixed'].map(d => (
-                <button key={d} onClick={() => {}} style={{ padding: '7px 16px', border: `1.5px solid ${d === 'Mixed' ? C.indigo : C.border}`, borderRadius: '8px', backgroundColor: d === 'Mixed' ? C.indigoLight : C.surface, color: d === 'Mixed' ? C.indigo : C.text2, fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}>{d}</button>
-              ))}
+              {(['Easy', 'Medium', 'Hard', 'Mixed'] as const).map(d => {
+                const isSelected = difficulty === d;
+                return (
+                  <button
+                    key={d}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => setDifficulty(d)}
+                    style={{ padding: '7px 16px', border: `1.5px solid ${isSelected ? C.indigo : C.border}`, borderRadius: '8px', backgroundColor: isSelected ? C.indigoLight : C.surface, color: isSelected ? C.indigo : C.text2, fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                  >
+                    {d}
+                  </button>
+                );
+              })}
             </div>
           </div>
           {/* Quiz facts row: question count, time limit, question type */}

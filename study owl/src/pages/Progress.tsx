@@ -26,11 +26,11 @@ const subjectProgress = [
 
 // Most recent quiz attempts (newest first)
 const quizHistory = [
-  { date: "Dec 11", subject: "DBMS", score: 80, total: 5 },
-  { date: "Dec 10", subject: "Algorithms", score: 60, total: 5 },
-  { date: "Dec 9", subject: "CN", score: 70, total: 5 },
-  { date: "Dec 7", subject: "SE", score: 90, total: 5 },
-  { date: "Dec 5", subject: "DBMS", score: 75, total: 5 },
+  { date: "Dec 11", subject: "DBMS", percentage: 80, totalQuestions: 5 },
+  { date: "Dec 10", subject: "Algorithms", percentage: 60, totalQuestions: 5 },
+  { date: "Dec 9", subject: "CN", percentage: 70, totalQuestions: 5 },
+  { date: "Dec 7", subject: "SE", percentage: 90, totalQuestions: 5 },
+  { date: "Dec 5", subject: "DBMS", percentage: 75, totalQuestions: 5 },
 ];
 
 // AI insight bullets; `type` drives the green/amber accent colour
@@ -49,7 +49,7 @@ export default function Progress() {
   const totalMin = weekData.reduce((a, b) => a + b, 0);
 
   // Mean quiz percentage across the history, rounded for display
-  const avgScore = Math.round(quizHistory.reduce((a, q) => a + (q.score / q.total * 100), 0) / quizHistory.length);
+  const avgScore = Math.round(quizHistory.reduce((a, q) => a + q.percentage, 0) / quizHistory.length);
 
   return (
     // Page container: 1200px max width (responsive padding via .page)
@@ -135,14 +135,14 @@ export default function Progress() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {/* Score ring colour and verbal band both derive from the percentage */}
           {quizHistory.map((q, i) => {
-            const pct = Math.round(q.score / q.total * 100);
+            const pct = q.percentage;
             const color = pct >= 80 ? C.success : pct >= 60 ? C.indigo : pct >= 40 ? C.warning : C.error;
             return (
               <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', padding: '12px 14px', backgroundColor: C.surface2, borderRadius: '10px' }}>
                 <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: `2.5px solid ${color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color, flexShrink: 0 }}>{pct}%</div>
                 <div style={{ flex: '1 1 140px', minWidth: 0 }}>
                   <p style={{ fontSize: '13.5px', fontWeight: 600, color: C.text }}>{q.subject}</p>
-                  <p style={{ fontSize: '12px', color: C.text3 }}>{q.date} · {q.score}/{q.total} correct</p>
+                  <p style={{ fontSize: '12px', color: C.text3 }}>{q.date} · {q.totalQuestions} questions</p>
                 </div>
                 <Badge variant={pct >= 80 ? 'success' : pct >= 60 ? 'navy' : pct >= 40 ? 'warning' : 'error'}>
                   {pct >= 80 ? 'Excellent' : pct >= 60 ? 'Good' : pct >= 40 ? 'Fair' : 'Needs Work'}
