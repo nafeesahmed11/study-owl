@@ -1,11 +1,21 @@
 import { useState, useRef, useEffect } from "react";
 import { C, Card, Btn, Badge, Avatar } from "../components/ui";
-import { IconBrain, IconSend, IconCopy, IconStar, IconRefresh, IconPlus, IconFileText, IconSparkles, IconCheck, IconChevronLeft, IconChevronRight, IconMessageCircle, IconDownload, IconTerminal } from "../components/Icons";
-import claudeLogo from "../image/clude logo.png";
-
-const ClaudeIcon = ({ size = 18 }) => (
-  <img src={claudeLogo} alt="" width={size} height={size} style={{ display: 'block' }} />
-);
+import { IconBrain, IconSend, IconCopy, IconStar, IconRefresh, IconPlus, IconFileText, IconSparkles, IconCheck, IconChevronLeft, IconChevronRight, IconMessageCircle, IconDownload, IconTerminal, IconSettings } from "../components/Icons";
+import { AgentConfigModal } from "../components/ai-study/AgentConfigModal";
+import { CreditUsageBar } from "../components/ai-study/CreditUsageBar";
+import {
+  DEFAULT_AGENT_CONFIG,
+  AGENT_NAME_MAX,
+  loadAgentConfig,
+  saveAgentConfig,
+  clearAgentConfig,
+  loadDevMode,
+  saveDevMode,
+  resolveAgentName,
+  sanitizeAgentName,
+  type AgentConfig,
+} from "../lib/agentConfig";
+import { loadCredits, consumeCredits, type CreditState } from "../lib/creditsStore";
 
 const DeepSeekIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -19,13 +29,6 @@ const ChatGPTIcon = ({ size = 18 }) => (
     <path fillRule="nonzero" d="M412.037 221.764a90.834 90.834 0 004.648-28.67 90.79 90.79 0 00-12.443-45.87c-16.37-28.496-46.738-46.089-79.605-46.089-6.466 0-12.943.683-19.264 2.04a90.765 90.765 0 00-67.881-30.515h-.576c-.059.002-.149.002-.216.002-39.807 0-75.108 25.686-87.346 63.554-25.626 5.239-47.748 21.31-60.682 44.03a91.873 91.873 0 00-12.407 46.077 91.833 91.833 0 0023.694 61.553 90.802 90.802 0 00-4.649 28.67 90.804 90.804 0 0012.442 45.87c16.369 28.504 46.74 46.087 79.61 46.087a91.81 91.81 0 0019.253-2.04 90.783 90.783 0 0067.887 30.516h.576l.234-.001c39.829 0 75.119-25.686 87.357-63.588 25.626-5.242 47.748-21.312 60.682-44.033a91.718 91.718 0 0012.383-46.035 91.83 91.83 0 00-23.693-61.553l-.004-.005zM275.102 413.161h-.094a68.146 68.146 0 01-43.611-15.8 56.936 56.936 0 002.155-1.221l72.54-41.901a11.799 11.799 0 005.962-10.251V241.651l30.661 17.704c.326.163.55.479.596.84v84.693c-.042 37.653-30.554 68.198-68.21 68.273h.001zm-146.689-62.649a68.128 68.128 0 01-9.152-34.085c0-3.904.341-7.817 1.005-11.663.539.323 1.48.897 2.155 1.285l72.54 41.901a11.832 11.832 0 0011.918-.002l88.563-51.137v35.408a1.1 1.1 0 01-.438.94l-73.33 42.339a68.43 68.43 0 01-34.11 9.12 68.359 68.359 0 01-59.15-34.11l-.001.004zm-19.083-158.36a68.044 68.044 0 0135.538-29.934c0 .625-.036 1.731-.036 2.5v83.801l-.001.07a11.79 11.79 0 005.954 10.242l88.564 51.13-30.661 17.704a1.096 1.096 0 01-1.034.093l-73.337-42.375a68.36 68.36 0 01-34.095-59.143 68.412 68.412 0 019.112-34.085l-.004-.003zm251.907 58.621l-88.563-51.137 30.661-17.697a1.097 1.097 0 011.034-.094l73.337 42.339c21.109 12.195 34.132 34.746 34.132 59.132 0 28.604-17.849 54.199-44.686 64.078v-86.308c.004-.032.004-.065.004-.096 0-4.219-2.261-8.119-5.919-10.217zm30.518-45.93c-.539-.331-1.48-.898-2.155-1.286l-72.54-41.901a11.842 11.842 0 00-5.958-1.611c-2.092 0-4.15.558-5.957 1.611l-88.564 51.137v-35.408l-.001-.061a1.1 1.1 0 01.44-.88l73.33-42.303a68.301 68.301 0 0134.108-9.129c37.704 0 68.281 30.577 68.281 68.281a68.69 68.69 0 01-.984 11.545v.005zm-191.843 63.109l-30.668-17.704a1.09 1.09 0 01-.596-.84v-84.692c.016-37.685 30.593-68.236 68.281-68.236a68.332 68.332 0 0143.689 15.804 63.09 63.09 0 00-2.155 1.222l-72.54 41.9a11.794 11.794 0 00-5.961 10.248v.068l-.05 102.23zm16.655-35.91l39.445-22.782 39.444 22.767v45.55l-39.444 22.767-39.445-22.767v-45.535z" />
   </svg>
 );
-
-const AI_MODELS = [
-  { id: 'claude', name: 'Claude', color: '#D97757', icon: <ClaudeIcon /> },
-  { id: 'deepseek', name: 'Deep Seek', color: '#4D6BFE', icon: <DeepSeekIcon /> },
-  { id: 'chatgpt', name: 'Chat gpt', color: '#000000', icon: <ChatGPTIcon /> },
-  { id: 'gemini', name: 'Gemini', color: '#fff', icon: <img src="/assets/gemini.svg" alt="" width={18} height={18} style={{ display: 'block' }} /> },
-];
 
 const labNotebookBlocks = [
   {
@@ -73,8 +76,8 @@ const sourceDocuments = [
  *   Canvas are compact fixed rails (240px and 300px, both min-width:0) while
  *   the chat column is flex:1, so the conversation always receives every pixel
  *   the side panels do not claim and can never be squeezed by them.
- *   On desktop the history rail rests as a 56px icon strip (the header chevron
- *   expands it to the labelled 240px column) and the Lab Canvas collapses to
+ *   On desktop the history rail opens to its labelled 240px column (the header
+ *   chevron collapses it to a 56px icon strip) and the Lab Canvas collapses to
  *   zero width. At 1440px and up the Lab Canvas sits inline; below that both
  *   rails become overlay drawers (closed by default) so the chat keeps the full
  *   width, and below 1024px the in-page toolbar carries both toggles. The shell
@@ -82,6 +85,10 @@ const sourceDocuments = [
  *   and each column scrolls on its own. The Lab Canvas holds three stacked
  *   sections: an artifacts list, a grid of referenced sources, and the code
  *   blocks.
+ * Agent identity: the header title and a per-reply prefix label render the
+ *   active agent name (default "AI Study Assistant"); an optional Developer
+ *   Mode dialog (lib/agentConfig) customizes the agent name and instructions
+ *   and persists them in localStorage.
  */
 
 type Message = { id: number; role: 'user' | 'assistant'; content: string; saved?: boolean };
@@ -94,6 +101,44 @@ const suggestions = [
   "Explain Deadlock Detection and Prevention",
   "Generate 5 MCQs on Normalization",
   "Write a 10-mark answer on Transaction Management",
+];
+
+const studyPrompts = [
+  {
+    title: 'The ELI12 (Simplify Concept) Prompt',
+    when: 'When a textbook or lecture is too confusing.',
+    prompt: 'Explain [complex concept] as if I am 12 years old. Use a simple, real-life analogy, break it down into core steps, and summarize the main takeaway in one sentence.',
+  },
+  {
+    title: 'The Interactive Quiz-Me Prompt',
+    when: 'For active recall instead of passively re-reading notes.',
+    prompt: 'Create 10 multiple-choice practice questions based on [paste your notes or topic]. Do not show me all the answers at once. Ask me the questions one by one and wait for my response. After I reply, tell me if I am right or wrong, and explain why.',
+  },
+  {
+    title: 'The Knowledge Gap Hunter Prompt',
+    when: 'To find out what you do not know before the test.',
+    prompt: 'Ask me 10 small questions about [subject/topic] before you show me the test. Wait for my confidence from 1 to 5. Flag any question I feel confident about but got wrong as a dangerous blind spot. At the end, group my results into solid, shaky, and blind-spot areas.',
+  },
+  {
+    title: 'The Flashcard Generator Prompt',
+    when: 'To quickly turn heavy reading into study cards.',
+    prompt: 'Turn the following class notes into clean question-and-answer flashcards suitable for self-testing. Put the question first, leave a space, and then give the answer below. [Paste Notes]',
+  },
+  {
+    title: 'The One-Page Revision Sheet Prompt',
+    when: 'The night before or morning of the exam for a quick review.',
+    prompt: 'Compress all the key concepts, formulas, definitions, and dates from [topic/notes] into a single-page cheat sheet. Use bullet points and bold text so it is fast to scan.',
+  },
+  {
+    title: 'The Oral Exam / Role-Play Prompt',
+    when: 'To practice under pressure or prepare for a face-to-face quiz.',
+    prompt: 'Act as my [subject] professor conducting an oral exam. Ask me a challenging question one at a time. Wait for my answer, give me constructive feedback, and then ask the next question. Adjust the difficulty based on how well I do.',
+  },
+  {
+    title: 'The Study Schedule / Cram-Free Plan Prompt',
+    when: 'When you have a massive amount of material and a few days or weeks left.',
+    prompt: 'I have an exam in [Subject] on [Date]. I have [X] hours a day to study. Build a realistic 7-day study schedule that mixes new topics, active recall practice, and short breaks.',
+  },
 ];
 
 // Canned reply text. Only `default` exists, so every answer is identical
@@ -113,8 +158,11 @@ export default function AIStudy() {
   // Conversation rail. At rest this is the 56px icon strip on desktop and the
   // closed overlay drawer below 1024px; the header chevron (desktop) and the
   // toolbar button (mobile) flip it to the labelled 240px column / 300px drawer.
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => window.innerWidth >= 1440);
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
+  const [showPrompts, setShowPrompts] = useState(false);
+  const [copiedPrompt, setCopiedPrompt] = useState<string | null>(null);
+  const [promptCopyError, setPromptCopyError] = useState(false);
   // Lab Canvas: an inline column from 1440px up, an overlay drawer below. It
   // starts open exactly where it is inline, so narrower screens give the full
   // width to the conversation without losing access to the canvas.
@@ -128,9 +176,15 @@ export default function AIStudy() {
 
   // In-flight flag; renders the typing indicator and blocks the send button
   const [loading, setLoading] = useState(false);
+  const [credits, setCredits] = useState<CreditState>(() => loadCredits());
 
-  // Which provider is active; affects only the assistant's avatar
-  const [selectedModel, setSelectedModel] = useState('chatgpt');
+  // ─── Agent identity: optional Developer Mode + persisted configuration.
+  // `agentName` drives the header title and the label above every assistant
+  // reply, so the visible prefix always reflects the real active config.
+  const [agentConfig, setAgentConfig] = useState<AgentConfig>(() => loadAgentConfig());
+  const [devMode, setDevModeState] = useState<boolean>(() => loadDevMode());
+  const [showAgentConfig, setShowAgentConfig] = useState(false);
+  const agentName = resolveAgentName(agentConfig, devMode);
 
   // Static conversation history list. Declared without a setter, so the
   // entries never change and the buttons have no click handler
@@ -146,9 +200,6 @@ export default function AIStudy() {
   const suggScrollRef = useRef<HTMLDivElement>(null);
   const [showSuggLeft, setShowSuggLeft] = useState(false);
   const [showSuggRight, setShowSuggRight] = useState(false);
-
-  // Look up the active model's display data, falling back to the first entry
-  const selectedModelData = AI_MODELS.find(m => m.id === selectedModel) || AI_MODELS[0];
 
   // Scroll to the newest message whenever the conversation grows
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
@@ -188,15 +239,23 @@ export default function AIStudy() {
   // overlaying, so it never hijacks Escape on wide inline layouts.
   useEffect(() => {
     const drawerOpen = (isSidebarOpen && window.innerWidth < 1024) || (isNotebookOpen && window.innerWidth < 1440);
-    if (!drawerOpen) return;
+    if (!drawerOpen && !showPrompts && !showAgentConfig) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
+      if (showAgentConfig) {
+        setShowAgentConfig(false);
+        return;
+      }
+      if (showPrompts) {
+        setShowPrompts(false);
+        return;
+      }
       setIsSidebarOpen(false);
       setIsNotebookOpen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [isSidebarOpen, isNotebookOpen]);
+  }, [isSidebarOpen, isNotebookOpen, showPrompts, showAgentConfig]);
 
   // Sends a message: appends the user turn, clears the input, then fakes a
   // 1.2s round-trip before appending the canned assistant reply
@@ -210,6 +269,7 @@ export default function AIStudy() {
     setTimeout(() => {
       const aiMsg: Message = { id: ++msgId, role: 'assistant', content: aiResponses.default };
       setMessages(m => [...m, aiMsg]);
+      setCredits(consumeCredits(content));
       setLoading(false);
     }, 1200);
   };
@@ -225,6 +285,39 @@ export default function AIStudy() {
     } catch {
       setCopiedBlock(null);
     }
+  };
+
+  const copyStudyPrompt = async (title: string, prompt: string) => {
+    setPromptCopyError(false);
+    try {
+      await navigator.clipboard.writeText(prompt);
+      setCopiedPrompt(title);
+      window.setTimeout(() => setCopiedPrompt(current => current === title ? null : current), 1800);
+    } catch {
+      setPromptCopyError(true);
+    }
+  };
+
+  // ─── Developer Mode: agent identity + persisted configuration ───────────────
+  // Applies (and persists) a validated agent configuration.
+  const applyAgentConfig = (next: AgentConfig) => {
+    saveAgentConfig(next);
+    setAgentConfig(next);
+    setShowAgentConfig(false);
+  };
+
+  // Clears the saved configuration back to defaults (mode itself unchanged;
+  // the dialog's mode switch controls returning to the default agent mode).
+  const resetAgentConfig = () => {
+    clearAgentConfig();
+    setAgentConfig({ ...DEFAULT_AGENT_CONFIG });
+  };
+
+  // Inline "Agent name" field in the rail: validates + persists as typed.
+  const handleAgentNameChange = (value: string) => {
+    const next: AgentConfig = { ...agentConfig, name: sanitizeAgentName(value) };
+    setAgentConfig(next);
+    saveAgentConfig(next);
   };
 
   // Below 1024px both side rails are overlay drawers. Keeping them mutually
@@ -260,22 +353,14 @@ export default function AIStudy() {
         .ai-study-sidebar { display: flex; flex: 0 0 240px; flex-direction: column; width: 240px; max-width: 240px; min-width: 0; height: 100%; overflow: hidden; background: ${C.surface}; border-right: 1px solid ${C.border}; transition: flex-basis 220ms ease, width 220ms ease, transform 240ms ease; z-index: 21; }
         .ai-study-sidebar.is-collapsed { flex-basis: 56px; width: 56px; max-width: 56px; }
 
-        /* AI model switchers. Their geometry lives here so the tiles follow both
-           rail states instead of squishing: 82% of the labelled column when
-           expanded, a fixed 40px square when the rail is collapsed. align-self
-           keeps every tile on the rail's centre axis in either state, and the
-           width/height transitions let the square shrink back down smoothly
-           when the chevron collapses the rail. */
-        .ai-study-model-btn { display: flex; align-items: center; justify-content: center; align-self: center; min-height: 42px; padding: 0 12px; border-radius: 12px; cursor: pointer; color: #fff; font-weight: 600; font-size: 13.5px; transition: background-color 180ms, color 180ms, border-color 180ms, transform 180ms, box-shadow 180ms, width 180ms, height 180ms; }
-        .ai-study-sidebar.is-open .ai-study-model-btn { width: 86%; }
-        .ai-study-sidebar.is-collapsed .ai-study-model-btn { width: 42px; height: 42px; padding: 0; }
-        /* Every tile keeps its own brand fill in both states; the active provider
-           is marked by the indigo border and the light ring alone. There is no
-           dot and no black override. */
-        .ai-study-model-btn.is-active { border: 2px solid #4F46E5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18); transform: translateY(-1px); }
-
         /* Center workspace: takes all remaining width, never crushed. */
-        .ai-study-chat-pane { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; overflow: hidden; }
+        .ai-study-chat-pane { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; overflow: hidden; position: relative; }
+        .ai-study-prompts-panel { position: absolute; top: 64px; left: 50%; z-index: 10; width: min(480px, calc(100% - 32px)); max-height: min(610px, calc(100% - 78px)); overflow-y: auto; transform: translateX(-50%); padding: 12px; border: 1px solid ${C.border}; border-radius: 14px; background: ${C.surface}; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16); }
+        .ai-study-prompt-card { position: relative; margin-top: 5px; padding: 5px 7px; border-radius: 8px; background: #F8FAFC; }
+        .ai-study-prompt-copy { position: absolute; top: 5px; right: 5px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 0; border-radius: 6px; background: transparent; color: #64748B; cursor: pointer; }
+        .ai-study-prompt-copy:hover { background: #E2E8F0; color: #1E293B; }
+        .ai-study-prompts-toggle { display: flex; align-items: center; gap: 6px; padding: 7px 11px; border: 1px solid #1E293B; border-radius: 8px; background: #1E293B; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .ai-study-prompts-toggle:hover, .ai-study-prompts-toggle[aria-expanded="true"] { background: #334155; border-color: #334155; }
 
         /* Lab Canvas: compact rail, collapsible to zero width on wide desktops
            and an overlay drawer below 1440px. */
@@ -362,52 +447,62 @@ export default function AIStudy() {
               </button>
             ))}
           </div>
-          {/* Model switchers. Geometry lives in .ai-study-model-btn so each tile
-              follows both rail states: 82% wide when the column is expanded, a
-              fixed 40px square when it is collapsed, never squished. The active
-              provider is marked by its highlighted border alone - nothing else. */}
-          <div style={{ padding: isSidebarOpen ? '16px 12px' : '12px 4px', display: 'flex', flexDirection: 'column', gap: '8px', borderTop: `1px solid ${C.border}` }}>
-            {AI_MODELS.map(model => (
-              <button
-                key={model.id}
-                onClick={() => setSelectedModel(model.id)}
-                title={model.name}
-                aria-pressed={selectedModel === model.id}
-                className={`ai-study-model-btn${selectedModel === model.id ? ' is-active' : ''}`}
-                style={{
-                  /* Brand backdrop and text colour hold in BOTH states, so the
-                     active tile keeps its own colour (Claude orange, DeepSeek
-                     blue, ChatGPT black, Gemini white). The indigo border and the
-                     ring come from .is-active, so only the 2px base border is
-                     needed while inactive - it keeps both states the same size. */
-                  backgroundColor: model.id === 'gemini' ? '#fff' : model.color,
-                  color: model.id === 'gemini' ? C.text : '#fff',
-                  ...(selectedModel === model.id ? null : {
-                    border: model.id === 'gemini' ? '2px solid rgb(209 209 209)' : '2px solid transparent',
-                  }),
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: isSidebarOpen ? '10px' : 0 }}>
-                  {model.icon}
-                  {isSidebarOpen && model.name}
-                </div>
-              </button>
-            ))}
-          </div>
+          {isSidebarOpen && (
+            <div style={{ padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '10px', borderTop: `1px solid ${C.border}` }}>
+              <CreditUsageBar total={credits.total} used={credits.used} status={credits.status} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <input
+                  value={agentConfig.name}
+                  onChange={e => handleAgentNameChange(e.target.value)}
+                  disabled={!devMode}
+                  maxLength={AGENT_NAME_MAX}
+                  placeholder="Agent name"
+                  aria-label="Agent name"
+                  title={devMode ? 'Custom prefix shown in the header and above replies' : 'Turn on Developer mode to set a custom agent name'}
+                  style={{ width: '100%', padding: '7px 10px', border: `1px solid ${C.border}`, borderRadius: 'var(--r-sm)', backgroundColor: devMode ? C.surface : C.surface2, color: devMode ? C.text : C.text3, fontSize: '12px', outline: 'none' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowAgentConfig(true)}
+                  aria-haspopup="dialog"
+                  aria-label={devMode ? 'Open Developer mode settings (on)' : 'Open Developer mode settings (off)'}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', width: '100%', padding: '8px 10px', border: `1px solid ${devMode ? C.indigo : C.border}`, borderRadius: 'var(--r-sm)', backgroundColor: devMode ? C.indigoLight : C.surface, color: devMode ? C.indigo : C.text2, fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'background 0.15s, color 0.15s, border-color 0.15s' }}
+                >
+                  <IconSettings size={14} />
+                  Developer mode
+                </button>
+              </div>
+            </div>
+          )}
         </aside>
 
         {/* Center: Chat — flex:1 in CSS, so it absorbs all remaining width */}
         <div className="ai-study-chat-pane" style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Header */}
-          <div style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '14px', backgroundColor: C.surface, flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
+          <div style={{ padding: '12px 20px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: C.surface, flexShrink: 0, boxShadow: '0 1px 2px rgba(0,0,0,0.02)' }}>
             <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, flexShrink: 0, boxShadow: 'inset 0 0 0 1px rgba(79, 70, 229, 0.1)' }}>
               <IconBrain size={21} />
             </div>
             <div style={{ minWidth: 0, flex: 1 }}>
-              <p style={{ fontSize: '16px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em' }}>AI Study Assistant</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                <p style={{ fontSize: '16px', fontWeight: 700, color: C.navy, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em', minWidth: 0 }}>{agentName}</p>
+                {devMode && (
+                  <span title="Developer mode is active" style={{ flexShrink: 0, fontSize: '9.5px', fontWeight: 700, letterSpacing: '0.06em', color: C.purple, backgroundColor: C.purpleLight, border: '1px solid rgba(124, 58, 237, 0.25)', borderRadius: 'var(--r-pill)', padding: '2px 8px' }}>DEV</span>
+                )}
+              </div>
               <p style={{ fontSize: '12.5px', color: C.text2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '1px' }}>Academic tutor · DBMS, Algorithms, CN and more</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+              <button
+                type="button"
+                className="ai-study-prompts-toggle"
+                aria-expanded={showPrompts}
+                aria-controls="ai-study-prompts"
+                onClick={() => setShowPrompts(open => !open)}
+              >
+                <IconSparkles size={14} />
+                Prompts
+              </button>
               {/* Lab Canvas toggle — shown from 1024px up, where the in-page
                   toolbar is hidden. Below that the toolbar button does the job. */}
               <button
@@ -431,6 +526,36 @@ export default function AIStudy() {
             </div>
           </div>
 
+          {showPrompts && (
+            <section id="ai-study-prompts" className="ai-study-prompts-panel" aria-label="Study prompts">
+              <h2 style={{ fontSize: '14px', fontWeight: 700, color: C.navy, padding: '0 4px 2px' }}>
+                7 Study Prompts to Supercharge Your Learning
+              </h2>
+              {studyPrompts.map((item, index) => (
+                <article key={item.title} className="ai-study-prompt-card">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px', paddingRight: '28px', marginBottom: '6px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '16px', height: '16px', flexShrink: 0, borderRadius: '50%', background: C.indigoLight, color: C.indigo, fontSize: '9px', fontWeight: 700 }}>{index + 1}</span>
+                    <h3 style={{ fontSize: '9.5px', fontWeight: 700, color: C.navy, lineHeight: 1.2 }}>{item.title}</h3>
+                  </div>
+                  <p style={{ fontSize: '8px', lineHeight: 1.2, color: C.text2, marginBottom: '2px' }}>When to use it: {item.when}</p>
+                  <div style={{ position: 'relative', padding: '4px 29px 4px 7px', borderRadius: '6px', background: '#F1F5F9' }}>
+                    <p style={{ fontSize: '8px', lineHeight: 1.2, color: C.text2 }}>{item.prompt}</p>
+                    <button
+                      type="button"
+                      className="ai-study-prompt-copy"
+                      aria-label={`Copy ${item.title}`}
+                      title={copiedPrompt === item.title ? 'Copied' : 'Copy prompt'}
+                      onClick={() => copyStudyPrompt(item.title, item.prompt)}
+                    >
+                      {copiedPrompt === item.title ? <IconCheck size={13} /> : <IconCopy size={13} />}
+                    </button>
+                  </div>
+                </article>
+              ))}
+              {promptCopyError && <p role="status" style={{ margin: '10px 4px 0', fontSize: '12px', color: C.error }}>Could not copy the prompt. Check clipboard permissions and try again.</p>}
+            </section>
+          )}
+
           {/* Scrollable message list; user turns are right-aligned via row-reverse.
               `minWidth: 0` + wrapping keeps long words and code from ever forcing
               the pane to overflow horizontally. */}
@@ -439,13 +564,17 @@ export default function AIStudy() {
             {messages.map(msg => (
               <div key={msg.id} style={{ display: 'flex', gap: '16px', minWidth: 0, flexDirection: msg.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-start' }}>
                 {msg.role === 'assistant' ? (
-                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: selectedModelData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                    {selectedModelData.icon}
+                  <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                    <IconBrain size={18} />
                   </div>
                 ) : (
                   <Avatar name="Alex Johnson" size={36} style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }} />
                 )}
                 <div style={{ maxWidth: 'min(75%, 720px)', minWidth: 0, overflowWrap: 'break-word', display: 'flex', flexDirection: 'column', alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                  {/* Agent prefix: the active identity from the agent config (not decorative). */}
+                  {msg.role === 'assistant' && (
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: C.text3, letterSpacing: '0.02em', marginBottom: '4px', paddingLeft: '4px' }}>{agentName}</span>
+                  )}
                   <div style={{ padding: '18px 22px', borderRadius: msg.role === 'user' ? '20px 20px 6px 20px' : '20px 20px 20px 6px', backgroundColor: msg.role === 'user' ? C.indigo : C.surface, color: msg.role === 'user' ? '#fff' : C.text, border: msg.role === 'assistant' ? `1px solid ${C.border}` : 'none', lineHeight: 1.75, boxShadow: msg.role === 'user' ? '0 4px 12px rgba(79, 70, 229, 0.15)' : '0 2px 10px rgba(15, 23, 42, 0.05)' }}>
                     {msg.content.split('\n').map((line, i) => (
                       <p key={i} style={{ fontSize: '14px', fontWeight: line.startsWith('**') ? 600 : 400, color: msg.role === 'user' ? '#fff' : (line.startsWith('**') ? C.navy : C.text), marginBottom: line === '' ? '12px' : '4px', letterSpacing: '0.01em' }}>
@@ -472,8 +601,8 @@ export default function AIStudy() {
 
             {loading && (
               <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: selectedModelData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
-                  {selectedModelData.icon}
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: C.indigo, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: '#fff' }}>
+                  <IconBrain size={16} />
                 </div>
                 <div style={{ padding: '14px 16px', borderRadius: '4px 16px 16px 16px', backgroundColor: C.surface, border: `1px solid ${C.border}` }}>
                   <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '20px' }}>
@@ -625,9 +754,17 @@ export default function AIStudy() {
           </div>
         </aside>
       </div>
+
+      {/* Developer Mode configuration dialog (scoped to this page). */}
+      <AgentConfigModal
+        open={showAgentConfig}
+        onClose={() => setShowAgentConfig(false)}
+        config={agentConfig}
+        devMode={devMode}
+        onSetDevMode={on => { setDevModeState(on); saveDevMode(on); }}
+        onApply={applyAgentConfig}
+        onReset={resetAgentConfig}
+      />
     </div>
   );
 }
-
-
-
