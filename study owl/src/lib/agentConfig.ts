@@ -33,6 +33,8 @@ export interface AgentConfig {
   model: string;
   temperature: number;
   commandPrefix: string;
+  apiKey?: string;
+  apiBaseUrl?: string;
 }
 
 export const DEFAULT_AGENT_CONFIG: AgentConfig = Object.freeze({

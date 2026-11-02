@@ -198,6 +198,8 @@ create table if not exists public.ai_agent_config (
   model        text not null default 'gpt-4o-mini',
   temperature  numeric not null default 0.6,
   command_prefix text not null default '?',
+  api_key      text not null default '',
+  api_base_url text not null default '',
   constraint ai_agent_config_name_len check (char_length(name) <= 30),
   constraint ai_agent_config_instructions_len check (char_length(instructions) <= 1000)
 );

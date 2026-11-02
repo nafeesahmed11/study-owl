@@ -362,14 +362,14 @@ export function Modal({ open, onClose, title, children, width = 480 }: {
   if (!open) return null;
   return (
     <div className="modal-overlay" style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
-      <div className="modal-panel" role="dialog" aria-modal="true" style={{ backgroundColor: C.surface, borderRadius: 'var(--r-3xl)', width: '100%', maxWidth: width, boxShadow: 'var(--sh-3)', overflow: 'hidden' }}>
+      <div className="modal-panel" role="dialog" aria-modal="true" style={{ backgroundColor: C.surface, borderRadius: 'var(--r-3xl)', width: '100%', maxWidth: width, maxHeight: '90vh', boxShadow: 'var(--sh-3)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
         <div className="modal-head" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: `1px solid ${C.border}`, flexShrink: 0 }}>
           <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>{title}</h3>
           <button aria-label="Close dialog" onClick={onClose} style={{ background: 'none', border: 'none', color: C.text3, cursor: 'pointer', display: 'flex', padding: '4px', minWidth: 32, minHeight: 32, alignItems: 'center', justifyContent: 'center' }}>
             <IconX size={18} />
           </button>
         </div>
-        <div className="modal-body" style={{ padding: '24px' }}>{children}</div>
+        <div className="modal-body" style={{ padding: '24px', overflowY: 'auto', flex: 1, minHeight: 0, boxSizing: 'border-box' }}>{children}</div>
       </div>
     </div>
   );

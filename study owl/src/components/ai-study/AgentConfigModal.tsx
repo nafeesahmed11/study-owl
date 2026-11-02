@@ -61,6 +61,16 @@ export function AgentConfigModal({
   const [model, setModel] = useState(config.model);
   const [temperature, setTemperature] = useState(config.temperature);
   const [commandPrefix, setCommandPrefix] = useState(config.commandPrefix);
+  const [apiKey, setApiKey] = useState(config.apiKey || '');
+  const [apiBaseUrl, setApiBaseUrl] = useState(config.apiBaseUrl || '');
+  const [isApiKeyDirty, setIsApiKeyDirty] = useState(false);
+
+  // Masked API key: show first 6 chars, then asterisks, then last 2 chars
+  const maskedApiKey = apiKey
+    ? apiKey.length > 12
+      ? apiKey.substring(0, 6) + '•••••' + apiKey.substring(apiKey.length - 2)
+      : '****' + apiKey
+    : '—';
 
   useEffect(() => {
     if (open) {
@@ -82,6 +92,8 @@ export function AgentConfigModal({
       model,
       temperature,
       commandPrefix,
+      apiKey: isApiKeyDirty ? apiKey : undefined,
+      apiBaseUrl: isApiKeyDirty ? apiBaseUrl : undefined,
     });
 
   const reset = () => {
@@ -295,6 +307,62 @@ export function AgentConfigModal({
             style={{ width: '60px' }}
           />
         </div>
+
+      {/* API Keys Configuration */}
+      <div>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
+          <label style={{ fontSize: '13px', fontWeight: 500, color: C.text }}>
+            API Configuration
+          </label>
+          <span style={{ fontSize: '11px', color: C.text3 }}>
+            Custom API key for this provider
+          </span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div>
+            <div style={{ fontSize: '11.5px', color: C.text2, marginBottom: '4px' }}>Provider</div>
+            <div style={{ fontSize: '12px', color: C.navy, fontWeight: 500 }}>
+              {provider === 'openai' ? 'OpenAI / compatible' : 'Google Gemini'}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: '11.5px', color: C.text2, marginBottom: '4px' }}>Model</div>
+            <div style={{ fontSize: '12px', color: C.navy, fontWeight: 500 }}>
+              {model}
+            </div>
+          </div>
+          <div>
+            <div style={{ fontSize: '11.5px', color: C.text2, marginBottom: '4px' }}>API Key</div>
+            <Input
+              id="ai-study-agent-api-key"
+              type="password"
+              fullWidth
+              disabled={!devMode}
+              value={apiKey}
+              onChange={(e) => { setApiKey(e.target.value); setIsApiKeyDirty(true); }}
+              placeholder="Enter your API key (optional)"
+              autoComplete="off"
+            />
+            {apiKey && (
+              <div style={{ fontSize: '11px', color: C.text3, marginTop: '4px' }}>
+                Current key: {maskedApiKey}
+              </div>
+            )}
+          </div>
+          <div>
+            <div style={{ fontSize: '11.5px', color: C.text2, marginBottom: '4px' }}>API Base URL</div>
+            <Input
+              id="ai-study-agent-api-base-url"
+              fullWidth
+              disabled={!devMode}
+              value={apiBaseUrl}
+              onChange={(e) => { setApiBaseUrl(e.target.value); setIsApiKeyDirty(true); }}
+              placeholder="https://api.openai.com/v1 (optional)"
+              autoComplete="off"
+            />
+          </div>
+        </div>
+      </div>
 
       </div>
 
