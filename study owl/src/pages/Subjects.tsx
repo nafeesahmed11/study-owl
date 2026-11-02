@@ -13,12 +13,12 @@ import { IconBook, IconFolder, IconFileText, IconSparkles, IconCheck, IconChevro
 
 // Subject catalogue: code, teacher, coverage %, counts, colour, and syllabus topics
 const allSubjects = [
-  { code: "CSE-401", name: "Database Management Systems", teacher: "Dr. A.K. Rahman", semester: 6, progress: 72, resources: 14, papers: 8, color: "#4F46E5", topics: ["ER Model", "Normalization", "SQL", "Transactions", "Indexing", "Concurrency Control"] },
-  { code: "CSE-402", name: "Algorithms & Complexity", teacher: "Prof. M. Hossain", semester: 6, progress: 58, resources: 9, papers: 5, color: "#059669", topics: ["Divide & Conquer", "Dynamic Programming", "Greedy Algorithms", "Graph Algorithms", "NP-Completeness"] },
+  { code: "CSE-401", name: "Database Management Systems", teacher: "Dr. A.K. Rahman", semester: 6, progress: 72, resources: 14, papers: 8, color: "#6B183C", topics: ["ER Model", "Normalization", "SQL", "Transactions", "Indexing", "Concurrency Control"] },
+  { code: "CSE-402", name: "Algorithms & Complexity", teacher: "Prof. M. Hossain", semester: 6, progress: 58, resources: 9, papers: 5, color: "#126B68", topics: ["Divide & Conquer", "Dynamic Programming", "Greedy Algorithms", "Graph Algorithms", "NP-Completeness"] },
   { code: "CSE-403", name: "Computer Networks", teacher: "Dr. S. Islam", semester: 6, progress: 45, resources: 11, papers: 6, color: "#D97706", topics: ["OSI Model", "TCP/IP", "Routing Algorithms", "Error Detection", "Data Link Layer"] },
   { code: "CSE-404", name: "Software Engineering", teacher: "Prof. N. Begum", semester: 6, progress: 83, resources: 7, papers: 4, color: "#DC2626", topics: ["SDLC", "Requirements", "Design Patterns", "Testing", "Agile & Scrum"] },
-  { code: "CSE-405", name: "Numerical Methods", teacher: "Dr. K. Chowdhury", semester: 6, progress: 34, resources: 6, papers: 3, color: "#7C3AED", topics: ["Bisection Method", "Newton-Raphson", "Interpolation", "Numerical Integration"] },
-  { code: "CSE-406", name: "Compiler Design", teacher: "Prof. Z. Ahmed", semester: 6, progress: 61, resources: 8, papers: 5, color: "#0EA5E9", topics: ["Lexical Analysis", "Parsing", "Semantic Analysis", "Code Generation"] },
+  { code: "CSE-405", name: "Numerical Methods", teacher: "Dr. K. Chowdhury", semester: 6, progress: 34, resources: 6, papers: 3, color: "#3B1028", topics: ["Bisection Method", "Newton-Raphson", "Interpolation", "Numerical Integration"] },
+  { code: "CSE-406", name: "Compiler Design", teacher: "Prof. Z. Ahmed", semester: 6, progress: 61, resources: 8, papers: 5, color: "#243D78", topics: ["Lexical Analysis", "Parsing", "Semantic Analysis", "Code Generation"] },
 ];
 
 // Sample resources shown in the detail view's "Resources" tab
@@ -136,7 +136,7 @@ function SubjectDetail({ subject, onBack }: { subject: typeof allSubjects[0]; on
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {papers.map((p, i) => (
             <Card key={i} padding={14} style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#FFF7ED', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706', flexShrink: 0 }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', backgroundColor: '#F5F3FF', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D97706', flexShrink: 0 }}>
                 <IconFileText size={17} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>

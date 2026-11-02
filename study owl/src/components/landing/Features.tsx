@@ -49,7 +49,7 @@ export function Features() {
                       aria-hidden="true"
                       style={{
                         width: "44px", height: "44px", borderRadius: "var(--r-xl)",
-                        backgroundColor: C.indigoLight, display: "flex", alignItems: "center",
+                        backgroundColor: "#F5F2EB", display: "flex", alignItems: "center",
                         justifyContent: "center", color: C.indigo, marginBottom: "16px",
                       }}
                     >

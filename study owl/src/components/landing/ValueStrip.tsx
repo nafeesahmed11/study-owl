@@ -25,7 +25,7 @@ export function ValueStrip() {
               const Icon = valueIcons[i % valueIcons.length];
               return (
                 <Card key={label} hover style={{ padding: "20px 16px", textAlign: "center" }}>
-                  <div style={{ width: "44px", height: "44px", borderRadius: "var(--r-xl)", backgroundColor: C.indigoLight, display: "flex", alignItems: "center", justifyContent: "center", color: C.indigo, margin: "0 auto 12px" }}>
+                  <div style={{ width: "44px", height: "44px", borderRadius: "var(--r-xl)", backgroundColor: "#F5F2EB", display: "flex", alignItems: "center", justifyContent: "center", color: C.indigo, margin: "0 auto 12px" }}>
                     <Icon size={20} />
                   </div>
                   <p style={{ fontSize: "13.5px", fontWeight: 600, color: C.navy, lineHeight: 1.4 }}>{label}</p>

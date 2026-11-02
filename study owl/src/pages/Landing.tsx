@@ -223,7 +223,7 @@ export default function Landing() {
       <section style={{ maxWidth: '1200px', margin: '0 auto', padding: '80px 24px 60px' }}>
         <div style={{ maxWidth: '720px' }}>
           {/* Hero copy: eyebrow pill, headline, subcopy, and the two CTAs */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 12px', backgroundColor: C.indigoLight, borderRadius: '99px', marginBottom: '24px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '5px 12px', backgroundColor: '#F5F2EB', borderRadius: '99px', marginBottom: '24px' }}>
             <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: C.indigo }}>Study Owl AI — Academic Platform</span>
           </div>
 
@@ -239,7 +239,7 @@ export default function Landing() {
             <button onClick={() => navigate('/register')} style={{ padding: '13px 28px', fontSize: '15px', fontWeight: 600, color: '#fff', backgroundColor: C.navyMid, border: 'none', borderRadius: '50px', cursor: 'pointer' }}>
               Get Started — It's Free
             </button>
-            <button onClick={() => { document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '13px 28px', fontSize: '15px', fontWeight: 600, color: C.navyMid, backgroundColor: 'transparent', border: `2px solid ${C.border}`, borderRadius: '50px', cursor: 'pointer' }}>
+            <button onClick={() => { document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' }); }} style={{ padding: '13px 28px', fontSize: '15px', fontWeight: 600, color: '#11102C', backgroundColor: 'transparent', border: `2px solid ${C.border}`, borderRadius: '50px', cursor: 'pointer' }}>
               Explore Features
             </button>
           </div>
@@ -307,7 +307,7 @@ export default function Landing() {
       </section>
 
       {/* Workflow / Core Philosophy */}
-      <section style={{ backgroundColor: C.navyMid, padding: '5rem 2rem' }}>
+      <section style={{ backgroundColor: '#11102C', padding: '5rem 2rem' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
           <p style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)', marginBottom: '14px', textAlign: 'center' }}>Core Philosophy</p>
           <h2 style={{ fontFamily: "'Merriweather', serif", fontSize: 'clamp(22px, 3vw, 34px)', fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1.4, marginBottom: '2.5rem' }}>
@@ -362,7 +362,7 @@ export default function Landing() {
               <div key={i} style={{ padding: '24px', backgroundColor: C.surface, border: `1px solid ${C.border}`, borderRadius: '16px', transition: 'box-shadow 0.2s, transform 0.2s' }}
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.07)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, marginBottom: '16px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#F5F2EB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.indigo, marginBottom: '16px' }}>
                   {f.icon}
                 </div>
                 <h3 style={{ fontSize: '16px', fontWeight: 700, color: C.navy, marginBottom: '8px' }}>{f.title}</h3>
@@ -374,7 +374,7 @@ export default function Landing() {
       </section>
 
       {/* CTA */}
-      <section style={{ backgroundColor: C.indigoLight, padding: '80px 24px', textAlign: 'center' }}>
+      <section style={{ backgroundColor: '#FFFDF8', padding: '80px 24px', textAlign: 'center' }}>
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           <img src="/assets/ce79b.svg" alt="Study Owl AI" style={{ height: '48px', width: 'auto', margin: '0 auto 20px' }} />
           <h2 style={{ fontFamily: "'Merriweather', serif", fontSize: 'clamp(24px, 3vw, 36px)', fontWeight: 700, color: C.navy, marginBottom: '16px' }}>

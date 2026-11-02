@@ -151,7 +151,7 @@ export default function Settings() {
             <div className="actions-row" style={{ alignItems: 'center', justifyContent: 'flex-end', paddingTop: '8px', borderTop: `1px solid ${C.border}` }}>
               {saved && (
                 <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold rounded-lg animate-fade-in">
-                  <IconCheck size={14} color="#059669" />
+                  <IconCheck size={14} color="#126B68" />
                   <span>Changes saved successfully!</span>
                 </div>
               )}

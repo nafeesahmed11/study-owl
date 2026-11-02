@@ -2,30 +2,37 @@
 @import 'tailwindcss';
 
 :root {
-  --c-bg: #F7F7FA;
-  --c-surface: #FFFFFF;
-  --c-surface2: #F1F1F6;
-  --c-border: #E2E2E8;
-  --c-navy: #0F172A;
-  --c-navy-mid: #1E1B4B;
-  --c-indigo: #4F46E5;
-  --c-indigo-hover: #4338CA;
-  --c-indigo-light: #EEF2FF;
-  --c-text: #1E293B;
-  --c-text2: #475569;
-  --c-text3: #94A3B8;
+  --c-bg: #FFFDF8;
+  --c-surface: #FFFDF8;
+  --c-surface2: #F5F2EB;
+  --c-border: #E8DDD0;
+  --c-navy: #11102C;
+  --c-navy-mid: #14123A;
+  --c-indigo: #6B183C;
+  --c-indigo-hover: #591432;
+  --c-indigo-light: #F5F3FF;
+  --c-text: #1A1930;
+  --c-text2: #4A3F5A;
+  --c-text3: #A090A8;
   /* Muted *content* text (due dates, metadata, descriptions). Darker than
      --c-text3 so real content meets ~4.6:1 contrast on white. --c-text3 is
      kept for purely decorative uses (icons, dividers, chart ticks). */
-  --c-text-muted: #64748B;
-  --c-success: #059669;
+  --c-text-muted: #7A6B80;
+  --c-success: #126B68;
   --c-success-light: #ECFDF5;
   --c-warning: #D97706;
   --c-warning-light: #FFFBEB;
-  --c-error: #DC2626;
+  --c-error: #8F1D1D;
   --c-error-light: #FEF2F2;
-  --c-info: #0EA5E9;
+  --c-info: #243D78;
   --c-info-light: #F0F9FF;
+  /* New palette accents */
+  --c-mauve: #D99A91;
+  --c-mauve-light: #F5EFEA;
+  --c-highlight-bg: #F6E39A;
+  --c-highlight-text: #7A5C00;
+  --c-ai-accent: #3B1028;
+  --c-ai-dim: #4A3F5A;
   --sidebar-w: 240px;
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;

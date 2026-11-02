@@ -540,17 +540,17 @@ export default function AIStudy() {
         .ai-study-chat-pane { display: flex; flex: 1 1 auto; flex-direction: column; min-width: 0; overflow: hidden; position: relative; }
         .ai-study-prompts-panel { position: absolute; top: 64px; left: 50%; z-index: 10; width: min(480px, calc(100% - 32px)); max-height: min(610px, calc(100% - 78px)); overflow-y: auto; transform: translateX(-50%); padding: 12px; border: 1px solid ${C.border}; border-radius: 14px; background: ${C.surface}; box-shadow: 0 12px 32px rgba(15, 23, 42, 0.16); }
         .ai-study-prompt-card { position: relative; margin-top: 5px; padding: 5px 7px; border-radius: 8px; background: #F8FAFC; }
-        .ai-study-prompt-copy { position: absolute; top: 5px; right: 5px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 0; border-radius: 6px; background: transparent; color: #64748B; cursor: pointer; }
-        .ai-study-prompt-copy:hover { background: #E2E8F0; color: #1E293B; }
-        .ai-study-prompts-toggle { display: flex; align-items: center; gap: 6px; padding: 7px 11px; border: 1px solid #1E293B; border-radius: 8px; background: #1E293B; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-        .ai-study-prompts-toggle:hover, .ai-study-prompts-toggle[aria-expanded="true"] { background: #334155; border-color: #334155; }
+        .ai-study-prompt-copy { position: absolute; top: 5px; right: 5px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 0; border-radius: 6px; background: transparent; color: #7A6B80; cursor: pointer; }
+        .ai-study-prompt-copy:hover { background: #E2E8F0; color: #1A1930; }
+        .ai-study-prompts-toggle { display: flex; align-items: center; gap: 6px; padding: 7px 11px; border: 1px solid #1A1930; border-radius: 8px; background: #1A1930; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .ai-study-prompts-toggle:hover, .ai-study-prompts-toggle[aria-expanded="true"] { background: #4A3F5A; border-color: #4A3F5A; }
 
         /* Lab Canvas: compact rail, collapsible to zero width on wide desktops
            and an overlay drawer below 1440px. */
         .ai-study-notebook-pane { display: flex; flex: 0 0 300px; flex-direction: column; width: 300px; max-width: 300px; min-width: 0; height: 100%; min-height: 0; overflow-y: auto; overflow-x: hidden; background: #F1F5F9; border-left: 1px solid ${C.border}; transition: flex-basis 220ms ease, width 220ms ease, transform 240ms ease; }
         .ai-study-notebook-pane.is-collapsed { flex-basis: 0; width: 0; max-width: 0; overflow: hidden; border-left-width: 0; }
         .ai-study-notebook-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 18px 18px 14px; background: #F8FAFC; border-bottom: 1px solid #E2E8F0; }
-        .ai-study-notebook-subheader { margin: 20px 18px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #64748B; }
+        .ai-study-notebook-subheader { margin: 20px 18px 10px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7A6B80; }
         .ai-study-artifact-row { display: flex; align-items: center; gap: 10px; width: calc(100% - 20px); margin: 0 10px 8px; padding: 10px 12px; background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; text-align: left; cursor: pointer; transition: background 140ms ease, border-color 140ms ease, box-shadow 140ms ease; }
         .ai-study-artifact-row:hover { background: #F8FAFC; border-color: #CBD5E1; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06); }
         .ai-study-source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; padding: 0 18px; }
@@ -889,16 +889,16 @@ export default function AIStudy() {
           {/* Sticky actions header */}
           <div className="ai-study-notebook-header">
             <div>
-              <p style={{ fontSize: '11px', fontWeight: 600, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>DBMS · 6th Semester</p>
-              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#1E293B' }}>Artifacts</h2>
+              <p style={{ fontSize: '11px', fontWeight: 600, color: '#7A6B80', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>DBMS · 6th Semester</p>
+              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#1A1930' }}>Artifacts</h2>
             </div>
             <button
               type="button"
               title="Download all artifacts"
               aria-label="Download all artifacts"
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, padding: '6px 10px', background: '#FFFFFF', border: '1px solid #D8E0E9', borderRadius: '8px', color: '#475569', fontSize: '12px', fontWeight: 500, cursor: 'pointer', transition: 'background 140ms ease, color 140ms ease' }}
-              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#F8FAFC'; e.currentTarget.style.color = '#1E293B'; }}
-              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.color = '#475569'; }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, padding: '6px 10px', background: '#FFFFFF', border: '1px solid #D8E0E9', borderRadius: '8px', color: '#4A3F5A', fontSize: '12px', fontWeight: 500, cursor: 'pointer', transition: 'background 140ms ease, color 140ms ease' }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#F8FAFC'; e.currentTarget.style.color = '#1A1930'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#FFFFFF'; e.currentTarget.style.color = '#4A3F5A'; }}
             >
               <IconDownload size={14} />Download all
             </button>
@@ -907,20 +907,20 @@ export default function AIStudy() {
           {/* Generated artifacts */}
           {notebookArtifacts.map(artifact => (
             <div key={artifact.id} className="ai-study-artifact-row">
-              <span style={{ display: 'flex', flexShrink: 0, color: artifact.code ? '#4F46E5' : '#64748B' }}>
+              <span style={{ display: 'flex', flexShrink: 0, color: artifact.code ? '#6B183C' : '#7A6B80' }}>
                 {artifact.code ? <IconTerminal size={17} /> : <IconFileText size={17} />}
               </span>
               <span style={{ flex: 1, minWidth: 0 }}>
-                <span style={{ display: 'block', fontSize: '12.5px', fontWeight: 500, color: '#1E293B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{artifact.name}</span>
-                <span style={{ display: 'block', fontSize: '11px', color: '#94A3B8', marginTop: '1px' }}>{artifact.meta}</span>
+                <span style={{ display: 'block', fontSize: '12.5px', fontWeight: 500, color: '#1A1930', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{artifact.name}</span>
+                <span style={{ display: 'block', fontSize: '11px', color: '#A090A8', marginTop: '1px' }}>{artifact.meta}</span>
               </span>
               <button
                 type="button"
                 title={`Download ${artifact.name}`}
                 aria-label={`Download ${artifact.name}`}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: '26px', height: '26px', border: 'none', borderRadius: '6px', background: 'transparent', color: '#64748B', cursor: 'pointer', transition: 'background 140ms ease, color 140ms ease' }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#E2E8F0'; e.currentTarget.style.color = '#1E293B'; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#64748B'; }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, width: '26px', height: '26px', border: 'none', borderRadius: '6px', background: 'transparent', color: '#7A6B80', cursor: 'pointer', transition: 'background 140ms ease, color 140ms ease' }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#E2E8F0'; e.currentTarget.style.color = '#1A1930'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#7A6B80'; }}
               >
                 <IconDownload size={14} />
               </button>
@@ -940,8 +940,8 @@ export default function AIStudy() {
                   <span style={{ width: '45%', height: '4px', borderRadius: '2px', background: '#CBD5E1' }} />
                 </div>
                 <div style={{ borderTop: '1px solid #E2E8F0', padding: '7px 8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ padding: '2px 6px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '4px', fontSize: '9.5px', fontWeight: 700, letterSpacing: '0.04em', color: '#64748B' }}>{source.format}</span>
-                  <span style={{ flex: 1, minWidth: 0, fontSize: '11px', color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{source.name}</span>
+                  <span style={{ padding: '2px 6px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '4px', fontSize: '9.5px', fontWeight: 700, letterSpacing: '0.04em', color: '#7A6B80' }}>{source.format}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: '11px', color: '#4A3F5A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{source.name}</span>
                 </div>
               </div>
             ))}
@@ -952,15 +952,15 @@ export default function AIStudy() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '0 18px 18px' }}>
             {labNotebookBlocks.map(block => (
               <section key={block.title}>
-                <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#1E293B', marginBottom: '5px' }}>{block.title}</h3>
-                <p style={{ fontSize: '12px', lineHeight: 1.5, color: '#64748B', marginBottom: '10px' }}>{block.subtitle}</p>
+                <h3 style={{ fontSize: '13px', fontWeight: 700, color: '#1A1930', marginBottom: '5px' }}>{block.title}</h3>
+                <p style={{ fontSize: '12px', lineHeight: 1.5, color: '#7A6B80', marginBottom: '10px' }}>{block.subtitle}</p>
                 <div style={{ overflow: 'hidden', border: '1px solid #D8E0E9', borderRadius: '8px', background: '#eef2f6' }}>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '6px 8px 0' }}>
-                    <button type="button" onClick={() => copyNotebookCode(block.title, block.code)} aria-label={`Copy ${block.title} code`} title={copiedBlock === block.title ? 'Copied' : 'Copy code'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', border: 'none', borderRadius: '6px', background: 'transparent', color: copiedBlock === block.title ? '#15803D' : '#64748B', cursor: 'pointer' }}>
+                    <button type="button" onClick={() => copyNotebookCode(block.title, block.code)} aria-label={`Copy ${block.title} code`} title={copiedBlock === block.title ? 'Copied' : 'Copy code'} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '28px', border: 'none', borderRadius: '6px', background: 'transparent', color: copiedBlock === block.title ? '#15803D' : '#7A6B80', cursor: 'pointer' }}>
                       {copiedBlock === block.title ? <IconCheck size={15} /> : <IconCopy size={15} />}
                     </button>
                   </div>
-                  <pre style={{ overflowX: 'auto', padding: '4px 12px 12px', margin: 0, color: '#1E293B', fontFamily: 'var(--font-mono)', fontSize: '11.5px', lineHeight: 1.6, whiteSpace: 'pre' }}><code>{block.code}</code></pre>
+                  <pre style={{ overflowX: 'auto', padding: '4px 12px 12px', margin: 0, color: '#1A1930', fontFamily: 'var(--font-mono)', fontSize: '11.5px', lineHeight: 1.6, whiteSpace: 'pre' }}><code>{block.code}</code></pre>
                 </div>
               </section>
             ))}

@@ -25,9 +25,9 @@ function ShowcaseFrame({ id, title, children }: { id: string; title: string; chi
   return (
     <div className="landing-preview" role="img" aria-label={`Preview of ${title} inside Study Owl AI.`}>
       <div className="landing-preview-bar" aria-hidden="true">
-        <span className="landing-preview-dot" style={{ backgroundColor: "#F87171" }} />
-        <span className="landing-preview-dot" style={{ backgroundColor: "#FBBF24" }} />
-        <span className="landing-preview-dot" style={{ backgroundColor: "#34D399" }} />
+        <span className="landing-preview-dot" style={{ backgroundColor: "#8F1D1D" }} />
+        <span className="landing-preview-dot" style={{ backgroundColor: "#F6E39A" }} />
+        <span className="landing-preview-dot" style={{ backgroundColor: "#126B68" }} />
         <span style={{ marginLeft: "8px", fontSize: "12px", fontWeight: 600, color: C.textMuted }}>
           Study Owl AI — {title}
         </span>
@@ -58,7 +58,7 @@ function AiAnalysisBody() {
           <Badge variant="purple">10-mark focus</Badge>
         </div>
       </div>
-      <div className="landing-preview-mini" style={{ backgroundColor: "#F8F7FF", border: "1px solid #E4E2FF" }}>
+      <div className="landing-preview-mini" style={{ backgroundColor: "#F5F3FF", border: "1px solid #E8DDD0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           <IconBrain size={15} color={C.indigo} />
           <p style={{ fontSize: "12px", fontWeight: 600, color: C.navy }}>AI verdict</p>

@@ -3,15 +3,16 @@ import { IconX, IconChevronDown, IconAlertCircle, IconCheckCircle, IconInfo } fr
 
 // ─── Color tokens ─────────────────────────────────────────────────────────────
 export const C = {
-  bg: '#F7F7FA', surface: '#FFFFFF', surface2: '#F1F1F6', border: '#E2E2E8',
-  navy: '#0F172A', navyMid: '#1E1B4B',
-  indigo: '#4F46E5', indigoHover: '#4338CA', indigoLight: '#EEF2FF',
-  text: '#1E293B', text2: '#475569', text3: '#94A3B8', textMuted: '#64748B',
-  success: '#059669', successLight: '#ECFDF5',
+  bg: '#FFFDF8', surface: '#FFFDF8', surface2: '#F5F2EB', border: '#E8DDD0',
+  navy: '#11102C', navyMid: '#14123A',
+  indigo: '#6B183C', indigoHover: '#591432', indigoLight: '#F5F2EB',
+  text: '#1A1930', text2: '#4A3F5A', text3: '#A090A8', textMuted: '#7A6B80',
+  success: '#126B68', successLight: '#ECFDF5',
   warning: '#D97706', warningLight: '#FFFBEB',
-  error: '#DC2626', errorLight: '#FEF2F2',
-  info: '#0EA5E9', infoLight: '#F0F9FF',
-  purple: '#7C3AED', purpleLight: '#F5F3FF',
+  error: '#8F1D1D', errorLight: '#FEF2F2',
+  info: '#243D78', infoLight: '#F0F9FF',
+  purple: '#3B1028', purpleLight: '#F5F3FF',
+  mauve: '#D99A91', highlight: '#F6E39A',
 } as const;
 
 // ─── Button ───────────────────────────────────────────────────────────────────

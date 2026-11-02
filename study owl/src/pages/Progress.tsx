@@ -17,11 +17,11 @@ const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 // Per-subject coverage percentage, quiz average, and display colour
 const subjectProgress = [
   { name: "Software Engineering", code: "CSE-404", progress: 83, quizAvg: 86, color: "#DC2626" },
-  { name: "Database Management", code: "CSE-401", progress: 72, quizAvg: 74, color: "#4F46E5" },
-  { name: "Algorithms", code: "CSE-402", progress: 58, quizAvg: 62, color: "#059669" },
-  { name: "Compiler Design", code: "CSE-406", progress: 61, quizAvg: 58, color: "#0EA5E9" },
+  { name: "Database Management", code: "CSE-401", progress: 72, quizAvg: 74, color: "#6B183C" },
+  { name: "Algorithms", code: "CSE-402", progress: 58, quizAvg: 62, color: "#126B68" },
+  { name: "Compiler Design", code: "CSE-406", progress: 61, quizAvg: 58, color: "#243D78" },
   { name: "Computer Networks", code: "CSE-403", progress: 45, quizAvg: 50, color: "#D97706" },
-  { name: "Numerical Methods", code: "CSE-405", progress: 34, quizAvg: 40, color: "#7C3AED" },
+  { name: "Numerical Methods", code: "CSE-405", progress: 34, quizAvg: 40, color: "#3B1028" },
 ];
 
 // Most recent quiz attempts (newest first)
@@ -94,7 +94,7 @@ export default function Progress() {
         </Card>
 
         {/* AI Insights */}
-        <Card style={{ backgroundColor: '#F8F7FF', border: '1px solid #E4E2FF' }}>
+        <Card style={{ backgroundColor: '#F5F3FF', border: '1px solid #E8DDD0' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <IconBrain size={17} color={C.indigo} />
             <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy }}>AI Study Insights</h3>

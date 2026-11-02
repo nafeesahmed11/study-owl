@@ -22,8 +22,8 @@ const stats = [
 
 // Subjects summarised with their coverage percentage
 const subjects = [
-  { code: "CSE-401", name: "Database Management Systems", progress: 72, resources: 14, papers: 8, color: "#4F46E5" },
-  { code: "CSE-402", name: "Algorithms & Complexity", progress: 58, resources: 9, papers: 5, color: "#059669" },
+  { code: "CSE-401", name: "Database Management Systems", progress: 72, resources: 14, papers: 8, color: "#6B183C" },
+  { code: "CSE-402", name: "Algorithms & Complexity", progress: 58, resources: 9, papers: 5, color: "#126B68" },
   { code: "CSE-403", name: "Computer Networks", progress: 45, resources: 11, papers: 6, color: "#D97706" },
   { code: "CSE-404", name: "Software Engineering", progress: 83, resources: 7, papers: 4, color: "#DC2626" },
 ];
@@ -101,10 +101,10 @@ export default function Dashboard() {
           {(() => {
             const quickActions = [
               { label: 'Upload Resource', icon: <IconFolder size={14} />, path: '/app/resources', color: C.indigo },
-              { label: 'Analyze Papers', icon: <IconSparkles size={14} />, path: '/app/ai-analysis', color: '#059669' },
-              { label: 'Ask AI', icon: <IconBrain size={14} />, path: '/app/ai-study', color: '#7C3AED' },
+              { label: 'Analyze Papers', icon: <IconSparkles size={14} />, path: '/app/ai-analysis', color: '#126B68' },
+              { label: 'Ask AI', icon: <IconBrain size={14} />, path: '/app/ai-study', color: '#3B1028' },
               { label: 'Start Quiz', icon: <IconCheck size={14} />, path: '/app/quiz', color: '#D97706' },
-              { label: 'Add Study Task', icon: <IconCalendar size={14} />, path: '/app/planner', color: '#0EA5E9' },
+              { label: 'Add Study Task', icon: <IconCalendar size={14} />, path: '/app/planner', color: '#243D78' },
               { label: 'Marks Generator', icon: <IconZap size={14} />, path: '/app/marks-generator', color: '#DC2626' },
             ];
             const inlineActions = quickActions.slice(0, 4);
@@ -215,7 +215,7 @@ export default function Dashboard() {
         </Card>
 
         {/* AI Insights */}
-        <Card style={{ backgroundColor: '#F8F7FF', border: `1px solid #E4E2FF`, padding: '20px', boxShadow: 'var(--sh-1)', borderRadius: 'var(--r-xl)' }}>
+        <Card style={{ backgroundColor: '#F5F3FF', border: `1px solid #E8DDD0`, padding: '20px', boxShadow: 'var(--sh-1)', borderRadius: 'var(--r-xl)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
             <div style={{ width: '30px', height: '30px', borderRadius: 'var(--r-md)', backgroundColor: C.indigoLight, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <IconBrain size={16} color={C.indigo} />
@@ -227,7 +227,7 @@ export default function Dashboard() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {aiInsights.map((ins, i) => (
-              <div key={i} style={{ padding: '12px 14px', backgroundColor: C.surface, border: `1px solid #E4E2FF`, borderRadius: 'var(--r-lg)' }}>
+              <div key={i} style={{ padding: '12px 14px', backgroundColor: C.surface, border: `1px solid #E8DDD0`, borderRadius: 'var(--r-lg)' }}>
                 <p style={{ fontSize: '14px', lineHeight: 1.55, color: C.text, marginBottom: '8px' }}>{ins.text}</p>
                 <button onClick={() => navigate('/app/ai-analysis')} style={{ fontSize: '12px', fontWeight: 600, lineHeight: 1.3, color: C.indigo, background: 'none', border: 'none', cursor: 'pointer', padding: 0, transition: 'opacity 150ms ease' }}>{ins.action} →</button>
               </div>

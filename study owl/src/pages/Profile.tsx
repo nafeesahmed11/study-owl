@@ -99,9 +99,9 @@ export default function Profile() {
         <Card>
           <h3 style={{ fontSize: '16px', fontWeight: 600, color: C.navy, marginBottom: '16px' }}>Subject Coverage</h3>
           {[
-            { name: "Software Engineering", progress: 83, color: "#DC2626" },
-            { name: "Database Management Systems", progress: 72, color: "#4F46E5" },
-            { name: "Algorithms & Complexity", progress: 58, color: "#059669" },
+            { name: "Software Engineering", progress: 83, color: "#8F1D1D" },
+            { name: "Database Management Systems", progress: 72, color: "#6B183C" },
+            { name: "Algorithms & Complexity", progress: 58, color: "#126B68" },
             { name: "Computer Networks", progress: 45, color: "#D97706" },
           ].map(s => (
             <div key={s.name} style={{ marginBottom: '14px' }}>

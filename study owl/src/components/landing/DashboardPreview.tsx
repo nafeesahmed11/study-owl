@@ -21,9 +21,9 @@ export function DashboardPreview() {
       <span className="sr-only">Preview of the Study Owl AI dashboard.</span>
       {/* Window bar */}
       <div className="landing-preview-bar" aria-hidden="true">
-        <span className="landing-preview-dot" style={{ backgroundColor: "#F87171" }} />
-        <span className="landing-preview-dot" style={{ backgroundColor: "#FBBF24" }} />
-        <span className="landing-preview-dot" style={{ backgroundColor: "#34D399" }} />
+        <span className="landing-preview-dot" style={{ backgroundColor: "#8F1D1D" }} />
+        <span className="landing-preview-dot" style={{ backgroundColor: "#F6E39A" }} />
+        <span className="landing-preview-dot" style={{ backgroundColor: "#126B68" }} />
         <span style={{ marginLeft: "8px", fontSize: "12px", fontWeight: 600, color: C.textMuted }}>
           Study Owl AI — Dashboard
         </span>
@@ -56,8 +56,8 @@ export function DashboardPreview() {
             <span style={{ fontSize: "12px", fontWeight: 600, color: C.indigo }}>View all</span>
           </div>
           {[
-            { name: "Database Management Systems", code: "CSE-401", progress: 72, color: "#4F46E5" },
-            { name: "Algorithms & Complexity", code: "CSE-402", progress: 58, color: "#059669" },
+            { name: "Database Management Systems", code: "CSE-401", progress: 72, color: "#6B183C" },
+            { name: "Algorithms & Complexity", code: "CSE-402", progress: 58, color: "#126B68" },
             { name: "Computer Networks", code: "CSE-403", progress: 45, color: "#D97706" },
           ].map(s => (
             <div key={s.code} style={{ marginBottom: "12px" }}>
@@ -76,7 +76,7 @@ export function DashboardPreview() {
 
         {/* AI insight + quick actions */}
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: "12px" }}>
-          <div className="landing-preview-mini" style={{ backgroundColor: "#F8F7FF", border: "1px solid #E4E2FF" }}>
+          <div className="landing-preview-mini" style={{ backgroundColor: "#F5F3FF", border: "1px solid #E8DDD0" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
               <IconBrain size={15} color={C.indigo} />
               <p style={{ fontSize: "12px", fontWeight: 600, color: C.navy }}>AI Study Insights</p>

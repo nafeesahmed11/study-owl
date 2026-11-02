@@ -47,7 +47,7 @@ export function LandingNav() {
       aria-label="Primary"
       style={{
         position: "sticky", top: 0, zIndex: 50,
-        backgroundColor: "rgba(247,247,250,0.92)", backdropFilter: "blur(12px)",
+        backgroundColor: "rgba(255,253,248,0.92)", backdropFilter: "blur(12px)",
         borderBottom: `1px solid ${C.border}`,
       }}
     >
