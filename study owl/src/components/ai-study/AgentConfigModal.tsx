@@ -1,11 +1,18 @@
-import { useEffect, useState } from 'react';
-import { C, Modal, Input, Textarea, Btn } from '../ui';
+import { useEffect, useState, useRef } from 'react';
+import { C, Modal, Input, Textarea, Select, Btn } from '../ui';
 import { IconRefresh } from '../Icons';
 import {
   AGENT_INSTRUCTIONS_MAX,
   AGENT_NAME_MAX,
+  ALLOWED_MODELS,
+  ALLOWED_PROVIDERS,
+  ALLOWED_PROVIDERS_LABEL,
   DEFAULT_AGENT_CONFIG,
   DEFAULT_AGENT_NAME,
+  DEFAULT_COMMAND_PREFIX,
+  DEFAULT_MODEL,
+  DEFAULT_PROVIDER,
+  DEFAULT_TEMPERATURE,
   sanitizeAgentName,
   sanitizeAgentInstructions,
   type AgentConfig,
@@ -26,9 +33,9 @@ import {
  *   X discards unsaved edits
  * - Reset: clears the saved configuration back to defaults (draft included)
  *
- * The note under the switch is intentionally honest: instructions are stored
- * locally and only affect real model behavior once a live AI backend exists
- * (the current chat replies are canned demo text).
+ * The note under the switch describes the real behaviour: the instructions are
+ * stored in the student's Supabase row and applied by the backend on every
+ * request.
  */
 export function AgentConfigModal({
   open,
@@ -50,13 +57,20 @@ export function AgentConfigModal({
   // Draft edits — re-seeded from the saved config each time the dialog opens.
   const [name, setName] = useState(config.name);
   const [instructions, setInstructions] = useState(config.instructions);
+  const [provider, setProvider] = useState(config.provider);
+  const [model, setModel] = useState(config.model);
+  const [temperature, setTemperature] = useState(config.temperature);
+  const [commandPrefix, setCommandPrefix] = useState(config.commandPrefix);
 
   useEffect(() => {
     if (open) {
       setName(config.name);
       setInstructions(config.instructions);
+      setProvider(config.provider);
+      setModel(config.model);
+      setTemperature(config.temperature);
+      setCommandPrefix(config.commandPrefix);
     }
-    // Seeding at open-time only; later edits live in draft state on purpose.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -64,12 +78,72 @@ export function AgentConfigModal({
     onApply({
       name: sanitizeAgentName(name),
       instructions: sanitizeAgentInstructions(instructions),
+      provider,
+      model,
+      temperature,
+      commandPrefix,
     });
 
   const reset = () => {
     onReset();
     setName(DEFAULT_AGENT_CONFIG.name);
     setInstructions(DEFAULT_AGENT_CONFIG.instructions);
+    setProvider(DEFAULT_AGENT_CONFIG.provider);
+    setModel(DEFAULT_AGENT_CONFIG.model);
+    setTemperature(DEFAULT_AGENT_CONFIG.temperature);
+    setCommandPrefix(DEFAULT_AGENT_CONFIG.commandPrefix);
+  };
+
+  const importInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = () => {
+    const payload = {
+      name,
+      instructions,
+      provider,
+      model,
+      temperature,
+      commandPrefix,
+      devMode,
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'studyowl-agent-config.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const raw = JSON.parse(ev.target?.result as string);
+        const next: AgentConfig = {
+          name: typeof raw.name === 'string' ? raw.name : '',
+          instructions: typeof raw.instructions === 'string' ? raw.instructions : '',
+          provider: typeof raw.provider === 'string' ? raw.provider : DEFAULT_PROVIDER,
+          model: typeof raw.model === 'string' ? raw.model : DEFAULT_MODEL,
+          temperature: typeof raw.temperature === 'number' ? raw.temperature : DEFAULT_TEMPERATURE,
+          commandPrefix: typeof raw.commandPrefix === 'string' ? raw.commandPrefix : DEFAULT_COMMAND_PREFIX,
+        };
+        setName(next.name);
+        setInstructions(next.instructions);
+        setProvider(next.provider);
+        setModel(next.model);
+        setTemperature(next.temperature);
+        setCommandPrefix(next.commandPrefix);
+      } catch {
+        // Invalid JSON — silently ignore
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const namePct = name.length / AGENT_NAME_MAX;
@@ -100,7 +174,7 @@ export function AgentConfigModal({
       {/* Honest scope note + mode guidance. */}
       <div style={{ backgroundColor: C.infoLight, border: '1px solid rgba(14, 165, 233, 0.25)', borderRadius: 'var(--r-md)', padding: '10px 12px', fontSize: '12px', lineHeight: 1.55, color: C.text2, marginBottom: '16px' }}>
         {devMode ? (
-          <>Settings are saved in this browser. System instructions are stored now and apply automatically once a live AI backend is connected — chat replies are currently canned demo text.</>
+          <>Settings are saved to your account and follow you across devices. System instructions are sent with every message, so the agent answers in the style you configure here.</>
         ) : (
           <>You are using the default agent (<strong style={{ color: C.navy, fontWeight: 600 }}>{DEFAULT_AGENT_NAME}</strong>). Switch to Developer mode to customize the agent name and instructions.</>
         )}
@@ -152,13 +226,98 @@ export function AgentConfigModal({
           />
         </div>
 
+        {/* Model & Generation Configuration */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
+            <label htmlFor="ai-study-agent-provider" style={{ fontSize: '13px', fontWeight: 500, color: C.text }}>
+              Model Provider
+            </label>
+          </div>
+          <Select
+            id="ai-study-agent-provider"
+            options={ALLOWED_PROVIDERS.map(p => ({ value: p, label: ALLOWED_PROVIDERS_LABEL[p] }))}
+            value={provider}
+            disabled={!devMode}
+            onChange={e => setProvider(e.target.value)}
+          />
+
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginTop: '12px', marginBottom: '6px' }}>
+            <label htmlFor="ai-study-agent-model" style={{ fontSize: '13px', fontWeight: 500, color: C.text }}>
+              Model
+            </label>
+          </div>
+          <Select
+            id="ai-study-agent-model"
+            options={ALLOWED_MODELS[provider].map(m => ({ value: m, label: m }))}
+            value={model}
+            disabled={!devMode}
+            onChange={e => setModel(e.target.value)}
+          />
+
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginTop: '12px', marginBottom: '6px' }}>
+            <label htmlFor="ai-study-agent-temperature" style={{ fontSize: '13px', fontWeight: 500, color: C.text }}>
+              Temperature
+            </label>
+            <span style={{ fontSize: '11px', fontVariantNumeric: 'tabular-nums', color: C.text3 }}>
+              {temperature}
+            </span>
+          </div>
+          <Input
+            id="ai-study-agent-temperature"
+            type="range"
+            min="0"
+            max="2"
+            step="0.1"
+            disabled={!devMode}
+            value={String(temperature)}
+            onChange={e => setTemperature(Number(e.target.value))}
+            style={{ width: '100%', padding: 0, height: '6px', backgroundColor: 'transparent', border: 'none' }}
+          />
+        </div>
+
+        {/* Command Prefix Customization */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
+            <label htmlFor="ai-study-agent-command-prefix" style={{ fontSize: '13px', fontWeight: 500, color: C.text }}>
+              Command prefix
+            </label>
+            <span style={{ fontSize: '11px', color: C.text3 }}>
+              Symbol before command names (e.g. ?fix)
+            </span>
+          </div>
+          <Input
+            id="ai-study-agent-command-prefix"
+            maxLength={3}
+            disabled={!devMode}
+            value={commandPrefix}
+            onChange={e => setCommandPrefix(e.target.value)}
+            placeholder={DEFAULT_COMMAND_PREFIX}
+            style={{ width: '60px' }}
+          />
+        </div>
+
       </div>
 
       {/* Actions: Reset on the left, Cancel/Apply on the right; wraps on phones. */}
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', flexWrap: 'wrap', marginTop: '18px' }}>
-        <Btn variant="secondary" size="sm" icon={<IconRefresh size={14} />} onClick={reset} disabled={!devMode}>
-          Reset to defaults
-        </Btn>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Btn variant="secondary" size="sm" icon={<IconRefresh size={14} />} onClick={reset} disabled={!devMode}>
+            Reset to defaults
+          </Btn>
+          <Btn variant="ghost" size="sm" onClick={handleExport} disabled={!devMode}>
+            Export config
+          </Btn>
+          <Btn variant="ghost" size="sm" onClick={() => importInputRef.current?.click()} disabled={!devMode}>
+            Import config
+          </Btn>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept=".json"
+            style={{ display: 'none' }}
+            onChange={handleImport}
+          />
+        </div>
         <div style={{ display: 'flex', gap: '8px' }}>
           <Btn variant="ghost" size="sm" onClick={onClose}>Cancel</Btn>
           <Btn size="sm" onClick={apply} disabled={!devMode}>Apply changes</Btn>

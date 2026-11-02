@@ -1,0 +1,18 @@
+{
+  "version": "5",
+  "specifiers": {
+    "jsr:@supabase/supabase-js@2": "2.118.0"
+  },
+  "jsr": {
+    "@supabase/supabase-js@2.118.0": {
+      "integrity": "42009f9d5b35997f35bba560d509f42608057cae647bd5a25b9b4a06ec3ffad0"
+    }
+  },
+  "workspace": {
+    "packageJson": {
+      "dependencies": [
+        "npm:@supabase/supabase-js@^2.118.0"
+      ]
+    }
+  }
+}

@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "format": "oxfmt",
     "type-check": "tsc --noEmit",
-    "test:planner": "node --experimental-strip-types scripts/planner-logic.test.ts"
+    "test:planner": "node --experimental-strip-types scripts/planner-logic.test.ts",
+    "test:ai-chat": "node --experimental-strip-types scripts/ai-chat-logic.test.ts",
+    "test": "npm run test:planner && npm run test:ai-chat"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
@@ -23,6 +25,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^6.0.0",
+    "agentation": "^3.1.2",
     "oxfmt": "^0.2.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0",

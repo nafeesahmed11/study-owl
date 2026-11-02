@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { C, Card, Btn, Badge, Avatar } from "../components/ui";
-import { IconBrain, IconSend, IconCopy, IconStar, IconRefresh, IconPlus, IconFileText, IconSparkles, IconCheck, IconChevronLeft, IconChevronRight, IconMessageCircle, IconDownload, IconTerminal, IconSettings } from "../components/Icons";
+import { IconBrain, IconSend, IconCopy, IconStar, IconRefresh, IconPlus, IconFileText, IconSparkles, IconCheck, IconChevronLeft, IconChevronRight, IconMessageCircle, IconDownload, IconTerminal, IconSettings, IconTrash } from "../components/Icons";
 import { AgentConfigModal } from "../components/ai-study/AgentConfigModal";
 import { CreditUsageBar } from "../components/ai-study/CreditUsageBar";
 import {
@@ -13,9 +13,20 @@ import {
   saveDevMode,
   resolveAgentName,
   sanitizeAgentName,
+  fetchAgentConfig,
+  persistAgentConfig,
+  removeAgentConfig,
   type AgentConfig,
 } from "../lib/agentConfig";
-import { loadCredits, consumeCredits, type CreditState } from "../lib/creditsStore";
+import { loadCredits, fetchCredits, applyCredits, type CreditState } from "../lib/creditsStore";
+import {
+  sendChatMessage,
+  listChatSessions,
+  loadChatMessages,
+  deleteChatSession,
+  setChatMessageSaved,
+  type ChatSession,
+} from "../lib/aiChat";
 
 const DeepSeekIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -67,10 +78,11 @@ const sourceDocuments = [
  * Page: AI Study Chat (/app/ai-study) — student-only, inside AppLayout.
  * Purpose: Chat-style AI tutor with a conversation history sidebar, a model
  *   picker, per-message copy/save/regenerate actions, and a context panel.
- * Data source: NOT a real AI call. `send` appends the user's message, waits
- *   1.2s, then always replies with the same canned `aiResponses.default`
- *   text regardless of the question or the selected model. Choosing a model
- *   only changes the avatar colour/icon, not the response.
+ * Data source: a live AI call. `send` posts the visible conversation to the
+ *   `ai-chat` Supabase Edge Function, which calls the provider, reserves and
+ *   settles the student's credits, and persists both turns of the exchange.
+ *   A failed request removes the user's turn again and shows the backend error,
+ *   so the student can retry without a half-written transcript.
  * Layout: a split-pane full-height shell rather than a normal scrolling page.
  *   Three flex children of `.ai-study-panes`. The history rail and the Lab
  *   Canvas are compact fixed rails (240px and 300px, both min-width:0) while
@@ -91,7 +103,7 @@ const sourceDocuments = [
  *   and persists them in localStorage.
  */
 
-type Message = { id: number; role: 'user' | 'assistant'; content: string; saved?: boolean };
+type Message = { id: number; role: 'user' | 'assistant'; content: string; saved?: boolean; serverId?: string };
 
 // Clickable starter prompts shown in the empty-chat state
 const suggestions = [
@@ -141,13 +153,29 @@ const studyPrompts = [
   },
 ];
 
-// Canned reply text. Only `default` exists, so every answer is identical
-const aiResponses: Record<string, string> = {
-  default: `Great question! Let me break this down clearly for your exam preparation.\n\n**Key Concepts:**\nThis is an important topic that regularly appears in CSE 6th semester examinations.\n\n**Explanation:**\nThe core idea involves understanding the underlying principles and their practical applications. Let me walk you through each aspect systematically:\n\n1. **First Principle** — The foundational concept that everything else builds upon. Understanding this gives you the framework to answer any related question.\n\n2. **Second Aspect** — This builds on the first and introduces the practical mechanics of how the system works.\n\n3. **Third Point** — The advanced consideration that often appears in 10-mark questions and distinguishes good answers from excellent ones.\n\n**Example:**\nConsider a real-world scenario: when you book a train ticket online, multiple concepts from this topic are applied simultaneously.\n\n**Exam Tip:**\nIn a 5-mark question, cover points 1 and 2 with one example. For 10 marks, add point 3, a comparison table, and a conclusion paragraph.\n\nWould you like me to generate practice questions on this topic, or explain any specific part in more detail?`,
-};
-
 // Module-level message id counter, shared by user and assistant messages
 let msgId = 10;
+
+// Renders a conversation timestamp as a short relative label ("2h ago",
+// "Yesterday", "Dec 10").
+function formatSessionDate(iso: string): string {
+  const then = new Date(iso);
+  if (Number.isNaN(then.getTime())) return '';
+
+  const diffMs = Date.now() - then.getTime();
+  const mins = Math.floor(diffMs / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 7) return `${days}d ago`;
+
+  return then.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
 
 // The greeting that starts every conversation
 const initMessages: Message[] = [
@@ -171,6 +199,16 @@ export default function AIStudy() {
   // The full conversation, oldest first
   const [messages, setMessages] = useState<Message[]>(initMessages);
 
+  // The conversation currently open on the server. Null means "no session yet",
+  // so the next reply starts a brand-new conversation.
+  const [sessionId, setSessionId] = useState<string | null>(null);
+
+  // The student's stored conversations, newest first.
+  const [history, setHistory] = useState<ChatSession[]>([]);
+
+  // Backend error surfaced inline in the chat, cleared on the next send.
+  const [chatError, setChatError] = useState<string | null>(null);
+
   // Current textarea contents
   const [input, setInput] = useState('');
 
@@ -185,15 +223,6 @@ export default function AIStudy() {
   const [devMode, setDevModeState] = useState<boolean>(() => loadDevMode());
   const [showAgentConfig, setShowAgentConfig] = useState(false);
   const agentName = resolveAgentName(agentConfig, devMode);
-
-  // Static conversation history list. Declared without a setter, so the
-  // entries never change and the buttons have no click handler
-  const [history] = useState([
-    { id: 1, title: "DBMS — Normalization Explained", date: "2h ago" },
-    { id: 2, title: "CN — OSI vs TCP/IP Model", date: "Yesterday" },
-    { id: 3, title: "Algo — Dynamic Programming", date: "Dec 10" },
-    { id: 4, title: "SE — SDLC Models Compared", date: "Dec 9" },
-  ]);
   // Anchor for auto-scrolling; always kept at the end of the message list
   const bottomRef = useRef<HTMLDivElement>(null);
   // Suggestion strip: ref + arrow visibility for the overflow-aware chip scroller.
@@ -203,6 +232,89 @@ export default function AIStudy() {
 
   // Scroll to the newest message whenever the conversation grows
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
+
+  // ─── Backend bootstrap ───────────────────────────────────────────────────
+  // On mount: load the authoritative credit balance, the stored agent
+  // configuration and the conversation list. Every one of these degrades
+  // gracefully to the local cache when Supabase is unreachable.
+  useEffect(() => {
+    let cancelled = false;
+
+    fetchCredits()
+      .then(state => { if (!cancelled) setCredits(state); })
+      .catch(() => { /* the cached balance stays on screen */ });
+
+    fetchAgentConfig()
+      .then(({ config, devMode: mode }) => {
+        if (cancelled) return;
+        setAgentConfig(config);
+        setDevModeState(mode);
+      })
+      .catch(() => { /* the cached configuration stays on screen */ });
+
+    listChatSessions()
+      .then(sessions => { if (!cancelled) setHistory(sessions); })
+      .catch(() => { /* an empty history is a valid state */ });
+
+    return () => { cancelled = true; };
+  }, []);
+
+  // Refreshes the conversation list after a change.
+  const refreshHistory = async () => {
+    try {
+      setHistory(await listChatSessions());
+    } catch {
+      /* keep the previous list */
+    }
+  };
+
+  // Opens a stored conversation and loads its transcript.
+  const openSession = async (id: string) => {
+    if (loading) return;
+    setLoading(true);
+    setChatError(null);
+    try {
+      const stored = await loadChatMessages(id);
+      setSessionId(id);
+      setMessages(
+        stored.length
+          ? stored.map(row => ({
+              id: ++msgId,
+              serverId: row.id,
+              role: row.role,
+              content: row.content,
+              saved: row.saved,
+            }))
+          : initMessages,
+      );
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : 'Could not open that conversation.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Removes a stored conversation from the server and from the list.
+  const removeSession = async (id: string) => {
+    try {
+      await deleteChatSession(id);
+      setHistory(list => list.filter(session => session.id !== id));
+      if (sessionId === id) {
+        setSessionId(null);
+        setMessages(initMessages);
+      }
+    } catch (err) {
+      setChatError(err instanceof Error ? err.message : 'Could not delete that conversation.');
+    }
+  };
+
+  // Starts a fresh conversation: clears the transcript and detaches from the
+  // current session so the next reply is stored in a new one.
+  const newConversation = () => {
+    setSessionId(null);
+    setMessages(initMessages);
+    setChatError(null);
+  };
 
   // Suggestion-strip arrows: visible only on real overflow; left shows past scrollLeft 0,
   // right shows while content remains to the right. Re-evaluated on scroll, resize,
@@ -257,25 +369,67 @@ export default function AIStudy() {
     return () => window.removeEventListener('keydown', onKey);
   }, [isSidebarOpen, isNotebookOpen, showPrompts, showAgentConfig]);
 
-  // Sends a message: appends the user turn, clears the input, then fakes a
-  // 1.2s round-trip before appending the canned assistant reply
-  const send = (text?: string) => {
-    const content = text || input.trim();
-    if (!content) return;
+  // Sends a message to the backend and appends the real assistant reply.
+  //
+  // The user turn is shown immediately, but it is removed again when the
+  // request fails so the student can retry the same question without a
+  // half-written transcript.
+  const send = async (text?: string) => {
+    const content = (text ?? input).trim();
+    if (!content || loading) return;
+
+    setChatError(null);
     const userMsg: Message = { id: ++msgId, role: 'user', content };
     setMessages(m => [...m, userMsg]);
     setInput('');
     setLoading(true);
-    setTimeout(() => {
-      const aiMsg: Message = { id: ++msgId, role: 'assistant', content: aiResponses.default };
-      setMessages(m => [...m, aiMsg]);
-      setCredits(consumeCredits(content));
+
+    // The model keeps the full visible conversation as context, minus the
+    // local greeting (it is not part of the stored transcript).
+    const context = [...messages, userMsg]
+      .filter(msg => msg.id !== 1)
+      .map(msg => ({ role: msg.role, content: msg.content }));
+
+    try {
+      const result = await sendChatMessage(context, sessionId);
+      setSessionId(result.sessionId);
+      setMessages(m => [
+        ...m,
+        { id: ++msgId, role: 'assistant', content: result.reply },
+      ]);
+      // The backend returns the authoritative balance after settlement. A
+      // missing balance means the settle call failed, so the cached balance
+      // is kept rather than replaced with zeroes.
+      if (result.credits.total > 0) {
+        setCredits(applyCredits(result.credits.total, result.credits.used));
+      }
+      void refreshHistory();
+    } catch (err) {
+      // Drop the failed user turn and restore the input so the student can
+      // retry. The backend releases any reserved credits on failure.
+      setMessages(m => m.filter(msg => msg.id !== userMsg.id));
+      setInput(content);
+      setChatError(err instanceof Error ? err.message : 'The AI could not answer right now.');
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
-  // Stars/unstars an assistant message
-  const toggleSave = (id: number) => setMessages(m => m.map(msg => msg.id === id ? { ...msg, saved: !msg.saved } : msg));
+  // Stars/unstars an assistant message. The local state updates immediately
+  // and the change is persisted in the background when the row is known.
+  const toggleSave = async (id: number) => {
+    const target = messages.find(msg => msg.id === id);
+    if (!target) return;
+    const next = !target.saved;
+    setMessages(m => m.map(msg => (msg.id === id ? { ...msg, saved: next } : msg)));
+    if (target.serverId) {
+      try {
+        await setChatMessageSaved(target.serverId, next);
+      } catch {
+        setChatError('Could not update the saved state.');
+      }
+    }
+  };
 
   const copyNotebookCode = async (title: string, code: string) => {
     try {
@@ -299,11 +453,18 @@ export default function AIStudy() {
   };
 
   // ─── Developer Mode: agent identity + persisted configuration ───────────────
-  // Applies (and persists) a validated agent configuration.
+  // Applies (and persists) a validated agent configuration. The local cache is
+  // written immediately; the Supabase row is updated in the background so the
+  // configuration follows the student across devices.
   const applyAgentConfig = (next: AgentConfig) => {
     saveAgentConfig(next);
     setAgentConfig(next);
     setShowAgentConfig(false);
+    void persistAgentConfig(next, devMode).then(result => {
+      if (!result.success) {
+        setChatError(result.error ?? 'Could not save the agent settings.');
+      }
+    });
   };
 
   // Clears the saved configuration back to defaults (mode itself unchanged;
@@ -311,6 +472,27 @@ export default function AIStudy() {
   const resetAgentConfig = () => {
     clearAgentConfig();
     setAgentConfig({ ...DEFAULT_AGENT_CONFIG });
+    void removeAgentConfig().then(result => {
+      if (!result.success) {
+        setChatError(result.error ?? 'Could not reset the agent settings.');
+        return;
+      }
+      // `removeAgentConfig` also clears the stored mode; the dialog's switch
+      // keeps Developer Mode on, so the mode is written back.
+      void persistAgentConfig({ ...DEFAULT_AGENT_CONFIG }, devMode);
+    });
+  };
+
+  // Toggling Developer Mode also changes what the agent is called, so the
+  // mode is stored with the configuration.
+  const setDevMode = (on: boolean) => {
+    setDevModeState(on);
+    saveDevMode(on);
+    void persistAgentConfig(agentConfig, on).then(result => {
+      if (!result.success) {
+        setChatError(result.error ?? 'Could not save the agent settings.');
+      }
+    });
   };
 
   // Inline "Agent name" field in the rail: validates + persists as typed.
@@ -318,6 +500,7 @@ export default function AIStudy() {
     const next: AgentConfig = { ...agentConfig, name: sanitizeAgentName(value) };
     setAgentConfig(next);
     saveAgentConfig(next);
+    void persistAgentConfig(next, devMode);
   };
 
   // Below 1024px both side rails are overlay drawers. Keeping them mutually
@@ -431,20 +614,41 @@ export default function AIStudy() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isSidebarOpen ? '12px' : '10px 4px' }}>
             {/* Keep collapsed controls narrower than the rail and centered. */}
-            <Btn fullWidth size="sm" variant="secondary" icon={<IconPlus size={14} />} onClick={() => setMessages(initMessages)}
+            <Btn fullWidth size="sm" variant="secondary" icon={<IconPlus size={14} />} onClick={newConversation}
               style={isSidebarOpen ? undefined : { width: '32px', padding: '6px 0', gap: 0 }}>
               {isSidebarOpen && 'New Conversation'}
             </Btn>
           </div>
           <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: isSidebarOpen ? '8px' : '6px 4px' }}>
             {isSidebarOpen && <p style={{ fontSize: '11px', fontWeight: 600, color: C.text2, textTransform: 'uppercase', letterSpacing: '0.06em', padding: '10px 8px 6px' }}>Recent</p>}
+            {history.length === 0 && isSidebarOpen && (
+              <p style={{ fontSize: '12px', color: C.text3, padding: '4px 8px' }}>No conversations yet.</p>
+            )}
             {history.map(h => (
-              <button key={h.id} title={h.title} style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarOpen ? 'flex-start' : 'center', gap: isSidebarOpen ? '10px' : 0, width: isSidebarOpen ? '100%' : '32px', margin: isSidebarOpen ? undefined : '0 auto', textAlign: 'left', padding: isSidebarOpen ? '9px 10px' : '9px 0', borderRadius: 'var(--r-md)', background: 'none', border: 'none', cursor: 'pointer', color: C.text2, transition: 'background 0.12s' }}
-                onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surface2}
-                onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}>
-                <IconMessageCircle size={16} />
-                {isSidebarOpen && <span style={{ minWidth: 0 }}><span style={{ display: 'block', fontSize: '13.5px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.title}</span><span style={{ display: 'block', fontSize: '11px', color: C.text3, marginTop: '2px' }}>{h.date}</span></span>}
-              </button>
+              <div key={h.id} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  title={h.title}
+                  aria-current={sessionId === h.id ? 'true' : undefined}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: isSidebarOpen ? 'flex-start' : 'center', gap: isSidebarOpen ? '10px' : 0, width: isSidebarOpen ? '100%' : '32px', margin: isSidebarOpen ? undefined : '0 auto', textAlign: 'left', padding: isSidebarOpen ? '9px 10px' : '9px 0', borderRadius: 'var(--r-md)', background: sessionId === h.id ? C.surface2 : 'none', border: 'none', cursor: 'pointer', color: C.text2, transition: 'background 0.12s' }}
+                  onClick={() => void openSession(h.id)}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surface2}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor = sessionId === h.id ? C.surface2 : 'transparent'}>
+                  <IconMessageCircle size={16} />
+                  {isSidebarOpen && <span style={{ minWidth: 0 }}><span style={{ display: 'block', fontSize: '13.5px', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.title}</span><span style={{ display: 'block', fontSize: '11px', color: C.text3, marginTop: '2px' }}>{formatSessionDate(h.updatedAt)}</span></span>}
+                </button>
+                {isSidebarOpen && (
+                  <button
+                    type="button"
+                    aria-label={`Delete ${h.title}`}
+                    title="Delete conversation"
+                    onClick={() => void removeSession(h.id)}
+                    style={{ position: 'absolute', right: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '24px', height: '24px', borderRadius: '6px', border: 'none', background: C.surface2, color: C.text3, cursor: 'pointer' }}
+                  >
+                    <IconTrash size={13} />
+                  </button>
+                )}
+              </div>
             ))}
           </div>
           {isSidebarOpen && (
@@ -556,6 +760,15 @@ export default function AIStudy() {
             </section>
           )}
 
+          {/* Backend error banner. The failed user turn is removed from the
+              transcript, so the student can simply press send again. */}
+          {chatError && (
+            <div role="alert" style={{ margin: '0 20px', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: '10px', backgroundColor: C.errorLight, border: `1px solid rgba(220, 38, 38, 0.2)`, borderRadius: 'var(--r-md)', color: C.error, fontSize: '12.5px' }}>
+              <span style={{ flex: 1, minWidth: 0 }}>{chatError}</span>
+              <button type="button" onClick={() => setChatError(null)} aria-label="Dismiss error" style={{ border: 'none', background: 'transparent', color: C.error, cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}>Dismiss</button>
+            </div>
+          )}
+
           {/* Scrollable message list; user turns are right-aligned via row-reverse.
               `minWidth: 0` + wrapping keeps long words and code from ever forcing
               the pane to overflow horizontally. */}
@@ -628,7 +841,7 @@ export default function AIStudy() {
               )}
               <div ref={suggScrollRef} className='ai-study-sugg-scroll' style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '10px', paddingLeft: showSuggLeft ? '36px' : 0, paddingRight: showSuggRight ? '36px' : 0, minWidth: 0, width: '100%', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
               {suggestions.map(s => (
-                <button key={s} onClick={() => send(s)} style={{ display: 'inline-flex', alignItems: 'center', minHeight: '34px', padding: '0 14px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-md)', fontSize: '12px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'background 0.12s, color 0.12s, border-color 0.12s' }}
+                <button key={s} onClick={() => void send(s)} style={{ display: 'inline-flex', alignItems: 'center', minHeight: '34px', padding: '0 14px', backgroundColor: C.surface2, border: `1px solid ${C.border}`, borderRadius: 'var(--r-md)', fontSize: '12px', color: C.text2, cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0, transition: 'background 0.12s, color 0.12s, border-color 0.12s' }}
                   onMouseEnter={e => { e.currentTarget.style.backgroundColor = C.indigoLight; e.currentTarget.style.color = C.indigo; e.currentTarget.style.borderColor = C.indigo; }}
                   onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.surface2; e.currentTarget.style.color = C.text2; e.currentTarget.style.borderColor = C.border; }}>
                   {s}
@@ -652,7 +865,7 @@ export default function AIStudy() {
                 <textarea
                   value={input}
                   onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
+                  onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void send(); } }}
                   placeholder="Ask me anything academic… (Enter to send, Shift+Enter for new line)"
                   rows={2}
                   aria-label="Message the AI tutor"
@@ -661,7 +874,7 @@ export default function AIStudy() {
                   onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = 'none'; }}
                 />
               </div>
-              <button onClick={() => send()} disabled={!input.trim() || loading} aria-label="Send message" title="Send message" style={{ width: '46px', height: '46px', borderRadius: 'var(--r-2xl)', backgroundColor: C.indigo, border: 'none', boxShadow: '0 2px 6px rgba(79, 70, 229, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: !input.trim() || loading ? 'not-allowed' : 'pointer', opacity: !input.trim() || loading ? 0.45 : 1, flexShrink: 0, transition: 'background 0.15s, opacity 0.15s' }}
+              <button onClick={() => void send()} disabled={!input.trim() || loading} aria-label="Send message" title="Send message" style={{ width: '46px', height: '46px', borderRadius: 'var(--r-2xl)', backgroundColor: C.indigo, border: 'none', boxShadow: '0 2px 6px rgba(79, 70, 229, 0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: !input.trim() || loading ? 'not-allowed' : 'pointer', opacity: !input.trim() || loading ? 0.45 : 1, flexShrink: 0, transition: 'background 0.15s, opacity 0.15s' }}
                 onMouseEnter={e => { if (input.trim() && !loading) e.currentTarget.style.backgroundColor = C.indigoHover; }}
                 onMouseLeave={e => { e.currentTarget.style.backgroundColor = C.indigo; }}>
                 <IconSend size={17} color="#fff" />
@@ -761,7 +974,7 @@ export default function AIStudy() {
         onClose={() => setShowAgentConfig(false)}
         config={agentConfig}
         devMode={devMode}
-        onSetDevMode={on => { setDevModeState(on); saveDevMode(on); }}
+        onSetDevMode={setDevMode}
         onApply={applyAgentConfig}
         onReset={resetAgentConfig}
       />

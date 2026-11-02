@@ -1,3 +1,4 @@
+import { Agentation } from "agentation";
 import { RouterProvider } from "react-router";
 import { router } from "./routes";
 import { AuthProvider } from "./context/AuthContext";
@@ -10,6 +11,9 @@ export default function App() {
           signed-in student (the OAuth round-trip is bound to their user id). */}
       <IntegrationProvider>
         <RouterProvider router={router} />
+        {process.env.NODE_ENV === "development" && (
+          <Agentation endpoint="http://localhost:4747" />
+        )}
       </IntegrationProvider>
     </AuthProvider>
   );
